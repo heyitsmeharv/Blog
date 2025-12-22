@@ -114,7 +114,8 @@ const StyledBorder = styled.div`
   :hover {
     background: ${({ theme }) => theme.primary};
     border: 2px solid ${({ theme }) => theme.text};
-    transition: background .5s;
+    transition: background .5s ease;
+    transition: border .5s ease;
   }
 `;
 

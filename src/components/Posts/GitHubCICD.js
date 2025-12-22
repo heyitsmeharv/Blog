@@ -265,7 +265,7 @@ const GitHubCICD = () => {
         <Paragraph>
           In this post, I'm going to lay out a learning path for GitHub Actions. By the
           end, you'll understand <Strong>how</Strong> workflows work, <Strong>when</Strong>{' '}
-          to use them, and <Strong>how</Strong> to go from a simple &quot;hello world&quot; to
+          to use them, and <Strong>how</Strong> to go from a simple 'hello world' to
           a full CI/CD pipeline that builds, tests, and deploys a real-world app.
         </Paragraph>
 
@@ -292,7 +292,7 @@ const GitHubCICD = () => {
         <SectionHeading>Your First Workflow: Hello GitHub Actions</SectionHeading>
 
         <Paragraph>
-          Let's start small. Every course has that first &quot;hello world&quot; section.
+          Let's start small. Every course has that first 'hello world' section.
           For GitHub Actions, it's a workflow that prints a message on every push to{' '}
           <InlineHighlight>main</InlineHighlight>.
         </Paragraph>
@@ -367,7 +367,7 @@ const GitHubCICD = () => {
             <InlineHighlight>pull_request</InlineHighlight> - on PR open/update.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>workflow_dispatch</InlineHighlight> - manual &quot;Run workflow&quot;
+            <InlineHighlight>workflow_dispatch</InlineHighlight> - manual 'Run workflow'
             button with optional inputs.
           </TextListItem>
           <TextListItem>
@@ -380,8 +380,8 @@ const GitHubCICD = () => {
         <CodeBlockWithCopy code={workflowTriggers} />
 
         <Paragraph>
-          This lets you do things like &quot;only run tests when the app code changes&quot; or
-          &quot;allow manual deployments with an environment dropdown&quot;.
+          This lets you do things like 'only run tests when the app code changes' or
+          'allow manual deployments with an environment dropdown'.
         </Paragraph>
 
         <SectionHeading>Building a Real Node.js CI Pipeline</SectionHeading>
@@ -419,7 +419,7 @@ const GitHubCICD = () => {
         </TextList>
 
         <Paragraph>
-          In a real project, this becomes your &quot;gatekeeper&quot; - PRs must pass this
+          In a real project, this becomes your 'gatekeeper' - PRs must pass this
           workflow before being merged.
         </Paragraph>
 
@@ -568,7 +568,7 @@ const GitHubCICD = () => {
         <SectionHeading>Capstone Pipeline - Push to Production</SectionHeading>
 
         <Paragraph>
-          To finish the &quot;course&quot;, imagine a full pipeline for a real-world app:
+          To finish the 'course', imagine a full pipeline for a real-world app:
         </Paragraph>
 
         <Paragraph>
@@ -609,7 +609,7 @@ const GitHubCICD = () => {
 
         <Paragraph>
           If you're building your own course or internal docs, you can treat each section of
-          this post as a module: start with &quot;hello world&quot; workflows, graduate to proper
+          this post as a module: start with 'hello world' workflows, graduate to proper
           CI, and finish with secure, automated deployments to the cloud.
         </Paragraph>
 
