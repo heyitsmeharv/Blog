@@ -15,6 +15,11 @@ const Container = styled.section`
   padding: 4rem 0;
   background: ${({ theme }) => theme.secondary};
   animation: ${SlideInBottom} 0.5s forwards;
+  border: 2px solid transparent;
+  :hover {
+    transition: border .5s ease;
+    border: 2px solid ${({ theme }) => theme.text};
+  }
 `;
 
 const Title = styled.h1`

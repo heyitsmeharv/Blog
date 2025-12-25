@@ -53,6 +53,11 @@ const Container = styled.section`
   padding: 4rem 0;
   margin-bottom: 20px;
   background: ${({ theme }) => theme.secondary};
+  border: 2px solid transparent;
+  :hover {
+    transition: border .5s ease;
+    border: 2px solid ${({ theme }) => theme.text};
+  }
 `;
 
 const Separator = styled.span`

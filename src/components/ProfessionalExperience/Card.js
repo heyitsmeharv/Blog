@@ -6,17 +6,21 @@ import SlideInBottom from '../../animations/SlideInBottom';
 const Container = styled.div`
   width: 450px;
   min-height: 600px;
+  min-width: 180px;
   margin: 30px;
   padding: 50px;
   background: ${({ theme }) => theme.secondary};
-  border: ${({ theme }) => theme.text} 2px solid;
   border-radius: 13px;
+  border: 2px solid transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 180px;
   @media only screen and (max-width: 375px) {
     min-width: 170px;
+  }
+  :hover {
+    transition: border .5s ease;
+    border: 2px solid ${({ theme }) => theme.text};
   }
 `;
 
