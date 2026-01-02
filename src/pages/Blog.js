@@ -440,14 +440,14 @@ export default function Blog() {
     },
     {
       title: 'GitHub CI/CD',
-      readingTime: 'N/A',
+      readingTime: 'approx 15 mins',
       type: 'Practical',
       date: '10/12/2025',
       tags: [{ name: 'DevOps', background: '#8B191D', icon: <DevOpsSVG /> }, { name: 'GitHub', background: '#000', icon: <GitHubSVG /> }],
       intro: `GitHub Actions has quietly become one of the most powerful tools in a modern developer's toolkit. It's where your tests run, your Docker images build, your infrastructure deploys, and 
       your app quietly rolls out to production while you're making coffee...`,
       navigate: 'github-ci-cd',
-      published: false
+      published: true
     },
     {
       title: 'Introduction to Docker and Kubernetes',
@@ -700,14 +700,14 @@ export default function Blog() {
     },
     {
       title: 'GitHub CI/CD',
-      readingTime: 'N/A',
+      readingTime: 'approx 15 mins',
       type: 'Practical',
       date: '10/12/2025',
       tags: [{ name: 'DevOps', background: '#8B191D', icon: <DevOpsSVG /> }, { name: 'GitHub', background: '#000', icon: <GitHubSVG /> }],
       intro: `GitHub Actions has quietly become one of the most powerful tools in a modern developer's toolkit. It's where your tests run, your Docker images build, your infrastructure deploys, and 
       your app quietly rolls out to production while you're making coffee...`,
       navigate: 'github-ci-cd',
-      published: false
+      published: true
     },
     {
       title: 'Introduction to Docker and Kubernetes',
