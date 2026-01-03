@@ -948,6 +948,18 @@ const GitHubCICD = () => {
           that ships a website to a real URL - without leaving GitHub.
         </Paragraph>
 
+        <Paragraph>
+          Here is a link to the template repo if you'd rather look at the source:
+          {" "}
+          <TextLink
+            href="https://github.com/heyitsmeharv/template-github-actions-cicd"
+            target="_blank"
+            rel="noreferrer"
+          >
+            template-github-actions-cicd
+          </TextLink>
+        </Paragraph>
+
         <SubSectionHeading>What we're building</SubSectionHeading>
         <Paragraph>
           The goal is a tiny site that acts like a <Strong>live pipeline dashboard</Strong>. It will show:
@@ -1052,25 +1064,6 @@ const GitHubCICD = () => {
           These are the issues most people hit when building this template for the first time.
         </Paragraph>
         <CodeBlockWithCopy code={pitfalls} />
-
-        <SubSectionHeading>Where to go next</SubSectionHeading>
-        <Paragraph>
-          You now have a complete GitHub-native CI/CD template that ends with a real deployed site. In the next post, we'll take the same
-          principles and apply them to infrastructure and AWS deployments - but the foundations won't change: clean triggers, predictable CI,
-          safe deployments, and reusable workflows.
-        </Paragraph>
-
-        <Paragraph>
-          If you want, you can link your template repo here once it's public:
-          {" "}
-          <TextLink
-            href="https://github.com/heyitsmeharv/template-github-actions-cicd"
-            target="_blank"
-            rel="noreferrer"
-          >
-            template-github-actions-cicd
-          </TextLink>
-        </Paragraph>
       </AnimatedPostContainer>
     </PageWrapper>
   );
