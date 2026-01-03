@@ -65,7 +65,8 @@ import {
   BashSVG,
   DevOpsSVG,
   GitHubSVG,
-  KubernetesSVG
+  KubernetesSVG,
+  TerraformSVG,
 } from '../resources/styles/icons';
 
 const SearchBarWrapper = styled.div`
@@ -440,10 +441,10 @@ export default function Blog() {
     },
     {
       title: 'GitHub CI/CD',
-      readingTime: 'approx 15 mins',
+      readingTime: 'approx 10 mins',
       type: 'Practical',
       date: '10/12/2025',
-      tags: [{ name: 'DevOps', background: '#8B191D', icon: <DevOpsSVG /> }, { name: 'GitHub', background: '#000', icon: <GitHubSVG /> }],
+      tags: [{ name: 'DevOps' }, { name: 'GitHub', background: '#000', icon: <GitHubSVG /> }],
       intro: `GitHub Actions has quietly become one of the most powerful tools in a modern developer's toolkit. It's where your tests run, your Docker images build, your infrastructure deploys, and 
       your app quietly rolls out to production while you're making coffee...`,
       navigate: 'github-ci-cd',
@@ -454,10 +455,21 @@ export default function Blog() {
       readingTime: 'N/A',
       type: 'Practical',
       date: '10/12/2025',
-      tags: [{ name: 'DevOps', background: '#8B191D', icon: <DevOpsSVG /> }, { name: 'Docker', background: '#D3ECEC', icon: <DockerSVG /> }],
+      tags: [{ name: 'DevOps' }, { name: 'Docker', background: '#D3ECEC', icon: <DockerSVG /> }],
       intro: `Docker and Kubernetes can sometimes feel intimidating - a world full of clusters, orchestrators, containers, pods, and YAML files. But when you peel back the layers, the story they tell is 
       actually quite simple: build your software once, run it consistently everywhere, and scale it effortlessly...`,
       navigate: 'intro-to-docker-kubernetes',
+      published: false
+    },
+    {
+      title: 'Infrastructure as Code (IaC) with Terraform',
+      readingTime: 'N/A',
+      type: 'Practical',
+      date: '03/01/2026',
+      tags: [{ name: 'Terraform', background: '#2E71E5', icon: <TerraformSVG /> }, { name: 'DevOps' }],
+      intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the 
+      same setup from local development into CI and multiple environments....`,
+      navigate: 'infrastructure-as-code-with-terraform',
       published: false
     }
   ]);
@@ -700,10 +712,10 @@ export default function Blog() {
     },
     {
       title: 'GitHub CI/CD',
-      readingTime: 'approx 15 mins',
+      readingTime: 'approx 10 mins',
       type: 'Practical',
       date: '10/12/2025',
-      tags: [{ name: 'DevOps', background: '#8B191D', icon: <DevOpsSVG /> }, { name: 'GitHub', background: '#000', icon: <GitHubSVG /> }],
+      tags: [{ name: 'DevOps' }, { name: 'GitHub', background: '#000', icon: <GitHubSVG /> }],
       intro: `GitHub Actions has quietly become one of the most powerful tools in a modern developer's toolkit. It's where your tests run, your Docker images build, your infrastructure deploys, and 
       your app quietly rolls out to production while you're making coffee...`,
       navigate: 'github-ci-cd',
@@ -714,10 +726,21 @@ export default function Blog() {
       readingTime: 'N/A',
       type: 'Practical',
       date: '10/12/2025',
-      tags: [{ name: 'DevOps', background: '#8B191D', icon: <DevOpsSVG /> }, { name: 'Docker', background: '#D3ECEC', icon: <DockerSVG /> }, { name: 'Kubernetes', background: '#326DE6', icon: <KubernetesSVG /> }],
+      tags: [{ name: 'DevOps' }, { name: 'Docker', background: '#D3ECEC', icon: <DockerSVG /> }, { name: 'Kubernetes', background: '#326DE6', icon: <KubernetesSVG /> }],
       intro: `Docker and Kubernetes can sometimes feel intimidating - a world full of clusters, orchestrators, containers, pods, and YAML files. But when you peel back the layers, the story they tell is 
       actually quite simple: build your software once, run it consistently everywhere, and scale it effortlessly...`,
       navigate: 'intro-to-docker-kubernetes',
+      published: false
+    },
+    {
+      title: 'Infrastructure as Code (IaC) with Terraform',
+      readingTime: 'N/A',
+      type: 'Practical',
+      date: '03/01/2026',
+      tags: [{ name: 'Terraform', background: '#2E71E5', icon: <TerraformSVG /> }, { name: 'DevOps' }],
+      intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the 
+      same setup from local development into CI and multiple environments....`,
+      navigate: 'infrastructure-as-code-with-terraform',
       published: false
     }
   ];

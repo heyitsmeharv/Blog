@@ -55,6 +55,7 @@ import AWSSecurityEncryption from "./components/Posts/AWSSecurityEncryption";
 import BashScripting from "./components/Posts/BashScripting";
 import GitHubCICD from "./components/Posts/GitHubCICD";
 import DockerKubernetes from "./components/Posts/DockerKubernetes";
+import IaCTerraform from "./components/Posts/IaCTerraform";
 
 const Wrapper = styled.div`
   display: flex;
@@ -160,6 +161,7 @@ const App = () => {
                         <Route exact path='/blog/getting-started-with-bash-scripting' component={BashScripting} />
                         <Route exact path='/blog/github-ci-cd' component={GitHubCICD} />
                         <Route exact path='/blog/intro-to-docker-kubernetes' component={DockerKubernetes} />
+                        <Route exact path='/blog/infrastructure-as-code-with-terraform' component={IaCTerraform} />
                         <Route component={NotFound} />
                       </Switch>
                     </TrackingGate>
