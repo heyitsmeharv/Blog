@@ -56,6 +56,7 @@ import BashScripting from "./components/Posts/BashScripting";
 import GitHubCICD from "./components/Posts/GitHubCICD";
 import DockerKubernetes from "./components/Posts/DockerKubernetes";
 import IaCTerraform from "./components/Posts/IaCTerraform";
+import ConventionalCommits from "./components/Posts/ConventionalCommits";
 
 const Wrapper = styled.div`
   display: flex;
@@ -162,6 +163,7 @@ const App = () => {
                         <Route exact path='/blog/github-ci-cd' component={GitHubCICD} />
                         <Route exact path='/blog/intro-to-docker-kubernetes' component={DockerKubernetes} />
                         <Route exact path='/blog/infrastructure-as-code-with-terraform' component={IaCTerraform} />
+                        <Route exact path='/blog/semantic-versioning-with-conventional-commits' component={ConventionalCommits} />
                         <Route component={NotFound} />
                       </Switch>
                     </TrackingGate>

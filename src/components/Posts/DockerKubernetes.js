@@ -33,7 +33,7 @@ import {
 } from '../Typography/Typography';
 
 // icons
-import { DevOpsSVG, DockerSVG, KubernetesSVG } from '../../resources/styles/icons';
+import { DockerSVG, KubernetesSVG } from '../../resources/styles/icons';
 
 const AnimatedPostContainer = styled(BasePostContainer)`
   animation: ${SlideInBottom} 0.5s forwards;
@@ -113,9 +113,6 @@ const DockerKubernetes = () => {
         <HeaderRow>
           <PageTitle>Introduction to Docker & Kubernetes</PageTitle>
           <IconWrapper>
-            <HeaderIcon>
-              <DevOpsSVG />
-            </HeaderIcon>
             <HeaderIcon>
               <DockerSVG />
             </HeaderIcon>

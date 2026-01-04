@@ -38,7 +38,7 @@ import {
 } from "../Typography/Typography";
 
 // icons
-import { DevOpsSVG, GitHubSVG } from '../../resources/styles/icons';
+import { GitHubSVG } from '../../resources/styles/icons';
 
 const AnimatedPostContainer = styled(BasePostContainer)`
   animation: ${SlideInBottom} 0.5s forwards;
@@ -676,9 +676,6 @@ const GitHubCICD = () => {
         <HeaderRow>
           <PageTitle>GitHub CI/CD</PageTitle>
           <IconWrapper>
-            <HeaderIcon>
-              <DevOpsSVG />
-            </HeaderIcon>
             <HeaderIcon>
               <GitHubSVG />
             </HeaderIcon>
