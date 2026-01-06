@@ -69,6 +69,11 @@ export const Strong = styled.strong`
   font-weight: 700;
 `;
 
+export const Italic = styled.p`
+  color: ${({ theme }) => theme.text};
+  font-style: italic;
+`;
+
 export const TextLink = styled.a`
   color: ${({ theme }) => theme.secondary};
   font-weight: bold;

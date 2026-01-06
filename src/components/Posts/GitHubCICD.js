@@ -28,6 +28,7 @@ import {
   SubSectionHeading,
   Paragraph,
   Strong,
+  Italic,
   TextLink,
   TextList,
   TextListItem,
@@ -693,7 +694,11 @@ const GitHubCICD = () => {
           In this post, I'm going to lay out a learning path for GitHub Actions. By the
           end, you'll understand <Strong>how</Strong> workflows work, <Strong>when</Strong>{' '}
           to use them, and <Strong>how</Strong> to go from a simple 'hello world' to
-          a full CI/CD pipeline that builds, tests, and deploys a real-world app.
+          a full CI/CD pipeline that builds, tests, and deploys a thing!
+        </Paragraph>
+
+        <Paragraph><Italic>*It's important to note that you'll need to have some familiarity with GitHub and 
+          an existing repository to find this post useful.*</Italic>
         </Paragraph>
 
         <SectionHeading>Why CI/CD and Why GitHub Actions?</SectionHeading>
@@ -811,15 +816,15 @@ const GitHubCICD = () => {
           'allow manual deployments with an environment dropdown'.
         </Paragraph>
 
-        <SectionHeading>Building a Real Node.js CI Pipeline</SectionHeading>
+        <SectionHeading>Building a Real CI Pipeline</SectionHeading>
 
         <Paragraph>
-          Now we turn this into something useful: a <Strong>Node.js CI pipeline</Strong> that
+          Now we turn this into something useful: a <Strong>CI pipeline</Strong> that
           runs on both pushes and pull requests.
         </Paragraph>
 
         <Paragraph>
-          A typical Node CI workflow might clone your repo, set up a Node version, install
+          A typical CI workflow might clone your repo, set up a Node version, install
           dependencies, and run tests. Here's a solid starting point:
         </Paragraph>
 
@@ -912,7 +917,7 @@ const GitHubCICD = () => {
           <Strong>easier to manage</Strong> than rotating static keys.
         </Paragraph>
 
-        <SectionHeading>Reusable Workflows: DRY for Your CI/CD</SectionHeading>
+        <SectionHeading>Reusable Workflows</SectionHeading>
 
         <Paragraph>
           As your project grows, you'll notice the same workflow patterns repeated across
