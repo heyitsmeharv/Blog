@@ -256,7 +256,7 @@ echo "✅ fmt complete"`;
 const scriptValidate = `#!/usr/bin/env bash
 set -euo pipefail
 
-# validate.sh (infra/scripts)
+# validate.sh
 # - Local quality gate (CI-like) for an environment.
 # - Includes linting checks:
 #   1) terraform fmt -check (style gate, does not modify files)
@@ -496,8 +496,235 @@ const terraformRoleTrustPolicyExample = `{
       "Action": "sts:AssumeRole"
     }
   ]
+}`;
+
+const terraformExecutionRoleTerraform = `/*
+terraform-execution-role.tf (bootstrap example)
+- Creates a Terraform execution role that can be assumed by a trusted principal.
+- Trust policy controls who can assume the role.
+- Permissions policies control what Terraform can do once assumed.
+*/
+
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::111111111111:role/YourTrustedRoleOrUser"]
+    }
+  }
+}
+
+resource "aws_iam_role" "terraform_execution" {
+  name               = "TerraformExecutionRoleDev"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+# Starter-friendly: get moving, then tighten later.
+resource "aws_iam_role_policy_attachment" "admin" {
+  role       = aws_iam_role.terraform_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 `;
+
+const terraformExecutionRoleNotes = `/*
+notes (recommended naming + intent)
+- Create one execution role per environment/account:
+  TerraformExecutionRoleDev, TerraformExecutionRoleProd, etc.
+- Trust policy: who can assume (you, your SSO role, CI role).
+- Permissions: what Terraform can do (start broad, tighten later).
+*/`;
+
+const remoteStateOverview = `/*
+Remote state (why it matters)
+- Terraform state is the source of truth for what Terraform thinks it manages.
+- Local state works for solo experiments, but breaks down for teams and CI.
+- Remote state gives you:
+  - Shared state (everyone and CI reads/writes the same file)
+  - Locking (prevents two applies at the same time)
+  - Safer collaboration (less chance of state drift and corruption)
+*/`;
+
+const backendDevExample = `/*
+backend.tf (infra/env/dev)
+- Remote state for dev environment using:
+  - S3 bucket for state storage
+  - DynamoDB table for state locking
+- Keep the key unique per environment (dev vs prod).
+- Backend config is separate from providers on purpose: state is a different concern.
+*/
+
+terraform {
+  backend "s3" {
+    bucket         = "my-terraform-state-bucket"
+    key            = "template-terraform-boilerplate/dev/terraform.tfstate"
+    region         = "eu-west-2"
+
+    # Locking: prevents concurrent applies
+    dynamodb_table = "terraform-state-locks"
+
+    # Encrypt state at rest (SSE-S3 by default)
+    encrypt        = true
+  }
+}
+`;
+
+const backendProdExample = `/*
+backend.tf (infra/env/prod)
+- Same backend, different key (separate state file).
+- This keeps prod isolated even if dev changes frequently.
+*/
+
+terraform {
+  backend "s3" {
+    bucket         = "my-terraform-state-bucket"
+    key            = "template-terraform-boilerplate/prod/terraform.tfstate"
+    region         = "eu-west-2"
+    dynamodb_table = "terraform-state-locks"
+    encrypt        = true
+  }
+}
+`;
+
+const stateKeyConvention = `/*
+State key convention (recommended)
+- Keep state keys predictable and environment-scoped.
+- A common pattern is:
+  <project>/<env>/terraform.tfstate
+
+Examples:
+- template-terraform-boilerplate/dev/terraform.tfstate
+- template-terraform-boilerplate/prod/terraform.tfstate
+*/`;
+
+const githubTerraformWorkflow = `name: Terraform
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to apply (dev or prod)"
+        required: true
+        default: "prod"
+        type: choice
+        options:
+          - dev
+          - prod
+
+# Needed for OIDC auth to AWS + PR commenting
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: terraform-\${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TF_IN_AUTOMATION: "true"
+  AWS_REGION: "eu-west-2"
+
+jobs:
+  plan:
+    name: Plan (\${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dev, prod]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: \${{ secrets[format('AWS_ROLE_ARN_{0}', matrix.environment)] }}
+          aws-region: \${{ env.AWS_REGION }}
+
+      - name: Validate (fmt check + validate + tflint)
+        run: bash infra/scripts/validate.sh \${{ matrix.environment }}
+
+      - name: Plan
+        run: bash infra/scripts/plan.sh \${{ matrix.environment }}
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-\${{ matrix.environment }}
+          path: infra/env/\${{ matrix.environment }}/tfplan
+          if-no-files-found: error
+
+  apply-dev:
+    name: Apply (dev)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: \${{ secrets.AWS_ROLE_ARN_dev }}
+          aws-region: \${{ env.AWS_REGION }}
+
+      - name: Validate (fmt check + validate + tflint)
+        run: bash infra/scripts/validate.sh dev
+
+      # Generate plan in this run so apply uses an exact plan file
+      - name: Plan
+        run: bash infra/scripts/plan.sh dev
+
+      - name: Apply
+        run: bash infra/scripts/apply.sh dev
+
+  apply-prod:
+    name: Apply (prod)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'prod'
+    environment: prod
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: \${{ secrets.AWS_ROLE_ARN_prod }}
+          aws-region: \${{ env.AWS_REGION }}
+
+      - name: Validate (fmt check + validate + tflint)
+        run: bash infra/scripts/validate.sh prod
+
+      - name: Plan
+        run: bash infra/scripts/plan.sh prod
+
+      - name: Apply
+        run: bash infra/scripts/apply.sh prod
+`;
+
 
 const IaCTerraform = () => {
   useEffect(() => {
@@ -808,6 +1035,355 @@ const IaCTerraform = () => {
         <Paragraph>
           Once we introduce GitHub Actions, the workflow will run these same steps automatically. The scripts are just there to keep your local workflow
           consistent and safe, especially when you're switching environments.
+        </Paragraph>
+
+        {/* <SubSectionHeading>Create the Terraform execution role</SubSectionHeading>
+
+        <Paragraph>
+          Before Terraform can create anything in AWS, it needs an identity it can run as. In most teams, that's a dedicated IAM role per environment —
+          something like <Strong>TerraformExecutionRoleDev</Strong> and <Strong>TerraformExecutionRoleProd</Strong>.
+        </Paragraph>
+
+        <Paragraph>
+          An IAM role is made up of two parts:
+        </Paragraph>
+
+        <TextList>
+          <TextListItem>
+            <Strong>Trust policy</Strong> — who is allowed to assume the role (your SSO role, a CI role, an IAM user, etc.).
+          </TextListItem>
+          <TextListItem>
+            <Strong>Permissions policies</Strong> — what Terraform is allowed to do once it has assumed the role.
+          </TextListItem>
+        </TextList>
+
+        <Paragraph>
+          AWS documents this split clearly, and it's worth keeping in mind as you build out your repo.
+        </Paragraph>
+
+        <TertiaryHeading>Option 1: Create the role manually (recommended for the very first setup)</TertiaryHeading>
+
+        <Paragraph>
+          For the first time you set up a new account/environment, creating the execution role in the AWS Console is usually the smoothest path. It avoids the
+          “Terraform needs the role, but the role doesn't exist yet” problem.
+        </Paragraph>
+
+        <Paragraph>
+          In the IAM Console, go to <Strong>Roles</Strong> → <Strong>Create role</Strong> → choose <Strong>Custom trust policy</Strong>, then paste a trust policy
+          like the one below (replace the principal ARN with your real trusted identity). AWS walks through these exact console steps in their docs.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={terraformRoleTrustPolicyExample} />
+
+        <Paragraph>
+          After that, attach a permissions policy. For a boilerplate template, it's common to start broad (so you can actually build), then tighten permissions
+          once your modules settle. The key is that permissions are separate from trust: trust is <InlineHighlight>who can assume</InlineHighlight>, permissions
+          are <InlineHighlight>what they can do</InlineHighlight>.
+        </Paragraph>
+
+        <TertiaryHeading>Option 2: Create the role with Terraform (bootstrap example)</TertiaryHeading>
+
+        <Paragraph>
+          Once you already have some base access (for example via SSO or a temporary admin setup), you can also create the execution role using Terraform itself.
+          I like including this as a reference because it shows the relationship between the trust policy and role attachments in code.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={terraformExecutionRoleTerraform} />
+
+        <Paragraph>
+          The AWS provider docs for <InlineHighlight>aws_iam_role</InlineHighlight> show the same core pattern: define an assume role policy and then attach
+          permissions.
+        </Paragraph>
+
+        <TertiaryHeading>Where this fits into the local workflow</TertiaryHeading>
+
+        <Paragraph>
+          Once the role exists, your <InlineHighlight>~/.aws/config</InlineHighlight> profiles can assume it automatically via{" "}
+          <InlineHighlight>role_arn</InlineHighlight> + <InlineHighlight>source_profile</InlineHighlight>. That's what makes switching between dev/prod locally
+          simple and low-risk.
+        </Paragraph>
+
+        <SectionHeading>Remote state & locking</SectionHeading>
+
+        <Paragraph>
+          Terraform keeps track of what it manages using <Strong>state</Strong>. It's the file Terraform reads to understand what already exists, what it created,
+          and what needs to change next.
+        </Paragraph>
+
+        <Paragraph>
+          Local state is fine when you're experimenting alone, but it becomes fragile as soon as you introduce a second machine, a teammate, or CI. That's where
+          <InlineHighlight>remote state</InlineHighlight> comes in.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={remoteStateOverview} /> */}
+
+        <SubSectionHeading>What remote state solves</SubSectionHeading>
+
+        <TextList>
+          <TextListItem>
+            <Strong>Shared source of truth</Strong> — your laptop and CI both read/write the same state, so you don't end up with competing copies.
+          </TextListItem>
+          <TextListItem>
+            <Strong>Locking</Strong> — prevents two applies happening at once, which is one of the fastest ways to corrupt state.
+          </TextListItem>
+          <TextListItem>
+            <Strong>Environment isolation</Strong> — dev and prod get separate state files, even if they share the same module code.
+          </TextListItem>
+        </TextList>
+
+        <SubSectionHeading>Backend conventions</SubSectionHeading>
+
+        <Paragraph>
+          You'll see backend config kept in a dedicated <InlineHighlight>backend.tf</InlineHighlight> at the environment root. I like this because it makes state
+          behaviour explicit per environment, and keeps it separate from provider configuration.
+        </Paragraph>
+
+        <Paragraph>
+          The key detail is the <InlineHighlight>key</InlineHighlight>. That's the path inside the bucket where the state file lives. Use a predictable convention
+          so it's always obvious which environment you're looking at.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={stateKeyConvention} />
+
+        <SubSectionHeading>Dev backend example</SubSectionHeading>
+        <Paragraph>
+          This is a standard AWS pattern: S3 stores the state file, and DynamoDB provides a lock so concurrent applies don't collide.
+        </Paragraph>
+        <CodeBlockWithCopy code={backendDevExample} />
+
+        <SubSectionHeading>Prod backend example</SubSectionHeading>
+        <Paragraph>
+          Prod is the same configuration, just a different key. This small separation is what keeps environments clean.
+        </Paragraph>
+        <CodeBlockWithCopy code={backendProdExample} />
+
+        {/* <SubSectionHeading>A note on bootstrapping</SubSectionHeading>
+        <Paragraph>
+          The backend resources (the S3 bucket and DynamoDB table) need to exist before Terraform can use them. Most teams handle this in one of two ways:
+        </Paragraph>
+
+        <TextList>
+          <TextListItem>
+            <Strong>Manual bootstrap once</Strong> — create the state bucket and lock table up front, then Terraform uses them forever.
+          </TextListItem>
+          <TextListItem>
+            <Strong>Bootstrap stack</Strong> — a tiny Terraform project whose only job is creating the backend resources.
+          </TextListItem>
+        </TextList>
+
+        <Paragraph>
+          For this boilerplate, I'd start with a manual bootstrap, then introduce a bootstrap stack once the workflow feels familiar.
+        </Paragraph> */}
+
+        <SubSectionHeading>What changes locally when you enable a backend</SubSectionHeading>
+        <Paragraph>
+          Once <InlineHighlight>backend.tf</InlineHighlight> is present, <InlineHighlight>terraform init</InlineHighlight> will initialise the backend and move your
+          state into it. From that point on, <InlineHighlight>plan</InlineHighlight> and <InlineHighlight>apply</InlineHighlight> operate against remote state —
+          which is exactly what you want for CI.
+        </Paragraph>
+
+        <Paragraph>
+          Next, we'll wire the same workflow into GitHub Actions so pull requests generate plans automatically, and main branch merges are the only thing that can apply.
+        </Paragraph>
+
+        <SectionHeading>GitHub Actions: plan on PR, apply on main</SectionHeading>
+
+        <Paragraph>
+          Once your repo structure is in place and you've got an execution role per environment, GitHub Actions becomes the glue that makes Terraform feel
+          safe and repeatable. The goal is simple:
+        </Paragraph>
+
+        <TextList>
+          <TextListItem>
+            <Strong>Pull requests</Strong> generate a plan automatically so you can review infrastructure changes like code.
+          </TextListItem>
+          <TextListItem>
+            <Strong>Main branch</Strong> is the only place that can apply changes, keeping deployments intentional.
+          </TextListItem>
+          <TextListItem>
+            <Strong>Prod</Strong> should be protected, ideally with an explicit manual approval step.
+          </TextListItem>
+        </TextList>
+
+        <SubSectionHeading>Authenticating to AWS (OIDC)</SubSectionHeading>
+
+        <Paragraph>
+          For CI, the cleanest pattern is to use GitHub's OIDC integration to assume an AWS role with short-lived credentials. That means you don't need to store
+          long-lived AWS access keys in GitHub secrets. GitHub and AWS both document this approach, and the{" "}
+          <InlineHighlight>aws-actions/configure-aws-credentials</InlineHighlight> action supports it directly.
+        </Paragraph>
+
+        <Paragraph>
+          The only requirement on the workflow side is granting <InlineHighlight>id-token: write</InlineHighlight> so the job can request an OIDC token.
+        </Paragraph>
+
+        <SubSectionHeading>Environment protection for prod</SubSectionHeading>
+
+        <Paragraph>
+          GitHub Environments let you put guardrails around deployments. For example, you can configure the <InlineHighlight>prod</InlineHighlight> environment to
+          require reviewers before any job targeting it can run. This gives you a simple “manual approval” without reinventing anything.
+        </Paragraph>
+
+        <SubSectionHeading>The workflow</SubSectionHeading>
+
+        <Paragraph>
+          The workflow below follows the same shape as our local scripts:
+          <InlineHighlight> validate </InlineHighlight> → <InlineHighlight> plan </InlineHighlight> → <InlineHighlight> apply </InlineHighlight>.
+          On pull requests, it runs <Strong>plan</Strong> (for dev and prod) and uploads the plan output as an artifact. On main branch pushes, it applies to dev.
+          For prod, it uses <InlineHighlight>workflow_dispatch</InlineHighlight> and an environment gate.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={githubTerraformWorkflow} />
+
+        <Paragraph>
+          Under the hood, we rely on <InlineHighlight>hashicorp/setup-terraform</InlineHighlight> to install Terraform on the runner, and we use OIDC auth to assume
+          the correct Terraform execution role for each environment.
+        </Paragraph>
+
+        <SectionHeading>GitHub repo setup (Environments, approvals, secrets)</SectionHeading>
+
+        <Paragraph>
+          The workflow is only half the story. To make “plan on PR” and “apply with guardrails” work properly, we need to configure a couple of things in GitHub:
+          Environments (for approvals) and Secrets (for role ARNs).
+        </Paragraph>
+
+        <SubSectionHeading>1) Create the environments</SubSectionHeading>
+
+        <Paragraph>
+          Environments are a GitHub feature that let you attach deployment rules (like manual approvals) and environment-specific secrets. A job that targets an
+          environment won't run until the protection rules pass.
+        </Paragraph>
+
+        <Paragraph>
+          In your repo:
+        </Paragraph>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            Go to <Strong>Settings</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            In the left sidebar, click <Strong>Environments</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Click <Strong>New environment</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Create an environment named <InlineHighlight>dev</InlineHighlight>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Repeat and create an environment named <InlineHighlight>prod</InlineHighlight>
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <Paragraph>
+          The environment names must match the <InlineHighlight>environment:</InlineHighlight> value in your workflow exactly.
+        </Paragraph>
+
+        <SubSectionHeading>2) Add a manual approval for prod</SubSectionHeading>
+
+        <Paragraph>
+          This is where the “guardrail” lives. You can require reviewers for an environment so deployments pause until someone approves. GitHub calls these
+          <Strong>deployment protection rules</Strong>.
+        </Paragraph>
+
+        <Paragraph>
+          In your repo:
+        </Paragraph>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            Go to <Strong>Settings</Strong> → <Strong>Environments</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Click the <InlineHighlight>prod</InlineHighlight> environment
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Under <Strong>Deployment protection rules</Strong>, enable <Strong>Required reviewers</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Add yourself (or a team) as a required reviewer
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <Paragraph>
+          Now, any job that uses <InlineHighlight>environment: prod</InlineHighlight> will pause and wait for approval before it can run.
+        </Paragraph>
+
+        <SubSectionHeading>3) Add the role ARNs as secrets</SubSectionHeading>
+
+        <Paragraph>
+          Your workflow needs the role ARN(s) to assume via OIDC. You can store these either as repository secrets or as environment secrets. Environment secrets
+          are nice because they keep dev/prod values scoped and harder to misuse.
+        </Paragraph>
+
+        <TertiaryHeading>Option A: Environment secrets (recommended)</TertiaryHeading>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            Go to <Strong>Settings</Strong> → <Strong>Environments</Strong> → click <InlineHighlight>dev</InlineHighlight>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Under <Strong>Environment secrets</Strong>, click <Strong>Add secret</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Add <InlineHighlight>AWS_ROLE_ARN</InlineHighlight> = <InlineHighlight>arn:aws:iam::...:role/TerraformExecutionRoleDev</InlineHighlight>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Repeat for <InlineHighlight>prod</InlineHighlight> using the prod role ARN
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <Paragraph>
+          If you use environment secrets like this, update the workflow to reference <InlineHighlight>secrets.AWS_ROLE_ARN</InlineHighlight> (the value will come
+          from the current environment automatically).
+        </Paragraph>
+
+        <TertiaryHeading>Option B: Repository secrets (simple)</TertiaryHeading>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            Go to <Strong>Settings</Strong> → <Strong>Secrets and variables</Strong> → <Strong>Actions</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Click <Strong>New repository secret</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Add <InlineHighlight>AWS_ROLE_ARN_dev</InlineHighlight> = <InlineHighlight>arn:aws:iam::...:role/TerraformExecutionRoleDev</InlineHighlight>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Add <InlineHighlight>AWS_ROLE_ARN_prod</InlineHighlight> = <InlineHighlight>arn:aws:iam::...:role/TerraformExecutionRoleProd</InlineHighlight>
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <Paragraph>
+          This matches the workflow pattern where dev/prod selects a different secret based on the environment name.
+        </Paragraph>
+
+        <SubSectionHeading>4) What it looks like when prod is waiting for approval</SubSectionHeading>
+
+        <Paragraph>
+          When you trigger a prod apply, the workflow run will pause at “Deployment protection rules” and wait. A reviewer can then approve and start the waiting
+          job directly from the workflow run page. GitHub documents this flow under reviewing deployments.
+        </Paragraph>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            Go to the <Strong>Actions</Strong> tab
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Open the running workflow
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            In <Strong>Deployment protection rules</Strong>, click <Strong>Review deployments</Strong> / <Strong>Start all waiting jobs</Strong> (wording varies)
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <SubSectionHeading>5) Sanity check: OIDC permissions</SubSectionHeading>
+
+        <Paragraph>
+          For OIDC to work, your workflow must have <InlineHighlight>permissions: id-token: write</InlineHighlight>. The AWS credentials action calls this out
+          directly, and GitHub's OIDC docs do as well.
         </Paragraph>
 
       </AnimatedPostContainer>
