@@ -10,6 +10,7 @@ import SlideInBottom from "../../animations/SlideInBottom";
 // components
 import BackButton from "../Button/BackButton";
 import { CodeBlockWithCopy } from "../Code/Code";
+import CodeCarousel from "../CodeCarousel/CodeCarousel";
 
 // layout
 import {
@@ -176,9 +177,6 @@ backend.tf (environment root)
 - Controls where Terraform state is stored.
 - Remote state is what allows CI and teams to work safely:
   everyone reads/writes the same state, and locking prevents collisions.
-
-Notes:
-- Backends are configured in a terraform { backend ... } block.
 */
 
 terraform {
@@ -250,7 +248,7 @@ ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 terraform fmt -recursive
-echo "✅ fmt complete"`;
+echo "fmt complete"`;
 
 
 const scriptValidate = `#!/usr/bin/env bash
@@ -275,41 +273,41 @@ ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_DIR="$ROOT_DIR/env/$ENVIRONMENT"
 
 if [ ! -d "$ENV_DIR" ]; then
-  echo "❌ Environment folder not found: $ENV_DIR"
+  echo "Environment folder not found: $ENV_DIR"
   echo "Usage: infra/scripts/validate.sh dev|prod"
   exit 1
 fi
 
-echo "🧪 Validate (fmt check → terraform validate → tflint)"
-echo "ℹ️  Env: $ENVIRONMENT"
+echo "Validate (fmt check → terraform validate → tflint)"
+echo "Env: $ENVIRONMENT"
 echo ""
 
 echo "→ terraform fmt (check)"
 cd "$ROOT_DIR"
 terraform fmt -recursive -check
-echo "✅ fmt check passed"
+echo "fmt check passed"
 echo ""
 
 echo "→ terraform validate"
 cd "$ENV_DIR"
 terraform init -backend=false -input=false >/dev/null
 terraform validate
-echo "✅ terraform validate passed"
+echo "terraform validate passed"
 echo ""
 
 echo "→ tflint"
 if ! command -v tflint >/dev/null 2>&1; then
-  echo "❌ tflint is not installed"
+  echo "tflint is not installed"
   echo "Install: https://github.com/terraform-linters/tflint"
   exit 1
 fi
 
 cd "$ROOT_DIR"
 tflint --recursive
-echo "✅ tflint passed"
+echo "tflint passed"
 echo ""
 
-echo "🎉 validate complete for env: $ENVIRONMENT"`;
+echo "validate complete for env: $ENVIRONMENT"`;
 
 const scriptPlan = `#!/usr/bin/env bash
 set -euo pipefail
@@ -328,13 +326,13 @@ ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_DIR="$ROOT_DIR/env/$ENVIRONMENT"
 
 if [ ! -d "$ENV_DIR" ]; then
-  echo "❌ Environment folder not found: $ENV_DIR"
+  echo "Environment folder not found: $ENV_DIR"
   echo "Usage: infra/scripts/plan.sh dev|prod"
   exit 1
 fi
 
-echo "🧾 Plan"
-echo "ℹ️  Env: $ENVIRONMENT"
+echo "Plan"
+echo "Env: $ENVIRONMENT"
 echo ""
 
 cd "$ENV_DIR"
@@ -345,8 +343,8 @@ terraform plan -input=false \\
   -var-file="env.tfvars" \\
   -out="tfplan"
 
-echo "✅ plan complete for env: $ENVIRONMENT"
-echo "ℹ️  Plan saved to: $ENV_DIR/tfplan"`;
+echo "plan complete for env: $ENVIRONMENT"
+echo "Plan saved to: $ENV_DIR/tfplan"`;
 
 const scriptApply = `#!/usr/bin/env bash
 set -euo pipefail
@@ -364,25 +362,25 @@ ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_DIR="$ROOT_DIR/env/$ENVIRONMENT"
 
 if [ ! -d "$ENV_DIR" ]; then
-  echo "❌ Environment folder not found: $ENV_DIR"
+  echo "Environment folder not found: $ENV_DIR"
   echo "Usage: infra/scripts/apply.sh dev|prod"
   exit 1
 fi
 
-echo "🚀 Apply"
-echo "ℹ️  Env: $ENVIRONMENT"
+echo "Apply"
+echo "Env: $ENVIRONMENT"
 echo ""
 
 cd "$ENV_DIR"
 
 if [ ! -f "tfplan" ]; then
-  echo "❌ No tfplan found in $ENV_DIR"
+  echo "No tfplan found in $ENV_DIR"
   echo "Run: infra/scripts/plan.sh $ENVIRONMENT"
   exit 1
 fi
 
 terraform apply -input=false "tfplan"
-echo "✅ apply complete for env: $ENVIRONMENT"`;
+echo "apply complete for env: $ENVIRONMENT"`;
 
 const awsConfigExample = `# ~/.aws/config
 #
@@ -444,7 +442,7 @@ ENVIRONMENT="\${1:-dev}"
 case "$ENVIRONMENT" in
   dev|prod) ;;
   *)
-    echo "❌ Unknown environment: $ENVIRONMENT"
+    echo "Unknown environment: $ENVIRONMENT"
     echo "Usage: source infra/scripts/use-env.sh dev|prod"
     return 1 2>/dev/null || exit 1
     ;;
@@ -456,8 +454,8 @@ export AWS_PROFILE="$ENVIRONMENT"
 export AWS_REGION="\${AWS_REGION:-eu-west-2}"
 export AWS_DEFAULT_REGION="\${AWS_DEFAULT_REGION:-$AWS_REGION}"
 
-echo "✅ Switched environment to: $ENVIRONMENT"
-echo "✅ AWS_PROFILE=$AWS_PROFILE"
+echo "Switched environment to: $ENVIRONMENT"
+echo "AWS_PROFILE=$AWS_PROFILE"
 echo ""
 echo "Next:"
 echo "  cd infra/env/$ENVIRONMENT"
@@ -478,7 +476,7 @@ set -euo pipefail
 # - Requires jq for prettier output
 
 if ! command -v jq >/dev/null 2>&1; then
-  echo "❌ jq is required for this script (brew install jq / apt-get install jq)"
+  echo "jq is required for this script (brew install jq / apt-get install jq)"
   exit 1
 fi
 
@@ -820,7 +818,7 @@ const IaCTerraform = () => {
 
         <Paragraph>
           This layout separates two concerns: <Strong>environment roots</Strong> (where we actually run Terraform) and <Strong>modules</Strong> (reusable
-          building blocks). That separation is what keeps your repo from turning into one huge folder of copy/paste.
+          building blocks). That separation is what keeps your repo from turning into one huge folder.
         </Paragraph>
 
         <SubSectionHeading>High-level layout</SubSectionHeading>
@@ -831,61 +829,85 @@ const IaCTerraform = () => {
           This is where your CI workflow lives. Later on, we'll add a workflow that runs <InlineHighlight>terraform fmt</InlineHighlight>,{" "}
           <InlineHighlight>validate</InlineHighlight> and <InlineHighlight>plan</InlineHighlight> on pull requests, and only runs{" "}
           <InlineHighlight>apply</InlineHighlight> on merges to main. Keeping workflows next to the code makes your infrastructure changes reviewable and
-          repeatable.
+          repeatable. I have a separate blog post going through GitHub's CI/CD which you can find here if you want a rundown on how that works{" "}
+          <TextLink href="/blog/github-ci-cd">GitHub CI/CD</TextLink>.
         </Paragraph>
 
         <SubSectionHeading>infra/env/</SubSectionHeading>
         <Paragraph>
-          Each folder under <InlineHighlight>infra/env/</InlineHighlight> is a deployable Terraform root. This is the folder you{" "}
+          Each folder under <InlineHighlight>infra/env/</InlineHighlight> is the deployable Terraform root. This is the folder you{" "}
           <Strong>cd into</Strong> when you run Terraform commands for that environment.
         </Paragraph>
 
-        <TextList>
-          <TextListItem>
-            <Strong>main.tf</Strong> the environment entry point where you wire modules together and keep the overall intent readable.
-          </TextListItem>
-          <CodeBlockWithCopy code={envMainTf} />
-          <TextListItem>
-            <Strong>variables.tf</Strong> typed inputs for the environment so configuration stays explicit and mistakes are caught early.
-          </TextListItem>
-          <CodeBlockWithCopy code={envVariablesTf} />
-          <TextListItem>
-            <Strong>env.tfvars</Strong> environment-specific values (dev/prod) so the Terraform code can stay the same across environments.
-          </TextListItem>
-          <CodeBlockWithCopy code={envTfvars} />
-          <TextListItem>
-            <Strong>providers.tf</Strong> provider configuration for this environment (region/account context), inherited by modules.
-          </TextListItem>
-          <CodeBlockWithCopy code={envProvidersTf} />
-          <TextListItem>
-            <Strong>outputs.tf</Strong> the important values you want after apply (names, IDs, URLs) without digging through state.
-          </TextListItem>
-          <CodeBlockWithCopy code={envOutputsTf} />
-          <TextListItem>
-            <Strong>backend.tf</Strong> where state lives (remote state + locking), which is what makes Terraform safe for teams and CI.
-          </TextListItem>
-          <CodeBlockWithCopy code={envBackendTf} />
-        </TextList>
+        <Paragraph>
+          Typically you would create a folder for each account you would want to deploy resources into. Dev being a good example. Let's run through each file
+          you would find in the environment folder:
+        </Paragraph>
+
+        <CodeCarousel
+          items={[
+            {
+              title: "main.tf",
+              description: "Environment entry point where you wire modules together and keep the overall intent readable.",
+              code: envMainTf,
+            },
+            {
+              title: "variables.tf",
+              description: "Typed inputs for the environment so configuration stays explicit and mistakes are caught early.",
+              code: envVariablesTf,
+            },
+            {
+              title: "env.tfvars",
+              description: "Environment-specific values (dev/prod) so the Terraform code can stay the same across environments.",
+              code: envTfvars,
+            },
+            {
+              title: "providers.tf",
+              description: "Provider configuration for this environment (region/account context), inherited by modules.",
+              code: envProvidersTf,
+            },
+            {
+              title: "outputs.tf",
+              description: "The important values you want after apply (names, IDs, URLs) without digging through state.",
+              code: envOutputsTf,
+            },
+            {
+              title: "backend.tf",
+              description: "Where state lives (remote state + locking), which is what makes Terraform safe for teams and CI.",
+              code: envBackendTf,
+            },
+          ]}
+        />
 
         <SubSectionHeading>infra/modules/</SubSectionHeading>
         <Paragraph>
           Modules are reusable pieces of infrastructure you can wire together from an environment root. If an environment folder starts to feel like a
-          long list of resources, that's usually your cue to extract a module.
+          long list of resources, it's usually better to break that up into multiple modules.
         </Paragraph>
-        <TextList>
-          <TextListItem>
-            <Strong>main.tf</Strong> the resources this module creates (keep modules small and single-purpose).
-          </TextListItem>
-          <CodeBlockWithCopy code={moduleMainTf} />
-          <TextListItem>
-            <Strong>variables.tf</Strong> inputs the module needs so it stays reusable across environments.
-          </TextListItem>
-          <CodeBlockWithCopy code={moduleVariablesTf} />
-          <TextListItem>
-            <Strong>outputs.tf</Strong> what the module returns so other parts of the system can connect to it cleanly.
-          </TextListItem>
-          <CodeBlockWithCopy code={moduleOutputsTf} />
-        </TextList>
+
+        <Paragraph>
+          Notice how we pass attributes from the main.tf in the environment folder to be used as variables inside our module.
+        </Paragraph>
+
+        <CodeCarousel
+          items={[
+            {
+              title: "main.tf",
+              description: "The resources this module creates (keep modules small and single-purpose).",
+              code: moduleMainTf,
+            },
+            {
+              title: "variables.tf",
+              description: "Inputs the module needs so it stays reusable across environments.",
+              code: moduleVariablesTf,
+            },
+            {
+              title: "outputs.tf",
+              description: "What the module returns so other parts of the system can connect to it cleanly.",
+              code: moduleOutputsTf,
+            }
+          ]}
+        />
 
         <SubSectionHeading>infra/scripts/</SubSectionHeading>
 
@@ -925,7 +947,7 @@ const IaCTerraform = () => {
         </Paragraph>
 
         <Paragraph>
-          Locally, we'll use{" "} <Strong>AWS profiles per environment</Strong> so switching between dev and prod is explicit and low-risk.
+          Locally, we'll use{" "} <Strong>AWS profiles per environment</Strong> so switching between environments like dev and prod is explicit and low-risk.
         </Paragraph>
 
         <SubSectionHeading>AWS profiles per environment</SubSectionHeading>
@@ -975,161 +997,74 @@ const IaCTerraform = () => {
           .
         </Paragraph>
 
-        <TextList>
-          <TextListItem>
-            <Strong>~/.aws/config</Strong>
-          </TextListItem>
-          <CodeBlockWithCopy code={awsConfigExample} />
-          <TextListItem>
-            <Strong>~/.aws/credentials</Strong> How you populate credentials depends on your setup. This example shows placeholders so you can see the shape of the file.
-          </TextListItem>
-          <CodeBlockWithCopy code={awsCredentialsExample} />
-          <TextListItem>
-            <Strong>Terraform role trust policy</Strong> This is a simple example of a trust policy that allows a specific principal to assume the role.
-            The actual principal will depend on your setup (an IAM user, an SSO role, or a role in another account). The key idea is: trust policy controls{" "}
-            <InlineHighlight>who can assume</InlineHighlight>, permissions policy controls <InlineHighlight>what they can do</InlineHighlight>.
-          </TextListItem>
-          <CodeBlockWithCopy code={terraformRoleTrustPolicyExample} />
-        </TextList>
+        <CodeCarousel
+          items={[
+            {
+              title: "~/.aws/config",
+              description: `This file stores AWS CLI profile configuration (not secret credentials).`,
+              code: awsConfigExample,
+            },
+            {
+              title: "~/.aws/credentials",
+              description: "This file stores credentials for profiles. This file should never be shared or else you risk losing your account!",
+              code: awsCredentialsExample,
+            },
+            {
+              title: "Terraform role trust policy",
+              description: `This is a simple example of a trust policy that allows a specific principal to assume the role.
+              The actual principal will depend on your setup (an IAM user, an SSO role, or a role in another account). The key idea is: trust policy controls 
+              who can assume, permissions policy controls what they can do.`,
+              code: terraformRoleTrustPolicyExample,
+            }
+          ]}
+        />
 
         <SubSectionHeading>Scripts</SubSectionHeading>
-
         <Paragraph>
           These scripts assume you're using named AWS profiles. The main one you'll use is{" "}
           <InlineHighlight>use-env.sh</InlineHighlight>, which sets <InlineHighlight>AWS_PROFILE</InlineHighlight> for your shell session.
           From there, Terraform commands run in the correct account/role context.
         </Paragraph>
 
-        <TextList>
-          <TextListItem>
-            <Strong>use-env.sh</Strong> switches AWS context locally by setting <InlineHighlight>AWS_PROFILE</InlineHighlight> for dev/prod.
-          </TextListItem>
-          <CodeBlockWithCopy code={scriptUseEnv} />
-
-          <TextListItem>
-            <Strong>whoami.sh</Strong> prints your active AWS identity (account/role) so you don't plan/apply in the wrong place.
-          </TextListItem>
-          <CodeBlockWithCopy code={scriptWhoAmI} />
-
-          <TextListItem>
-            <Strong>fmt.sh</Strong> formats Terraform code under <InlineHighlight>infra/</InlineHighlight> so diffs stay clean.
-          </TextListItem>
-          <CodeBlockWithCopy code={scriptFmt} />
-
-          <TextListItem>
-            <Strong>validate.sh</Strong> the local quality gate (fmt check + validate + tflint) before you generate a plan.
-          </TextListItem>
-          <CodeBlockWithCopy code={scriptValidate} />
-
-          <TextListItem>
-            <Strong>plan.sh</Strong> creates a saved plan file using <InlineHighlight>env.tfvars</InlineHighlight> so changes can be reviewed.
-          </TextListItem>
-          <CodeBlockWithCopy code={scriptPlan} />
-
-          <TextListItem>
-            <Strong>apply.sh</Strong> applies the saved plan file so you deploy exactly what you planned.
-          </TextListItem>
-          <CodeBlockWithCopy code={scriptApply} />
-        </TextList>
+        <CodeCarousel
+          items={[
+            {
+              title: "use-env.sh",
+              description: "Switches AWS context locally by setting <InlineHighlight>AWS_PROFILE</InlineHighlight> for dev/prod.",
+              code: scriptUseEnv,
+            },
+            {
+              title: "whoami.sh",
+              description: "Prints your active AWS identity (account/role) so you don't plan/apply in the wrong place.",
+              code: scriptWhoAmI,
+            },
+            {
+              title: "fmt.sh",
+              description: "Formats Terraform code under infra so the code stay clean.",
+              code: scriptFmt,
+            },
+            {
+              title: "validate.sh",
+              description: "The local quality gate (fmt check + validate + tflint) before you generate a plan.",
+              code: scriptValidate,
+            },
+            {
+              title: "plan.sh",
+              description: "Creates a saved plan file using env.tfvars so changes can be reviewed.",
+              code: scriptPlan,
+            },
+            {
+              title: "apply.sh",
+              description: "Applies the saved plan file so you deploy exactly what you planned.",
+              code: scriptApply,
+            },
+          ]}
+        />
 
         <Paragraph>
           Once we introduce GitHub Actions, the workflow will run these same steps automatically. The scripts are just there to keep your local workflow
           consistent and safe, especially when you're switching environments.
         </Paragraph>
-
-        {/* <SubSectionHeading>Create the Terraform execution role</SubSectionHeading>
-
-        <Paragraph>
-          Before Terraform can create anything in AWS, it needs an identity it can run as. In most teams, that's a dedicated IAM role per environment —
-          something like <Strong>TerraformExecutionRoleDev</Strong> and <Strong>TerraformExecutionRoleProd</Strong>.
-        </Paragraph>
-
-        <Paragraph>
-          An IAM role is made up of two parts:
-        </Paragraph>
-
-        <TextList>
-          <TextListItem>
-            <Strong>Trust policy</Strong> — who is allowed to assume the role (your SSO role, a CI role, an IAM user, etc.).
-          </TextListItem>
-          <TextListItem>
-            <Strong>Permissions policies</Strong> — what Terraform is allowed to do once it has assumed the role.
-          </TextListItem>
-        </TextList>
-
-        <Paragraph>
-          AWS documents this split clearly, and it's worth keeping in mind as you build out your repo.
-        </Paragraph>
-
-        <TertiaryHeading>Option 1: Create the role manually (recommended for the very first setup)</TertiaryHeading>
-
-        <Paragraph>
-          For the first time you set up a new account/environment, creating the execution role in the AWS Console is usually the smoothest path. It avoids the
-          “Terraform needs the role, but the role doesn't exist yet” problem.
-        </Paragraph>
-
-        <Paragraph>
-          In the IAM Console, go to <Strong>Roles</Strong> → <Strong>Create role</Strong> → choose <Strong>Custom trust policy</Strong>, then paste a trust policy
-          like the one below (replace the principal ARN with your real trusted identity). AWS walks through these exact console steps in their docs.
-        </Paragraph>
-
-        <CodeBlockWithCopy code={terraformRoleTrustPolicyExample} />
-
-        <Paragraph>
-          After that, attach a permissions policy. For a boilerplate template, it's common to start broad (so you can actually build), then tighten permissions
-          once your modules settle. The key is that permissions are separate from trust: trust is <InlineHighlight>who can assume</InlineHighlight>, permissions
-          are <InlineHighlight>what they can do</InlineHighlight>.
-        </Paragraph>
-
-        <TertiaryHeading>Option 2: Create the role with Terraform (bootstrap example)</TertiaryHeading>
-
-        <Paragraph>
-          Once you already have some base access (for example via SSO or a temporary admin setup), you can also create the execution role using Terraform itself.
-          I like including this as a reference because it shows the relationship between the trust policy and role attachments in code.
-        </Paragraph>
-
-        <CodeBlockWithCopy code={terraformExecutionRoleTerraform} />
-
-        <Paragraph>
-          The AWS provider docs for <InlineHighlight>aws_iam_role</InlineHighlight> show the same core pattern: define an assume role policy and then attach
-          permissions.
-        </Paragraph>
-
-        <TertiaryHeading>Where this fits into the local workflow</TertiaryHeading>
-
-        <Paragraph>
-          Once the role exists, your <InlineHighlight>~/.aws/config</InlineHighlight> profiles can assume it automatically via{" "}
-          <InlineHighlight>role_arn</InlineHighlight> + <InlineHighlight>source_profile</InlineHighlight>. That's what makes switching between dev/prod locally
-          simple and low-risk.
-        </Paragraph>
-
-        <SectionHeading>Remote state & locking</SectionHeading>
-
-        <Paragraph>
-          Terraform keeps track of what it manages using <Strong>state</Strong>. It's the file Terraform reads to understand what already exists, what it created,
-          and what needs to change next.
-        </Paragraph>
-
-        <Paragraph>
-          Local state is fine when you're experimenting alone, but it becomes fragile as soon as you introduce a second machine, a teammate, or CI. That's where
-          <InlineHighlight>remote state</InlineHighlight> comes in.
-        </Paragraph>
-
-        <CodeBlockWithCopy code={remoteStateOverview} /> */}
-
-        <SubSectionHeading>What remote state solves</SubSectionHeading>
-
-        <TextList>
-          <TextListItem>
-            <Strong>Shared source of truth</Strong> — your laptop and CI both read/write the same state, so you don't end up with competing copies.
-          </TextListItem>
-          <TextListItem>
-            <Strong>Locking</Strong> — prevents two applies happening at once, which is one of the fastest ways to corrupt state.
-          </TextListItem>
-          <TextListItem>
-            <Strong>Environment isolation</Strong> — dev and prod get separate state files, even if they share the same module code.
-          </TextListItem>
-        </TextList>
 
         <SubSectionHeading>Backend conventions</SubSectionHeading>
 
@@ -1157,23 +1092,19 @@ const IaCTerraform = () => {
         </Paragraph>
         <CodeBlockWithCopy code={backendProdExample} />
 
-        {/* <SubSectionHeading>A note on bootstrapping</SubSectionHeading>
-        <Paragraph>
-          The backend resources (the S3 bucket and DynamoDB table) need to exist before Terraform can use them. Most teams handle this in one of two ways:
-        </Paragraph>
+        <SubSectionHeading>What remote state solves</SubSectionHeading>
 
         <TextList>
           <TextListItem>
-            <Strong>Manual bootstrap once</Strong> — create the state bucket and lock table up front, then Terraform uses them forever.
+            <Strong>Shared source of truth</Strong> — your laptop and CI both read/write the same state, so you don't end up with competing copies.
           </TextListItem>
           <TextListItem>
-            <Strong>Bootstrap stack</Strong> — a tiny Terraform project whose only job is creating the backend resources.
+            <Strong>Locking</Strong> — prevents two applies happening at once, which is one of the fastest ways to corrupt state.
+          </TextListItem>
+          <TextListItem>
+            <Strong>Environment isolation</Strong> — dev and prod get separate state files, even if they share the same module code.
           </TextListItem>
         </TextList>
-
-        <Paragraph>
-          For this boilerplate, I'd start with a manual bootstrap, then introduce a bootstrap stack once the workflow feels familiar.
-        </Paragraph> */}
 
         <SubSectionHeading>What changes locally when you enable a backend</SubSectionHeading>
         <Paragraph>
@@ -1183,8 +1114,11 @@ const IaCTerraform = () => {
         </Paragraph>
 
         <Paragraph>
-          Next, we'll wire the same workflow into GitHub Actions so pull requests generate plans automatically, and main branch merges are the only thing that can apply.
+          Now we've finished looking at local development, we can now look into integrating the same flow into GitHub Actions,
+          but putting processes in place so that pull requests generate plans automatically, and main branch merges are the only thing that can apply the terraform.
         </Paragraph>
+
+        <SectionHeading>Bootstrap AWS prerequisites</SectionHeading>
 
         <SectionHeading>GitHub Actions: plan on PR, apply on main</SectionHeading>
 
