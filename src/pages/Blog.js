@@ -464,7 +464,7 @@ export default function Blog() {
     },
     {
       title: 'Infrastructure as Code (IaC) with Terraform',
-      readingTime: 'N/A',
+      readingTime: 'approx 25 mins',
       type: 'Practical',
       date: '03/01/2026',
       tags: [{ name: 'Terraform', background: '#2E71E5', icon: <TerraformSVG /> }, { name: 'DevOps' }],
@@ -746,7 +746,7 @@ export default function Blog() {
     },
     {
       title: 'Infrastructure as Code (IaC) with Terraform',
-      readingTime: 'N/A',
+      readingTime: 'approx 25 mins',
       type: 'Practical',
       date: '03/01/2026',
       tags: [{ name: 'Terraform', background: '#2E71E5', icon: <TerraformSVG /> }, { name: 'DevOps' }],
