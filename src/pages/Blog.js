@@ -471,7 +471,7 @@ export default function Blog() {
       intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the 
       same setup from local development into CI and multiple environments...`,
       navigate: 'infrastructure-as-code-with-terraform',
-      published: false
+      published: true
     },
     {
       title: 'Semantic Versioning with Conventional Commits',
@@ -753,7 +753,7 @@ export default function Blog() {
       intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the 
       same setup from local development into CI and multiple environments...`,
       navigate: 'infrastructure-as-code-with-terraform',
-      published: false
+      published: true
     },
     {
       title: 'Semantic Versioning with Conventional Commits',
