@@ -242,9 +242,9 @@ const scriptValidate = `#!/usr/bin/env bash
 set -euo pipefail
 
 # validate.sh
-# - Local quality gate (CI-like) for a deployable root under infra/env/<aws-account>
-# - Includes checks:
-#   1) terraform fmt -check (style gate, does not modify files)
+# - Local/CI quality gate for a deployable root under infra/env/<aws-account>
+# - Includes:
+#   1) terraform fmt (writes changes)
 #   2) terraform validate (syntax + internal consistency)
 #   3) tflint (provider-aware linting)
 #
@@ -269,14 +269,13 @@ if [ ! -d "$ENV_DIR" ]; then
   exit 1
 fi
 
-echo "Validate (fmt check → terraform validate → tflint)"
-echo "Target: $ENVIRONMENT"
+echo "Validate (fmt → terraform validate → tflint)"
+echo "Environment: $ENVIRONMENT"
 echo ""
 
-echo "→ terraform fmt (check)"
-cd "$ROOT_DIR"
-terraform fmt -recursive -check
-echo "fmt check passed"
+echo "→ terraform fmt"
+bash "$ROOT_DIR/scripts/fmt.sh"
+echo "fmt complete"
 echo ""
 
 echo "→ terraform validate"
@@ -298,7 +297,7 @@ tflint --recursive
 echo "tflint passed"
 echo ""
 
-echo "validate complete for target: $ENVIRONMENT"`;
+echo "validate complete for environment: $ENVIRONMENT"`;
 
 const scriptPlan = `#!/usr/bin/env bash
 set -euo pipefail
@@ -334,8 +333,8 @@ cd "$ENV_DIR"
 
 terraform init -input=false -backend-config=../../backend.hcl
 
-terraform plan -input=false \\
-  -var-file="env.tfvars" \\
+terraform plan -input=false \
+  -var-file="env.tfvars" \
   -out="tfplan"
 
 echo "plan complete for target: $ENVIRONMENT"
@@ -438,7 +437,6 @@ fi
 
 export AWS_PROFILE="$ENVIRONMENT"
 
-# Optional: keep region explicit for Terraform + AWS CLI
 export AWS_REGION="\${AWS_REGION:-eu-west-2}"
 export AWS_DEFAULT_REGION="\${AWS_DEFAULT_REGION:-$AWS_REGION}"
 
@@ -454,21 +452,32 @@ const scriptWhoAmI = `#!/usr/bin/env bash
 set -euo pipefail
 
 # whoami.sh
-# - Prints the current AWS identity (account + principal ARN).
-# - Useful before plan/apply, especially when switching environments.
+# - Prints the current AWS identity (account ID + principal ARN) for the *current shell session*.
+# - This is a safety check before running plan/apply, especially after switching AWS_PROFILE.
+# - Runs in Git Bash (Windows) or any Bash shell where aws is available on PATH.
 #
 # Usage:
-#   infra/scripts/whoami.sh
+#   bash infra/scripts/whoami.sh
 #
-# Notes:
-# - Requires jq for prettier output
+# Output:
+# - If jq is installed: pretty-printed JSON
+# - If jq is not installed: raw JSON
+#
+# Requirements:
+# - aws CLI must be installed and discoverable via PATH in this shell
+# - jq is optional (only used for formatting)
 
-if ! command -v jq >/dev/null 2>&1; then
-  echo "jq is required for this script (brew install jq / apt-get install jq)"
+if ! command -v aws >/dev/null 2>&1; then
+  echo "aws CLI is required for this script."
+  echo "Run: bash infra/scripts/prereqs.sh"
   exit 1
 fi
 
-aws sts get-caller-identity | jq`;
+if command -v jq >/dev/null 2>&1; then
+  aws sts get-caller-identity | jq
+else
+  aws sts get-caller-identity
+fi`;
 
 const terraformRoleTrustPolicyExample = `{
   "Version": "2012-10-17",
@@ -515,8 +524,8 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      target:
-        description: "Environment folder under infra/env/ (e.g. dev-account, staging-account, prod-account)"
+      environment:
+        description: "Environment folder under infra/env/"
         required: true
         type: string
 
@@ -535,14 +544,16 @@ env:
 
 jobs:
   plan:
-    name: Plan (\${{ matrix.environment }})
-    runs-on: ubuntu-latest
+    name: Validate + Plan (\${{ matrix.environment }})
     if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment: \${{ matrix.environment }}
+
     strategy:
       fail-fast: false
       matrix:
-        # Replace these with the folder names under infra/env/
-        environment: [account-a, account-b]
+        # Add more env folders here as you create them:
+        environment: [sandbox]
 
     steps:
       - name: Checkout
@@ -554,9 +565,17 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          # Recommended: store AWS_ROLE_ARN as an Environment Secret and set environment: below
           role-to-assume: \${{ secrets.AWS_ROLE_ARN }}
           aws-region: \${{ env.AWS_REGION }}
+
+      - name: Make scripts executable
+        run: chmod +x infra/scripts/*.sh
+
+      - name: Install tflint
+        run: |
+          set -euo pipefail
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          tflint --version
 
       - name: Validate (fmt check + validate + tflint)
         run: bash infra/scripts/validate.sh \${{ matrix.environment }}
@@ -573,8 +592,8 @@ jobs:
 
   apply:
     name: Apply (\${{ inputs.environment }})
-    runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
     environment: \${{ inputs.environment }}
 
     steps:
@@ -590,6 +609,15 @@ jobs:
           role-to-assume: \${{ secrets.AWS_ROLE_ARN }}
           aws-region: \${{ env.AWS_REGION }}
 
+      - name: Make scripts executable
+        run: chmod +x infra/scripts/*.sh
+
+      - name: Install tflint
+        run: |
+          set -euo pipefail
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          tflint --version
+
       - name: Validate (fmt check + validate + tflint)
         run: bash infra/scripts/validate.sh \${{ inputs.environment }}
 
@@ -597,8 +625,7 @@ jobs:
         run: bash infra/scripts/plan.sh \${{ inputs.environment }}
 
       - name: Apply
-        run: bash infra/scripts/apply.sh \${{ inputs.environment }}
-`;
+        run: bash infra/scripts/apply.sh \${{ inputs.environment }}`;
 
 const bootstrapOverview = `/*
 Bootstrap (why it exists)
@@ -1284,7 +1311,59 @@ const IaCTerraform = () => {
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <SubSectionHeading>5) Sanity check: OIDC permissions</SubSectionHeading>
+        <SubSectionHeading>5) Why Workflow permissions must allow OIDC (id-token: write)</SubSectionHeading>
+
+        <Paragraph>
+          GitHub Actions can only assume your AWS OIDC role if it's allowed to request an OIDC token. That token is what AWS trusts
+          to exchange for short-lived credentials. If your repo/workflow permissions don't allow{" "}
+          <InlineHighlight>id-token: write</InlineHighlight>, GitHub can't mint the token, which means{" "}
+          <InlineHighlight>aws-actions/configure-aws-credentials</InlineHighlight> has nothing to send to AWS — and the role assumption
+          fails with "Credentials could not be loaded".
+        </Paragraph>
+
+        <Paragraph>
+          In other words: <Strong>id-token: write is the permission that unlocks "allow this workflow run to authenticate to AWS via OIDC."</Strong>
+        </Paragraph>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            Without it, GitHub cannot issue an OIDC token for the job
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Without the token, AWS will not allow <InlineHighlight>AssumeRoleWithWebIdentity</InlineHighlight>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            The workflow then falls back to "no credentials available" and fails early
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <Paragraph>
+          Here is how you can make the changes in GitHub:
+        </Paragraph>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            Go to <Strong>Settings</Strong> in your GitHub repository
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            In the left sidebar, open <Strong>Actions</Strong> → <Strong>General</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Scroll to <Strong>Workflow permissions</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Select <Strong>Read and write permissions</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Ensure <Strong>Allow GitHub Actions to create and approve pull requests</Strong> is enabled if you want PR comments/updates
+            (optional, but commonly useful for Terraform plan outputs)
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Click <Strong>Save</Strong>
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <SubSectionHeading>6) Sanity check: OIDC permissions</SubSectionHeading>
 
         <Paragraph>
           For OIDC to work, your workflow must have <InlineHighlight>permissions: id-token: write</InlineHighlight>. Without it, GitHub can't use the OIDC token
