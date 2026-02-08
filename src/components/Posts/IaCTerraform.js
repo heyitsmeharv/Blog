@@ -1266,13 +1266,13 @@ const IaCTerraform = () => {
           <InlineHighlight>~/.aws/credentials</InlineHighlight>.
           Terraform and the AWS CLI both understand these files. The AWS docs cover the file locations and formats in detail:
           {" "}
-          <TextLink href="https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-files.html" target="_blank" rel="noreferrer">
+          <TextLink href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html" target="_blank" rel="noreferrer">
             AWS CLI config & credentials files
           </TextLink>
           {" "}
           and
           {" "}
-          <TextLink href="https://docs.aws.amazon.com/cli/v1/userguide/cli-chap-configure.html" target="_blank" rel="noreferrer">
+          <TextLink href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html" target="_blank" rel="noreferrer">
             Configuring the AWS CLI
           </TextLink>
           .
