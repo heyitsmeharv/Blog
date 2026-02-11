@@ -200,7 +200,7 @@ export default function Blog() {
     },
     {
       name: "DevOps",
-      colour: "#8B191D",
+      colour: "#005F02",
       active: false,
     },
   ]);
@@ -434,7 +434,7 @@ export default function Blog() {
       readingTime: 'approx 45 mins',
       type: 'Practical',
       date: '09/10/2025',
-      tags: [{ name: 'DevOps', background: '#8B191D', icon: <DevOpsSVG /> }, { name: 'Bash', background: '#000', icon: <BashSVG /> }],
+      tags: [{ name: 'DevOps', background: '#005F02', icon: <DevOpsSVG /> }, { name: 'Bash', background: '#000', icon: <BashSVG /> }],
       intro: `When you first start working in the command line, it can feel like stepping into a different world - one where you're talking directly to your computer instead of clicking buttons. 
       It's intimidating at first, but once you realise how much power sits behind a few keystrokes it's addictive. In this post...`,
       navigate: 'getting-started-with-bash-scripting',
@@ -716,7 +716,7 @@ export default function Blog() {
       readingTime: 'approx 45 mins',
       type: 'Practical',
       date: '09/10/2025',
-      tags: [{ name: 'DevOps', background: '#8B191D', icon: <DevOpsSVG /> }, { name: 'Bash', background: '#000', icon: <BashSVG /> }],
+      tags: [{ name: 'DevOps', background: '#005F02', icon: <DevOpsSVG /> }, { name: 'Bash', background: '#000', icon: <BashSVG /> }],
       intro: `When you first start working in the command line, it can feel like stepping into a different world - one where you're talking directly to your computer instead of clicking buttons. 
       It's intimidating at first, but once you realise how much power sits behind a few keystrokes it's addictive. In this post...`,
       navigate: 'getting-started-with-bash-scripting',
