@@ -413,8 +413,8 @@ export default function Blog() {
       type: 'Study',
       date: '03/02/2025',
       tags: [{ name: 'AWS', background: '#FF9900', icon: <AWSWhiteBackgroundSVG /> }, { name: 'KMS', background: '#FF9900', icon: <AWSKMSSVG /> }, { name: 'SSM', background: '#FF9900', icon: <AWSSSMSVG /> }, { name: 'Secrets Manager', background: '#FF9900', icon: <AWSSecretsManagerSVG /> }, { name: 'ACM', background: '#FF9900', icon: <AWSCertificateManagerSVG /> }, { name: 'Sheild', background: '#FF9900', icon: <AWSShieldSVG /> }, { name: 'Firewall', background: '#FF9900', icon: <AWSFirewallSVG /> }, { name: 'WAF', background: '#FF9900', icon: <AWSWAFSVG /> }, { name: 'Inspector', background: '#FF9900', icon: <AWSInspectorSVG /> }, { name: 'Macie', background: '#FF9900', icon: <AWSMacieSVG /> }],
-      intro: `Encryption is necessary to protect sensitive information being sent or received over a network from being hijacked or leaked. The information (data)
-      is encrypted before sending and decrypting after receiving...`,
+      intro: `Encryption protects sensitive information in transit and at rest by transforming plaintext into ciphertext that can only be read with the appropriate key. AWS provides multiple mechanisms to handle
+      encryption in flight, server-side encryption and client-side encryption...`,
       navigate: 'aws-security-encryption',
       published: true
     },
@@ -480,7 +480,7 @@ export default function Blog() {
       date: '05/01/2026',
       tags: [{ name: 'Commits', background: '#ffff', icon: <ConventionalCommitsSVG /> }, { name: 'DevOps' }, { name: 'GitHub', background: '#000', icon: <GitHubSVG /> }],
       intro: `I'm guilty of writing some pretty horrific commit messages in my own personal projects and that has now caught up to me! If your git history is the same as mine which is full of commits 
-      like fix test wip, or just fix look no further...`,
+      like fix test wip, or just fix look no further. This post will look to set up a simple system that forces clean...`,
       navigate: 'semantic-versioning-with-conventional-commits',
       published: true
     }
@@ -695,8 +695,8 @@ export default function Blog() {
       type: 'Study',
       date: '03/02/2025',
       tags: [{ name: 'AWS', background: '#FF9900', icon: <AWSWhiteBackgroundSVG /> }, { name: 'KMS', background: '#FF9900', icon: <AWSKMSSVG /> }, { name: 'SSM', background: '#FF9900', icon: <AWSSSMSVG /> }, { name: 'Secrets Manager', background: '#FF9900', icon: <AWSSecretsManagerSVG /> }, { name: 'ACM', background: '#FF9900', icon: <AWSCertificateManagerSVG /> }, { name: 'Sheild', background: '#FF9900', icon: <AWSShieldSVG /> }, { name: 'Firewall', background: '#FF9900', icon: <AWSFirewallSVG /> }, { name: 'WAF', background: '#FF9900', icon: <AWSWAFSVG /> }, { name: 'Inspector', background: '#FF9900', icon: <AWSInspectorSVG /> }, { name: 'Macie', background: '#FF9900', icon: <AWSMacieSVG /> }],
-      intro: `Encryption is necessary to protect sensitive information being sent or received over a network from being hijacked or leaked. The information (data)
-      is encrypted before sending and decrypting after receiving...`,
+      intro: `Encryption protects sensitive information in transit and at rest by transforming plaintext into ciphertext that can only be read with the appropriate key. AWS provides multiple mechanisms to handle
+      encryption in flight, server-side encryption and client-side encryption...`,
       navigate: 'aws-security-encryption',
       published: true
     },
@@ -762,7 +762,7 @@ export default function Blog() {
       date: '05/01/2026',
       tags: [{ name: 'Commits', background: '#ffff', icon: <ConventionalCommitsSVG /> }, { name: 'DevOps' }, { name: 'GitHub', background: '#000', icon: <GitHubSVG /> }],
       intro: `I'm guilty of writing some pretty horrific commit messages in my own personal projects and that has now caught up to me! If your git history is the same as mine which is full of commits 
-      like fix test wip, or just fix look no further...`,
+      like fix test wip, or just fix look no further. This post will look to set up a simple system that forces clean...`,
       navigate: 'semantic-versioning-with-conventional-commits',
       published: true
     }
