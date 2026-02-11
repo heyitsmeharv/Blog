@@ -73,6 +73,7 @@ const terraformFolderTree = `template-terraform-boilerplate/
 │     ├─ fmt.sh
 │     ├─ validate.sh
 │     ├─ plan.sh
+│     ├─ write-backend-hcl.sh
 │     └─ apply.sh
 ├─ .gitignore
 ├─ README.md
@@ -226,10 +227,10 @@ set -euo pipefail
 
 # fmt.sh
 # - Formats Terraform code under infra/ recursively.
-# - Keeps diffs clean and matches what CI enforces.
+# - This modifies files (not a check-only).
 #
 # Usage:
-#   infra/scripts/fmt.sh
+#   bash infra/scripts/fmt.sh
 
 ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
@@ -242,21 +243,18 @@ const scriptValidate = `#!/usr/bin/env bash
 set -euo pipefail
 
 # validate.sh
-# - Local/CI quality gate for a deployable root under infra/env/<aws-account>
+# - Local/CI quality gate for an environment under infra/env/<environment>
 # - Includes:
 #   1) terraform fmt (writes changes)
 #   2) terraform validate (syntax + internal consistency)
-#   3) tflint (provider-aware linting)
+#   3) tflint (recursive linting)
 #
 # Usage:
-#   infra/scripts/validate.sh <aws-account>
-#
-# Install tflint:
-#   https://github.com/terraform-linters/tflint
+#   bash infra/scripts/validate.sh <environment>
 
 ENVIRONMENT="\${1:-}"
 if [ -z "$ENVIRONMENT" ]; then
-  echo "Usage: infra/scripts/validate.sh <aws-account>"
+  echo "Usage: bash infra/scripts/validate.sh <environment>"
   exit 1
 fi
 
@@ -265,7 +263,6 @@ ENV_DIR="$ROOT_DIR/env/$ENVIRONMENT"
 
 if [ ! -d "$ENV_DIR" ]; then
   echo "Environment folder not found: $ENV_DIR"
-  echo "Usage: infra/scripts/validate.sh <aws-account>"
   exit 1
 fi
 
@@ -275,7 +272,6 @@ echo ""
 
 echo "→ terraform fmt"
 bash "$ROOT_DIR/scripts/fmt.sh"
-echo "fmt complete"
 echo ""
 
 echo "→ terraform validate"
@@ -285,6 +281,7 @@ terraform validate
 echo "terraform validate passed"
 echo ""
 
+# tflint: required in CI, optional locally (but if present we run it).
 echo "→ tflint"
 if ! command -v tflint >/dev/null 2>&1; then
   echo "tflint is not installed"
@@ -293,7 +290,7 @@ if ! command -v tflint >/dev/null 2>&1; then
 fi
 
 cd "$ROOT_DIR"
-tflint
+tflint --recursive
 echo "tflint passed"
 echo ""
 
@@ -303,16 +300,16 @@ const scriptPlan = `#!/usr/bin/env bash
 set -euo pipefail
 
 # plan.sh
-# - Creates a plan for a chosen deployable root under infra/env/<aws-account>.
+# - Creates a plan for a chosen deployable root under infra/env/<environment>.
 # - Uses env.tfvars to supply values.
 # - Outputs a tfplan file so apply uses an exact, reviewed plan.
 #
 # Usage:
-#   infra/scripts/plan.sh <aws-account>
+#   bash infra/scripts/plan.sh <environment>
 
 ENVIRONMENT="\${1:-}"
 if [ -z "$ENVIRONMENT" ]; then
-  echo "Usage: infra/scripts/plan.sh <aws-account>"
+  echo "Usage: bash infra/scripts/plan.sh <environment>"
   exit 1
 fi
 
@@ -321,23 +318,14 @@ ENV_DIR="$ROOT_DIR/env/$ENVIRONMENT"
 
 if [ ! -d "$ENV_DIR" ]; then
   echo "Environment folder not found: $ENV_DIR"
-  echo "Usage: infra/scripts/plan.sh <aws-account>"
   exit 1
 fi
 
 echo "Plan"
-echo "Target: $ENVIRONMENT"
+echo "Environment: $ENVIRONMENT"
 echo ""
 
 cd "$ENV_DIR"
-
-if [ ! -f "backend.hcl" ]; then
-  echo "backend.hcl not found in: $ENV_DIR"
-  echo "Fix (local): run bootstrap for this environment:"
-  echo "  bash $ROOT_DIR/scripts/bootstrap-state.sh $ENVIRONMENT --region \${AWS_REGION:-eu-west-2}"
-  echo "Fix (CI): generate backend.hcl before running plan.sh"
-  exit 1
-fi
 
 terraform init -input=false -backend-config=backend.hcl
 
@@ -353,14 +341,13 @@ set -euo pipefail
 
 # apply.sh
 # - Applies a previously generated plan file (tfplan).
-# - Avoids "surprise applies" and matches a safer CI pattern.
 #
 # Usage:
-#   infra/scripts/apply.sh <aws-account>
+#   bash infra/scripts/apply.sh <environment>
 
 ENVIRONMENT="\${1:-}"
 if [ -z "$ENVIRONMENT" ]; then
-  echo "Usage: infra/scripts/apply.sh <aws-account>"
+  echo "Usage: bash infra/scripts/apply.sh <environment>"
   exit 1
 fi
 
@@ -369,27 +356,18 @@ ENV_DIR="$ROOT_DIR/env/$ENVIRONMENT"
 
 if [ ! -d "$ENV_DIR" ]; then
   echo "Environment folder not found: $ENV_DIR"
-  echo "Usage: infra/scripts/apply.sh <aws-account>"
   exit 1
 fi
 
 echo "Apply"
-echo "Target: $ENVIRONMENT"
+echo "Environment: $ENVIRONMENT"
 echo ""
 
 cd "$ENV_DIR"
 
-if [ ! -f "backend.hcl" ]; then
-  echo "backend.hcl not found in: $ENV_DIR"
-  echo "Fix (local): run bootstrap for this environment."
-  exit 1
-fi
-
-terraform init -input=false -backend-config=backend.hcl
-
 if [ ! -f "tfplan" ]; then
   echo "No tfplan found in $ENV_DIR"
-  echo "Run: infra/scripts/plan.sh $ENVIRONMENT"
+  echo "Run: bash infra/scripts/plan.sh $ENVIRONMENT"
   exit 1
 fi
 
@@ -400,18 +378,11 @@ const scriptPreReqs = `#!/usr/bin/env bash
 set -euo pipefail
 
 # prereqs.sh
-# - Verifies required tooling is available *in this Git Bash shell* (i.e., discoverable via PATH).
-# - This repo standardises on Git Bash to avoid cmd/powershell/Linux differences.
-# - This script does not install anything; it only checks and prints versions.
+# - Verifies required tooling is available *in this shell* (PATH).
+# - Does not install anything; fails fast with a clear hint.
 #
 # Usage:
 #   bash infra/scripts/prereqs.sh
-#
-# Requirements:
-# - Run in Git Bash (Windows) or any Bash shell with the tools on PATH.
-#
-# Notes:
-# - If something is missing, install it and then restart Git Bash so PATH updates apply.
 
 need() {
   local bin="$1"
@@ -426,15 +397,21 @@ need() {
   fi
 }
 
-echo "Checking prerequisites in Git Bash..."
+echo "Checking prerequisites..."
 echo ""
 
-need terraform "Install Terraform and ensure it's on PATH for Git Bash"
-need aws       "Install AWS CLI v2 and ensure it's on PATH for Git Bash"
-need jq        "Install jq and ensure it's on PATH for Git Bash (optional for pretty output, but required by this template)"
-need tflint    "Install tflint and ensure it's on PATH for Git Bash"
-need node      "Install Node.js (LTS) and ensure it's on PATH for Git Bash"
+need terraform "Install Terraform and ensure it's on PATH"
+need aws       "Install AWS CLI v2 and ensure it's on PATH"
+need jq        "Install jq and ensure it's on PATH (optional for pretty output, but required by this template)"
+need node      "Install Node.js (LTS) and ensure it's on PATH"
 need npm       "npm should come with Node.js (LTS)"
+
+# Optional locally. CI installs it in the workflow.
+if ! command -v tflint >/dev/null 2>&1; then
+  echo "Note: tflint not found (optional locally; CI installs it in the workflow)"
+  echo "Install: https://github.com/terraform-linters/tflint"
+  echo ""
+fi
 
 echo "All required tools are available."
 echo ""
@@ -442,310 +419,349 @@ echo ""
 echo "terraform: $(terraform version | head -n 1)"
 echo "aws:       $(aws --version 2>&1)"
 echo "jq:        $(jq --version)"
-echo "tflint:    $(tflint --version | head -n 1)"
 echo "node:      $(node --version)"
 echo "npm:       $(npm --version)"
-echo`;
 
-const scriptBootstrapState = `#!/usr/bin/env bash 
-set -euo pipefail 
- 
-# bootstrap-state.sh 
-# - Creates Terraform remote state prerequisites in the CURRENT AWS account: 
-#   - S3 bucket for state (versioning + encryption + public access block) 
-#   - DynamoDB table for state locking 
-# - Sets up GitHub Actions OIDC: 
-#   - IAM OIDC provider for token.actions.githubusercontent.com (idempotent) 
-#   - GitHub OIDC role that Actions assumes 
-# - Writes backend config to: 
-#   infra/env/<environment>/backend.hcl 
-# 
-# Usage (Git Bash, from repo root): 
-#   source infra/scripts/use-env.sh <aws-account> 
-#   bash infra/scripts/bootstrap-state.sh <aws-account> --region eu-west-2 
-# 
-# Notes: 
-# - This script creates resources in whichever AWS account your current auth points to. 
-# - Always check the printed Account + Caller ARN before continuing. 
-# - If you want a different account, switch AWS_PROFILE first, then rerun. 
- 
-usage() { 
-  echo "Usage: bash infra/scripts/bootstrap-state.sh <environment> [--region eu-west-2] [--github-role-name GitHubOIDCTerraformRole] [--github-repo owner/repo]" 
-  echo "" 
-  echo "Args:" 
-  echo "  <environment>       Folder name under infra/env/ (e.g., sandbox)" 
-  echo "" 
-  echo "Options:" 
-  echo "  --region            AWS region (default: AWS_REGION or eu-west-2)" 
-  echo "  --github-role-name  GitHub OIDC role name (default: GitHubOIDCTerraformRole)" 
-  echo "  --github-repo       GitHub repo in owner/repo format (auto-detected if possible)" 
-  exit 1 
-} 
- 
-if [ ! -d "infra" ]; then 
-  echo "Run this from the repo root (infra/ folder not found)." 
-  exit 1 
-fi 
- 
-ENVIRONMENT="\${1:-}" 
-shift || true 
-if [ -z "$ENVIRONMENT" ]; then 
-  usage 
-fi 
- 
-REGION="\${AWS_REGION:-eu-west-2}" 
-GITHUB_ROLE_NAME="GitHubOIDCTerraformRole" 
-GITHUB_REPO="" 
- 
-while [ "\${1:-}" != "" ]; do 
-  case "$1" in 
-    --region) 
-      shift 
-      REGION="\${1:-}" 
-      ;; 
-    --github-role-name) 
-      shift 
-      GITHUB_ROLE_NAME="\${1:-}" 
-      ;; 
-    --github-repo) 
-      shift 
-      GITHUB_REPO="\${1:-}" 
-      ;; 
-    *) 
-      echo "Unknown arg: $1" 
-      usage 
-      ;; 
-  esac 
-  shift || true 
-done 
- 
-# Prereqs 
-if ! command -v aws >/dev/null 2>&1; then 
-  echo "AWS CLI is required." 
-  echo "Run: bash infra/scripts/prereqs.sh" 
-  exit 1 
-fi 
- 
-PROJECT_NAME="template-terraform-boilerplate" 
-ENV_DIR="infra/env/$ENVIRONMENT" 
- 
-if [ ! -d "$ENV_DIR" ]; then 
-  echo "Environment folder not found: $ENV_DIR" 
-  echo "Create it under infra/env/ and try again." 
-  exit 1 
-fi 
- 
-# Confirm identity early (avoid creating resources in the wrong account) 
-ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text 2>/dev/null || true)" 
-CALLER_ARN="$(aws sts get-caller-identity --query Arn --output text 2>/dev/null || true)" 
- 
-if [ -z "$ACCOUNT_ID" ] || [ "$ACCOUNT_ID" = "None" ] || [ -z "$CALLER_ARN" ] || [ "$CALLER_ARN" = "None" ]; then 
-  echo "Could not determine AWS account/principal. Are you authenticated?" 
-  echo "Tip: set AWS_PROFILE and run: aws sts get-caller-identity" 
-  exit 1 
-fi 
- 
-# Try to detect owner/repo from git remote if not provided 
-if [ -z "$GITHUB_REPO" ] && command -v git >/dev/null 2>&1; then 
-  ORIGIN_URL="$(git config --get remote.origin.url 2>/dev/null || true)" 
- 
-  # Supports: 
-  # - https://github.com/owner/repo.git 
-  # - git@github.com:owner/repo.git 
-  if echo "$ORIGIN_URL" | grep -q "github.com"; then 
-    GITHUB_REPO="$(echo "$ORIGIN_URL" \ 
-      | sed -E 's#^git@github\.com:##' \ 
-      | sed -E 's#^https://github\.com/##' \ 
-      | sed -E 's#\.git$##')" 
-  fi 
-fi 
- 
-if [ -z "$GITHUB_REPO" ]; then 
-  echo "" 
-  echo "Could not auto-detect the GitHub repo." 
-  echo "Fix: re-run with --github-repo owner/repo" 
-  echo "Example:" 
-  echo "  bash infra/scripts/bootstrap-state.sh $ENVIRONMENT --region $REGION --github-repo heyitsmeharv/template-terraform-boilerplate" 
-  echo "" 
-  exit 1 
-fi 
- 
-STATE_BUCKET="\${PROJECT_NAME}-\${ACCOUNT_ID}-\${REGION}-tfstate" 
-LOCK_TABLE="\${PROJECT_NAME}-\${ACCOUNT_ID}-\${REGION}-tflocks" 
- 
-OIDC_URL="https://token.actions.githubusercontent.com" 
-OIDC_PROVIDER_ARN="arn:aws:iam::\${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com" 
- 
-echo "" 
-echo "Bootstrap (remote state + GitHub OIDC)" 
-echo "Environment:   $ENVIRONMENT" 
-echo "Account:       $ACCOUNT_ID" 
-echo "Region:        $REGION" 
-echo "Caller ARN:    $CALLER_ARN" 
-echo "GitHub repo:   $GITHUB_REPO" 
-echo "State bucket:  $STATE_BUCKET" 
-echo "Lock table:    $LOCK_TABLE" 
-echo "GitHub role:   $GITHUB_ROLE_NAME" 
-echo "" 
- 
-############################################################################### 
-# 1) Create S3 bucket 
-############################################################################### 
-echo "→ Ensuring S3 bucket exists..." 
-if aws s3api head-bucket --bucket "$STATE_BUCKET" >/dev/null 2>&1; then 
-  echo "  - Bucket exists: $STATE_BUCKET" 
-else 
-  if [ "$REGION" = "us-east-1" ]; then 
-    aws s3api create-bucket --bucket "$STATE_BUCKET" >/dev/null 
-  else 
-    aws s3api create-bucket \ 
-      --bucket "$STATE_BUCKET" \ 
-      --create-bucket-configuration "LocationConstraint=$REGION" >/dev/null 
-  fi 
-  echo "  - Bucket created: $STATE_BUCKET" 
-fi 
- 
-echo "→ Configuring bucket (versioning, encryption, public access block)..." 
-aws s3api put-bucket-versioning \ 
-  --bucket "$STATE_BUCKET" \ 
-  --versioning-configuration Status=Enabled >/dev/null 
- 
-aws s3api put-bucket-encryption \ 
-  --bucket "$STATE_BUCKET" \ 
-  --server-side-encryption-configuration '{ 
-    "Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}] 
-  }' >/dev/null 
- 
-aws s3api put-public-access-block \ 
-  --bucket "$STATE_BUCKET" \ 
-  --public-access-block-configuration '{ 
-    "BlockPublicAcls":true, 
-    "IgnorePublicAcls":true, 
-    "BlockPublicPolicy":true, 
-    "RestrictPublicBuckets":true 
-  }' >/dev/null 
- 
-echo "  - Bucket configured" 
- 
-############################################################################### 
-# 2) Create DynamoDB lock table 
-############################################################################### 
-echo "" 
-echo "→ Ensuring DynamoDB lock table exists..." 
-if aws dynamodb describe-table --table-name "$LOCK_TABLE" >/dev/null 2>&1; then 
-  echo "  - Table exists: $LOCK_TABLE" 
-else 
-  aws dynamodb create-table \ 
-    --table-name "$LOCK_TABLE" \ 
-    --attribute-definitions AttributeName=LockID,AttributeType=S \ 
-    --key-schema AttributeName=LockID,KeyType=HASH \ 
-    --billing-mode PAY_PER_REQUEST >/dev/null 
- 
-  echo "  - Table created: $LOCK_TABLE" 
-  echo "  - Waiting for table to become ACTIVE..." 
-  aws dynamodb wait table-exists --table-name "$LOCK_TABLE" 
-fi 
- 
-############################################################################### 
-# 3) GitHub Actions OIDC provider + role 
-############################################################################### 
-echo "" 
-echo "→ Ensuring GitHub OIDC provider exists..." 
-if aws iam get-open-id-connect-provider --open-id-connect-provider-arn "$OIDC_PROVIDER_ARN" >/dev/null 2>&1; then 
-  echo "  - OIDC provider exists" 
-else 
-  # GitHub OIDC uses a stable root CA chain. This thumbprint is the commonly used value for token.actions.githubusercontent.com. 
-  # If AWS ever requires an update, recreate the provider with the new thumbprint. 
-  THUMBPRINT="6938fd4d98bab03faadb97b34396831e3780aea1" 
- 
-  aws iam create-open-id-connect-provider \ 
-    --url "$OIDC_URL" \ 
-    --client-id-list "sts.amazonaws.com" \ 
-    --thumbprint-list "$THUMBPRINT" >/dev/null 
- 
-  echo "  - OIDC provider created" 
-fi 
- 
-echo "→ Ensuring GitHub OIDC role exists..." 
-if aws iam get-role --role-name "$GITHUB_ROLE_NAME" >/dev/null 2>&1; then 
-  echo "  - Role exists: $GITHUB_ROLE_NAME" 
-else 
-  echo "  - Creating role: $GITHUB_ROLE_NAME" 
- 
-  GITHUB_TRUST_POLICY="$(cat <<EOF 
-{ 
-  "Version": "2012-10-17", 
-  "Statement": [ 
-    { 
-      "Sid": "AllowGitHubActionsOIDC", 
-      "Effect": "Allow", 
-      "Principal": { "Federated": "\${OIDC_PROVIDER_ARN}" }, 
-      "Action": "sts:AssumeRoleWithWebIdentity", 
-      "Condition": { 
-        "StringEquals": { 
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com" 
-        }, 
-        "StringLike": { 
-          "token.actions.githubusercontent.com:sub": "repo:\${GITHUB_REPO}:*" 
-        } 
-      } 
-    } 
-  ] 
-} 
-EOF 
-)" 
- 
-  aws iam create-role \ 
-    --role-name "$GITHUB_ROLE_NAME" \ 
-    --assume-role-policy-document "$GITHUB_TRUST_POLICY" >/dev/null 
- 
-  echo "  - Role created: $GITHUB_ROLE_NAME" 
-fi 
- 
-GITHUB_ROLE_ARN="$(aws iam get-role --role-name "$GITHUB_ROLE_NAME" --query 'Role.Arn' --output text 2>/dev/null || true)" 
-if [ -z "$GITHUB_ROLE_ARN" ] || [ "$GITHUB_ROLE_ARN" = "None" ]; then 
-  echo "Could not resolve GitHub role ARN for: $GITHUB_ROLE_NAME" 
-  echo "Tip: IAM can be eventually consistent. Re-run in ~10 seconds." 
-  exit 1 
-fi 
- 
-# Template default: broad permissions so first runs don't get blocked. 
-# Tighten later when you know exactly what you manage. 
-echo "→ Ensuring GitHub role has permissions (AdministratorAccess)..." 
-aws iam attach-role-policy \ 
-  --role-name "$GITHUB_ROLE_NAME" \ 
-  --policy-arn "arn:aws:iam::aws:policy/AdministratorAccess" >/dev/null || true 
- 
-############################################################################### 
-# 4) Write env-bound backend.hcl 
-############################################################################### 
-echo "" 
-echo "→ Writing $ENV_DIR/backend.hcl..." 
- 
-STATE_KEY="\${PROJECT_NAME}/\${ENVIRONMENT}/terraform.tfstate" 
- 
-cat > "$ENV_DIR/backend.hcl" <<EOF 
-bucket         = "$STATE_BUCKET" 
-key            = "$STATE_KEY" 
-region         = "$REGION" 
-dynamodb_table = "$LOCK_TABLE" 
-encrypt        = true 
-EOF 
- 
-echo "  - Wrote $ENV_DIR/backend.hcl" 
-echo "" 
-echo "    Bootstrap complete" 
-echo "" 
-echo "Next (local):" 
-echo "  source infra/scripts/use-env.sh $ENVIRONMENT" 
-echo "  bash infra/scripts/whoami.sh" 
-echo "  cd infra/env/$ENVIRONMENT" 
-echo "  terraform init -backend-config=backend.hcl" 
-echo "" 
-echo "Next (GitHub):" 
-echo "  Create GitHub Environment named: $ENVIRONMENT" 
-echo "  Add Environment secret AWS_ROLE_ARN = $GITHUB_ROLE_ARN" 
-echo "" `;
+if command -v tflint >/dev/null 2>&1; then
+  echo "tflint:    $(tflint --version | head -n 1)"
+fi
+
+echo ""`;
+
+const scriptBootstrapState = `#!/usr/bin/env bash
+set -euo pipefail
+
+# bootstrap-state.sh
+# - Creates Terraform remote state prerequisites in the CURRENT AWS account:
+#   - S3 bucket for state (versioning + encryption + public access block)
+#   - DynamoDB table for state locking
+# - Sets up GitHub Actions OIDC:
+#   - IAM OIDC provider for token.actions.githubusercontent.com (idempotent)
+#   - GitHub OIDC role that Actions assumes
+# - Writes backend config to:
+#   infra/env/<environment>/backend.hcl (via write-backend-hcl.sh)
+#
+# Usage (Git Bash, from repo root):
+#   source infra/scripts/use-env.sh <environment>
+#   bash infra/scripts/bootstrap-state.sh <environment> --region eu-west-2
+#
+# Notes:
+# - This script creates resources in whichever AWS account your current auth points to.
+# - Always check the printed Account + Caller ARN before continuing.
+
+usage() {
+  echo "Usage: bash infra/scripts/bootstrap-state.sh <environment> [--region eu-west-2] [--github-role-name GitHubOIDCTerraformRole] [--github-repo owner/repo] [--project-name template-terraform-boilerplate]"
+  exit 1
+}
+
+ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+ENVIRONMENT="\${1:-}"
+shift || true
+if [ -z "$ENVIRONMENT" ]; then
+  usage
+fi
+
+REGION="\${AWS_REGION:-eu-west-2}"
+GITHUB_ROLE_NAME="GitHubOIDCTerraformRole"
+GITHUB_REPO=""
+PROJECT_NAME="template-terraform-boilerplate"
+
+while [ "\${1:-}" != "" ]; do
+  case "$1" in
+    --region)
+      shift
+      REGION="\${1:-}"
+      ;;
+    --github-role-name)
+      shift
+      GITHUB_ROLE_NAME="\${1:-}"
+      ;;
+    --github-repo)
+      shift
+      GITHUB_REPO="\${1:-}"
+      ;;
+    --project-name)
+      shift
+      PROJECT_NAME="\${1:-}"
+      ;;
+    *)
+      echo "Unknown arg: $1"
+      usage
+      ;;
+  esac
+  shift || true
+done
+
+ENV_DIR="$ROOT_DIR/env/$ENVIRONMENT"
+if [ ! -d "$ENV_DIR" ]; then
+  echo "Environment folder not found: $ENV_DIR"
+  echo "Create it under infra/env/ and try again."
+  exit 1
+fi
+
+if ! command -v aws >/dev/null 2>&1; then
+  echo "AWS CLI is required."
+  echo "Run: bash infra/scripts/prereqs.sh"
+  exit 1
+fi
+
+ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text 2>/dev/null || true)"
+CALLER_ARN="$(aws sts get-caller-identity --query Arn --output text 2>/dev/null || true)"
+
+if [ -z "$ACCOUNT_ID" ] || [ "$ACCOUNT_ID" = "None" ] || [ -z "$CALLER_ARN" ] || [ "$CALLER_ARN" = "None" ]; then
+  echo "Could not determine AWS account/principal. Are you authenticated?"
+  echo "Tip: set AWS_PROFILE and run: aws sts get-caller-identity"
+  exit 1
+fi
+
+# Detect owner/repo from git remote if not provided
+if [ -z "$GITHUB_REPO" ] && command -v git >/dev/null 2>&1; then
+  ORIGIN_URL="$(git config --get remote.origin.url 2>/dev/null || true)"
+  if echo "$ORIGIN_URL" | grep -q "github.com"; then
+    GITHUB_REPO="$(echo "$ORIGIN_URL" \
+      | sed -E 's#^git@github\.com:##' \
+      | sed -E 's#^https://github\.com/##' \
+      | sed -E 's#\.git$##')"
+  fi
+fi
+
+if [ -z "$GITHUB_REPO" ]; then
+  echo "Could not auto-detect the GitHub repo."
+  echo "Fix: re-run with --github-repo owner/repo"
+  exit 1
+fi
+
+STATE_BUCKET="\${PROJECT_NAME}-\${ACCOUNT_ID}-\${REGION}-tfstate"
+LOCK_TABLE="\${PROJECT_NAME}-\${ACCOUNT_ID}-\${REGION}-tflocks"
+
+OIDC_URL="https://token.actions.githubusercontent.com"
+OIDC_PROVIDER_ARN="arn:aws:iam::\${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
+
+echo ""
+echo "Bootstrap (remote state + GitHub OIDC)"
+echo "Environment:   $ENVIRONMENT"
+echo "Account:       $ACCOUNT_ID"
+echo "Region:        $REGION"
+echo "Caller ARN:    $CALLER_ARN"
+echo "GitHub repo:   $GITHUB_REPO"
+echo "State bucket:  $STATE_BUCKET"
+echo "Lock table:    $LOCK_TABLE"
+echo "GitHub role:   $GITHUB_ROLE_NAME"
+echo ""
+
+echo "→ Ensuring S3 bucket exists..."
+if aws s3api head-bucket --bucket "$STATE_BUCKET" >/dev/null 2>&1; then
+  echo "  - Bucket exists: $STATE_BUCKET"
+else
+  if [ "$REGION" = "us-east-1" ]; then
+    aws s3api create-bucket --bucket "$STATE_BUCKET" >/dev/null
+  else
+    aws s3api create-bucket \
+      --bucket "$STATE_BUCKET" \
+      --create-bucket-configuration "LocationConstraint=$REGION" >/dev/null
+  fi
+  echo "  - Bucket created: $STATE_BUCKET"
+fi
+
+echo "→ Configuring bucket (versioning, encryption, public access block)..."
+aws s3api put-bucket-versioning \
+  --bucket "$STATE_BUCKET" \
+  --versioning-configuration Status=Enabled >/dev/null
+
+aws s3api put-bucket-encryption \
+  --bucket "$STATE_BUCKET" \
+  --server-side-encryption-configuration '{
+    "Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]
+  }' >/dev/null
+
+aws s3api put-public-access-block \
+  --bucket "$STATE_BUCKET" \
+  --public-access-block-configuration '{
+    "BlockPublicAcls":true,
+    "IgnorePublicAcls":true,
+    "BlockPublicPolicy":true,
+    "RestrictPublicBuckets":true
+  }' >/dev/null
+
+echo "  - Bucket configured"
+
+echo ""
+echo "→ Ensuring DynamoDB lock table exists..."
+if aws dynamodb describe-table --table-name "$LOCK_TABLE" >/dev/null 2>&1; then
+  echo "  - Table exists: $LOCK_TABLE"
+else
+  aws dynamodb create-table \
+    --table-name "$LOCK_TABLE" \
+    --attribute-definitions AttributeName=LockID,AttributeType=S \
+    --key-schema AttributeName=LockID,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST >/dev/null
+
+  echo "  - Table created: $LOCK_TABLE"
+  echo "  - Waiting for table to become ACTIVE..."
+  aws dynamodb wait table-exists --table-name "$LOCK_TABLE"
+fi
+
+echo ""
+echo "→ Ensuring GitHub OIDC provider exists..."
+if aws iam get-open-id-connect-provider --open-id-connect-provider-arn "$OIDC_PROVIDER_ARN" >/dev/null 2>&1; then
+  echo "  - OIDC provider exists"
+else
+  THUMBPRINT="6938fd4d98bab03faadb97b34396831e3780aea1"
+  aws iam create-open-id-connect-provider \
+    --url "$OIDC_URL" \
+    --client-id-list "sts.amazonaws.com" \
+    --thumbprint-list "$THUMBPRINT" >/dev/null
+  echo "  - OIDC provider created"
+fi
+
+echo "→ Ensuring GitHub OIDC role exists..."
+if aws iam get-role --role-name "$GITHUB_ROLE_NAME" >/dev/null 2>&1; then
+  echo "  - Role exists: $GITHUB_ROLE_NAME"
+else
+  GITHUB_TRUST_POLICY="$(cat <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowGitHubActionsOIDC",
+      "Effect": "Allow",
+      "Principal": { "Federated": "\${OIDC_PROVIDER_ARN}" },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": "repo:\${GITHUB_REPO}:*"
+        }
+      }
+    }
+  ]
+}
+EOF
+)"
+  aws iam create-role \
+    --role-name "$GITHUB_ROLE_NAME" \
+    --assume-role-policy-document "$GITHUB_TRUST_POLICY" >/dev/null
+  echo "  - Role created: $GITHUB_ROLE_NAME"
+fi
+
+GITHUB_ROLE_ARN="$(aws iam get-role --role-name "$GITHUB_ROLE_NAME" --query 'Role.Arn' --output text 2>/dev/null || true)"
+if [ -z "$GITHUB_ROLE_ARN" ] || [ "$GITHUB_ROLE_ARN" = "None" ]; then
+  echo "Could not resolve GitHub role ARN for: $GITHUB_ROLE_NAME"
+  exit 1
+fi
+
+echo "→ Ensuring GitHub role has permissions (AdministratorAccess)..."
+aws iam attach-role-policy \
+  --role-name "$GITHUB_ROLE_NAME" \
+  --policy-arn "arn:aws:iam::aws:policy/AdministratorAccess" >/dev/null || true
+
+echo ""
+echo "→ Writing backend.hcl for $ENVIRONMENT..."
+bash "$ROOT_DIR/scripts/write-backend-hcl.sh" "$ENVIRONMENT" --region "$REGION" --project-name "$PROJECT_NAME"
+
+echo ""
+echo "Bootstrap complete"
+echo ""
+echo "Next (local):"
+echo "  source infra/scripts/use-env.sh $ENVIRONMENT"
+echo "  bash infra/scripts/whoami.sh"
+echo "  cd infra/env/$ENVIRONMENT"
+echo "  terraform init -backend-config=backend.hcl"
+echo ""
+echo "Next (GitHub):"
+echo "  Create GitHub Environment named: $ENVIRONMENT"
+echo "  Add Environment secret AWS_ROLE_ARN = $GITHUB_ROLE_ARN"
+echo ""`;
+
+const scriptWriteBackendHCL = `#!/usr/bin/env bash
+set -euo pipefail
+
+# write-backend-hcl.sh
+# - Writes an env-bound write-backend.hcl at:
+#   infra/env/<environment>/write-backend.hcl
+# - Uses the current AWS identity to derive the account ID.
+# - Matches the same naming convention used by bootstrap-state.sh.
+#
+# Usage:
+#   bash infra/scripts/write-backend-hcl.sh <environment> [--region eu-west-2] [--project-name template-terraform-boilerplate]
+#
+# Notes:
+# - write-backend.hcl is intentionally NOT committed to git.
+
+usage() {
+  echo "Usage: bash infra/scripts/write-backend-hcl.sh <environment> [--region eu-west-2] [--project-name template-terraform-boilerplate]"
+  exit 1
+}
+
+ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+ENVIRONMENT="\${1:-}"
+shift || true
+if [ -z "$ENVIRONMENT" ]; then
+  usage
+fi
+
+REGION="\${AWS_REGION:-eu-west-2}"
+PROJECT_NAME="template-terraform-boilerplate"
+
+while [ "\${1:-}" != "" ]; do
+  case "$1" in
+    --region)
+      shift
+      REGION="\${1:-}"
+      ;;
+    --project-name)
+      shift
+      PROJECT_NAME="\${1:-}"
+      ;;
+    *)
+      echo "Unknown arg: $1"
+      usage
+      ;;
+  esac
+  shift || true
+done
+
+ENV_DIR="$ROOT_DIR/env/$ENVIRONMENT"
+if [ ! -d "$ENV_DIR" ]; then
+  echo "Environment folder not found: $ENV_DIR"
+  echo "Create it under infra/env/ and try again."
+  exit 1
+fi
+
+if ! command -v aws >/dev/null 2>&1; then
+  echo "AWS CLI is required."
+  exit 1
+fi
+
+ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text 2>/dev/null || true)"
+CALLER_ARN="$(aws sts get-caller-identity --query Arn --output text 2>/dev/null || true)"
+
+if [ -z "$ACCOUNT_ID" ] || [ "$ACCOUNT_ID" = "None" ]; then
+  echo "Could not determine AWS account ID. Are you authenticated?"
+  exit 1
+fi
+
+STATE_BUCKET="\${PROJECT_NAME}-\${ACCOUNT_ID}-\${REGION}-tfstate"
+LOCK_TABLE="\${PROJECT_NAME}-\${ACCOUNT_ID}-\${REGION}-tflocks"
+STATE_KEY="\${PROJECT_NAME}/\${ENVIRONMENT}/terraform.tfstate"
+
+cat > "$ENV_DIR/backend.hcl" <<EOF
+bucket         = "$STATE_BUCKET"
+key            = "$STATE_KEY"
+region         = "$REGION"
+dynamodb_table = "$LOCK_TABLE"
+encrypt        = true
+EOF
+
+echo "Wrote $ENV_DIR/backend.hcl"
+echo "Account:    $ACCOUNT_ID"
+echo "Caller ARN: \${CALLER_ARN:-<unknown>}"`;
 
 const awsConfigExample = `# ~/.aws/config
 #
@@ -786,19 +802,19 @@ const scriptUseEnv = `#!/usr/bin/env bash
 set -euo pipefail
 
 # use-env.sh
-# - Switches local AWS context by setting AWS_PROFILE=<aws-account>.
-# - Use with "source" so the variable persists in your current shell session.
+# - Switches local AWS context by setting AWS_PROFILE=<environment>.
+# - Use with "source" so it persists in your current shell session.
 #
 # Usage:
-#   source infra/scripts/use-env.sh <aws-account>
+#   source infra/scripts/use-env.sh <environment>
 #
 # Notes:
-# - Assumes AWS profiles are configured in ~/.aws/config
-# - Region is set here for convenience and can be overridden
+# - Assumes AWS profiles exist in ~/.aws/config
+# - Sets region defaults (can be overridden per shell)
 
 ENVIRONMENT="\${1:-}"
 if [ -z "$ENVIRONMENT" ]; then
-  echo "Usage: source infra/scripts/use-env.sh <aws-account>"
+  echo "Usage: source infra/scripts/use-env.sh <environment>"
   return 1 2>/dev/null || exit 1
 fi
 
@@ -809,30 +825,23 @@ export AWS_DEFAULT_REGION="\${AWS_DEFAULT_REGION:-$AWS_REGION}"
 
 echo "Switched AWS context"
 echo "AWS_PROFILE=$AWS_PROFILE"
+echo "AWS_REGION=$AWS_REGION"
 echo ""
 echo "Next:"
+echo "  bash infra/scripts/whoami.sh"
 echo "  cd infra/env/$ENVIRONMENT"
-echo "  terraform init -backend-config=../../backend.hcl"
-echo "  terraform plan -var-file=env.tfvars"`;
+echo "  bash ../../scripts/write-backend-hcl.sh $ENVIRONMENT --region $AWS_REGION"
+echo "  terraform init -backend-config=backend.hcl"`;
 
 const scriptWhoAmI = `#!/usr/bin/env bash
 set -euo pipefail
 
 # whoami.sh
-# - Prints the current AWS identity (account ID + principal ARN) for the *current shell session*.
-# - This is a safety check before running plan/apply, especially after switching AWS_PROFILE.
-# - Runs in Git Bash (Windows) or any Bash shell where aws is available on PATH.
+# - Prints the current AWS identity (account + principal ARN).
+# - Safety check before running plan/apply.
 #
 # Usage:
 #   bash infra/scripts/whoami.sh
-#
-# Output:
-# - If jq is installed: pretty-printed JSON
-# - If jq is not installed: raw JSON
-#
-# Requirements:
-# - aws CLI must be installed and discoverable via PATH in this shell
-# - jq is optional (only used for formatting)
 
 if ! command -v aws >/dev/null 2>&1; then
   echo "aws CLI is required for this script."
@@ -906,7 +915,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TF_IN_AUTOMATION: "true"
   AWS_REGION: "eu-west-2"
 
 jobs:
@@ -1428,6 +1436,11 @@ const IaCTerraform = () => {
               title: "bootstrap-state.sh",
               description: "Bootstraps the AWS prerequisites Terraform needs before the first init: creates the remote state S3 bucket (versioning + encryption + public access block) and the DynamoDB lock table, then sets up GitHub Actions OIDC (provider + role) and writes backend.hcl so your environment can run terraform init immediately against remote state.",
               code: scriptBootstrapState,
+            },
+            {
+              title: "write-backend-hcl.sh",
+              description: "Generates an env-bound backend.hcl inside infra/env/<environment>/ using your current AWS identity. It derives the account ID via sts, builds deterministic S3 + DynamoDB backend names, and writes the exact config Terraform needs for remote state (bucket, key, region, lock table, encryption) without committing any backend values to Git.",
+              code: scriptWriteBackendHCL,
             },
             {
               title: "fmt.sh",
