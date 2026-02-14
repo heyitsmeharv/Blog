@@ -456,9 +456,9 @@ export default function Blog() {
       readingTime: 'N/A',
       type: 'Practical',
       date: '10/12/2025',
-      tags: [{ name: 'DevOps' }, { name: 'Docker', background: '#D3ECEC', icon: <DockerSVG /> }],
-      intro: `Docker and Kubernetes can sometimes feel intimidating - a world full of clusters, orchestrators, containers, pods, and YAML files. But when you peel back the layers, the story they tell is 
-      actually quite simple: build your software once, run it consistently everywhere, and scale it effortlessly...`,
+      tags: [{ name: 'DevOps' }, { name: 'Docker', background: '#D3ECEC', icon: <DockerSVG /> }, { name: 'Kubernetes', background: '#326DE6', icon: <KubernetesSVG /> }],
+      intro: `This is a practical learning path built around one tiny project: a "virtual shell" playground: a small service that feels like a terminal you can poke at safely, plus a helper service 
+      so it becomes a real system instead of a single container...`,
       navigate: 'intro-to-docker-kubernetes',
       published: false
     },
@@ -739,8 +739,8 @@ export default function Blog() {
       type: 'Practical',
       date: '10/12/2025',
       tags: [{ name: 'DevOps' }, { name: 'Docker', background: '#D3ECEC', icon: <DockerSVG /> }, { name: 'Kubernetes', background: '#326DE6', icon: <KubernetesSVG /> }],
-      intro: `Docker and Kubernetes can sometimes feel intimidating - a world full of clusters, orchestrators, containers, pods, and YAML files. But when you peel back the layers, the story they tell is 
-      actually quite simple: build your software once, run it consistently everywhere, and scale it effortlessly...`,
+      intro: `This is a practical learning path built around one tiny project: a "virtual shell" playground: a small service that feels like a terminal you can poke at safely, plus a helper service 
+      so it becomes a real system instead of a single container...`,
       navigate: 'intro-to-docker-kubernetes',
       published: false
     },

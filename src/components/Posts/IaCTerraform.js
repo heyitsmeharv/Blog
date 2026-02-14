@@ -10,7 +10,7 @@ import SlideInBottom from "../../animations/SlideInBottom";
 // components
 import BackButton from "../Button/BackButton";
 import { CodeBlockWithCopy } from "../Code/Code";
-import CodeCarousel from "../CodeCarousel/CodeCarousel";
+import Carousel from "../Carousel/Carousel";
 
 // layout
 import {
@@ -1232,7 +1232,7 @@ const IaCTerraform = () => {
           you would find in the environment folder:
         </Paragraph>
 
-        <CodeCarousel
+        <Carousel
           items={[
             {
               title: "main.tf",
@@ -1277,7 +1277,7 @@ const IaCTerraform = () => {
           Notice how we pass attributes from the main.tf in the environment folder to be used as variables inside our module.
         </Paragraph>
 
-        <CodeCarousel
+        <Carousel
           items={[
             {
               title: "main.tf",
@@ -1386,7 +1386,7 @@ const IaCTerraform = () => {
           .
         </Paragraph>
 
-        <CodeCarousel
+        <Carousel
           items={[
             {
               title: "~/.aws/config",
@@ -1415,7 +1415,7 @@ const IaCTerraform = () => {
           From there, Terraform commands run in the correct account/role context.
         </Paragraph>
 
-        <CodeCarousel
+        <Carousel
           items={[
             {
               title: "prereqs.sh",
@@ -1550,7 +1550,7 @@ const IaCTerraform = () => {
           The bootstrap command generates <InlineHighlight>infra/backend.hcl</InlineHighlight> (gitignored). We then pass it into
           <InlineHighlight>terraform init</InlineHighlight> so each environment can use remote state without committing account-specific backend values.
         </Paragraph>
-        <CodeCarousel
+        <Carousel
           items={[
             {
               title: "infra/backend.hcl (generated)",

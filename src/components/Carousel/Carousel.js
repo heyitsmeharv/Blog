@@ -118,6 +118,20 @@ const CodeFrame = styled.div`
   }
 `;
 
+const ImageFrame = styled.div`
+  border-radius: 1.2rem;
+  overflow: hidden;
+
+  & img {
+    width: 100%;
+    height: auto;
+    display: block;
+
+    object-fit: contain;
+    image-rendering: auto;
+  }
+`;
+
 const NavBtn = styled.button`
   position: absolute;
   top: 50%;
@@ -212,7 +226,7 @@ const NextBtn = styled(NavBtn)`
   right: 1rem;
 `;
 
-const CodeCarousel = ({ items = [], initialIndex = 0 }) => {
+const Carousel = ({ items = [], initialIndex = 0 }) => {
   const safeItems = useMemo(() => items ?? [], [items]);
 
   const [index, setIndex] = useState(() => {
@@ -231,7 +245,6 @@ const CodeCarousel = ({ items = [], initialIndex = 0 }) => {
     const el = slideRefs.current[index];
     if (!el) return;
 
-    // Use scrollHeight to include content even if fonts/line wrapping change.
     const next = Math.ceil(el.scrollHeight);
     setViewportHeight((prev) => (prev === next ? prev : next));
   }, [index]);
@@ -242,10 +255,8 @@ const CodeCarousel = ({ items = [], initialIndex = 0 }) => {
     const el = slideRefs.current[index];
     if (!el) return;
 
-    // Measure on next paint (ensures CodeBlock has rendered)
     const raf = requestAnimationFrame(measureActive);
 
-    // Track changes (responsive, font changes, etc.)
     const ro = new ResizeObserver(() => measureActive());
     ro.observe(el);
 
@@ -309,8 +320,8 @@ const CodeCarousel = ({ items = [], initialIndex = 0 }) => {
         </Intro>
       </Header>
 
-      <Stage tabIndex={0} onKeyDown={onKeyDown} aria-label="Code carousel" role="region">
-        <PrevBtn type="button" onClick={goPrev} disabled={!canPrev} aria-label="Previous snippet">
+      <Stage tabIndex={0} onKeyDown={onKeyDown} aria-label="Carousel" role="region">
+        <PrevBtn type="button" onClick={goPrev} disabled={!canPrev} aria-label="Previous">
           <span>←</span>
         </PrevBtn>
 
@@ -319,14 +330,24 @@ const CodeCarousel = ({ items = [], initialIndex = 0 }) => {
             {safeItems.map((item, idx) => (
               <Slide key={item.id ?? idx} ref={(el) => (slideRefs.current[idx] = el)}>
                 <CodeFrame>
-                  <CodeBlockWithCopy code={item.code} />
+                  {item?.src ? (
+                    <ImageFrame>
+                      <img
+                        src={item.src}
+                        alt={item.alt || item.title || `Slide ${idx + 1}`}
+                        loading="lazy"
+                      />
+                    </ImageFrame>
+                  ) : (
+                    <CodeBlockWithCopy code={item.code} />
+                  )}
                 </CodeFrame>
               </Slide>
             ))}
           </Track>
         </Viewport>
 
-        <NextBtn type="button" onClick={goNext} disabled={!canNext} aria-label="Next snippet">
+        <NextBtn type="button" onClick={goNext} disabled={!canNext} aria-label="Next">
           <span>→</span>
         </NextBtn>
       </Stage>
@@ -334,4 +355,4 @@ const CodeCarousel = ({ items = [], initialIndex = 0 }) => {
   );
 };
 
-export default CodeCarousel;
+export default Carousel;

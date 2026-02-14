@@ -1,15 +1,17 @@
-import React, { useEffect } from 'react';
-import styled from 'styled-components';
+import React, { useEffect } from "react";
+import styled from "styled-components";
 
 // helpers
-import { Analytics } from '../../helpers/analytics';
+import { Analytics } from "../../helpers/analytics";
 
 // animations
-import SlideInBottom from '../../animations/SlideInBottom';
+import SlideInBottom from "../../animations/SlideInBottom";
 
 // components
-import BackButton from '../Button/BackButton';
-import { CodeBlockWithCopy } from '../Code/Code';
+import BackButton from "../Button/BackButton";
+import Banner from "../Banner/Banner";
+import { CodeBlockWithCopy } from "../Code/Code";
+import Carousel from "../Carousel/Carousel";
 
 // layout
 import {
@@ -19,97 +21,122 @@ import {
   HeaderRow,
   IconWrapper,
   HeaderIcon,
-} from '../BlogLayout/BlogLayout';
+} from "../BlogLayout/BlogLayout";
 
 // typography
 import {
   PageTitle,
   SectionHeading,
   SubSectionHeading,
+  TertiaryHeading,
   Paragraph,
-  InlineHighlight,
   Strong,
   TextLink,
-} from '../Typography/Typography';
+  TextList,
+  TextListItem,
+  InlineHighlight,
+  IndentedTextList,
+  IndentedTextListItem,
+} from "../Typography/Typography";
 
 // icons
-import { DockerSVG, KubernetesSVG } from '../../resources/styles/icons';
+import { DockerSVG, KubernetesSVG } from "../../resources/styles/icons";
 
-const AnimatedPostContainer = styled(BasePostContainer)`
+// images
+import dockerCliPng from "../../resources/images/blog/DockerKubernetes/docker-cli.png";
+import dockerDesktopPng from "../../resources/images/blog/DockerKubernetes/docker-desktop.png";
+import alpineShellPng from "../../resources/images/blog/DockerKubernetes/alpine-shell.png";
+
+const dockerDocs = "https://docs.docker.com/";
+const dockerInstallation = "https://docs.docker.com/get-started/get-docker/";
+const dockerWhatIsContainer = "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/";
+const dockerDockerfileRef = "https://docs.docker.com/reference/dockerfile/";
+const dockerBestPractices = "https://docs.docker.com/build/building/best-practices/";
+const dockerComposeDocs = "https://docs.docker.com/compose/";
+const dockerComposeFileRef = "https://docs.docker.com/reference/compose-file/";
+
+const k8sDocs = "https://kubernetes.io/docs/home/";
+const k8sOverview = "https://kubernetes.io/docs/concepts/overview/";
+const k8sTools = "https://kubernetes.io/docs/tasks/tools/";
+const k8sHelloMinikube = "https://kubernetes.io/docs/tutorials/hello-minikube/";
+const k8sDeployments = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/";
+const k8sServices = "https://kubernetes.io/docs/concepts/services-networking/service/";
+const k8sConfigMaps = "https://kubernetes.io/docs/concepts/configuration/configmap/";
+const k8sSecrets = "https://kubernetes.io/docs/concepts/configuration/secret/";
+const k8sDebug = "https://kubernetes.io/docs/tasks/debug/";
+
+const playgroundRepo = "https://github.com/heyitsmeharv/docker-k8s-virtual-shell";
+
+const verifyDocker = `docker version`;
+const helloContainer = `docker run --rm -it alpine sh`;
+const insideContainer = `# inside the container
+ls
+
+# What OS/users do I see in here?
+cat /etc/os-release
+whoami
+
+# Am I on my host machine?
+hostname
+
+# What happens if I exit?
+exit`;
+const imageVsContainerQuickCheck = `docker images    # List images stored locally (your reusable "blueprints")
+docker ps        # List running containers only (what's currently alive)
+docker ps -a     # List all containers, including stopped/exited ones`;
+const buildImage = `docker build -t virtual-shell-api:dev -f docker/Dockerfile .`;
+const runImage = `docker run --rm -p 8080:8080 virtual-shell-api:dev`;
+
+const composeUp = `docker compose -f compose/compose.yml up --build`;
+const composeDown = `docker compose -f compose/compose.yml down`;
+
+const verifyK8s = `kubectl version --client
+kubectl cluster-info`;
+
+const k8sApply = `kubectl apply -f k8s/
+kubectl get pods
+kubectl get svc`;
+
+const k8sDebugLoop = `kubectl get pods
+kubectl describe pod <pod>
+kubectl logs <pod>
+kubectl get events --sort-by=.metadata.creationTimestamp
+kubectl get svc,endpoints`;
+
+const playgroundTree = `docker-k8s-virtual-shell/
+├─ app/
+│  ├─ ui/                
+│  └─ api/
+├─ docker/
+│  ├─ Dockerfile
+│  └─ .dockerignore
+├─ compose/
+│  └─ compose.yml
+├─ k8s/
+│  ├─ api-deployment.yaml
+│  ├─ api-service.yaml
+│  ├─ ui-deployment.yaml
+│  ├─ ui-service.yaml
+│  ├─ configmap.yaml
+│  └─ secret.yaml
+└─ README.md`;
+
+const PostContainer = styled(BasePostContainer)`
   animation: ${SlideInBottom} 0.5s forwards;
 `;
 
-const dockerRunExample = `docker run hello-world`;
-
-const simpleNodeDockerfile = `FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-CMD ["node", "server.js"]`;
-
-const dockerComposeExample = `services:
-  frontend:
-    build: ./frontend
-    ports:
-      - "5173:5173"
-
-  backend:
-    build: ./backend
-    ports:
-      - "8080:8080"
-    environment:
-      - DATABASE_URL=postgres://postgres:password@db:5432/app
-
-  db:
-    image: postgres:16
-    environment:
-      - POSTGRES_PASSWORD=password`;
-
-const kubernetesDeployment = `apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: demo-app
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: demo
-  template:
-    metadata:
-      labels:
-        app: demo
-    spec:
-      containers:
-        - name: demo
-          image: demo-image:latest
-          ports:
-            - containerPort: 8080`;
-
-const kubernetesService = `apiVersion: v1
-kind: Service
-metadata:
-  name: demo-service
-spec:
-  selector:
-    app: demo
-  ports:
-    - port: 80
-      targetPort: 8080
-  type: NodePort`;
-
 const DockerKubernetes = () => {
   useEffect(() => {
-    Analytics.event('blog_opened', { slug: 'introduction-to-docker-kubernetes' });
+    Analytics.event("blog_opened", { slug: "introduction-to-docker-kubernetes" });
   }, []);
 
   return (
     <PageWrapper>
       <PostTopBar>
-        <BackButton />
+        <BackButton to="/blog" />
       </PostTopBar>
 
-      <AnimatedPostContainer>
+      <PostContainer>
         <HeaderRow>
           <PageTitle>Introduction to Docker & Kubernetes</PageTitle>
           <IconWrapper>
@@ -123,239 +150,318 @@ const DockerKubernetes = () => {
         </HeaderRow>
 
         <Paragraph>
-          Docker and Kubernetes can sometimes feel intimidating - a world full of clusters,
-          orchestrators, containers, pods, and YAML files. But when you peel back the layers,
-          the story they tell is actually quite simple: build your software once, run it
-          consistently everywhere, and scale it effortlessly.
+          This is a practical learning path built around one tiny project: a "virtual shell" playground - a small service that
+          feels like a terminal you can poke at safely.
         </Paragraph>
 
         <Paragraph>
-          In this post, I'm going to walk you through a full learning journey that follows the
-          natural progression of how developers actually use Docker and Kubernetes today.
-          Rather than memorising commands, the goal is to help you understand <Strong>why</Strong>
-          each tool exists, <Strong>when</Strong> you'd use it, and <Strong>how</Strong> it all fits
-          together in a real workflow.
-        </Paragraph>
-
-        <SectionHeading>Introduction to Containers</SectionHeading>
-
-        <Paragraph>
-          Before touching Kubernetes, YAML files, or cluster dashboards, it's important to
-          understand the foundation everything is built on: containers. A container is simply
-          a packaged environment containing your application and everything it needs to run.
-          No more “works on my machine” - because the machine is inside the container.
+          Here is the companion repo if you'd rather dive into the code:{" "}
+          <TextLink href={playgroundRepo} target="_blank" rel="noreferrer">
+            <InlineHighlight>docker-k8s-virtual-shell</InlineHighlight>
+          </TextLink>
         </Paragraph>
 
         <Paragraph>
-          Docker makes this easy. Your first step is running the classic{' '}
-          <InlineHighlight>hello-world</InlineHighlight> container:
+          Before we dive into building anything let's go explore the fundamentals.
         </Paragraph>
 
-        <CodeBlockWithCopy code={dockerRunExample} />
+        <SectionHeading>What is Docker?</SectionHeading>
 
         <Paragraph>
-          This command downloads an extremely small image from Docker Hub and runs it inside
-          a container. If it prints a cheery welcome message, you're officially up and running.
-        </Paragraph>
-
-        <SectionHeading>Docker Fundamentals</SectionHeading>
-
-        <Paragraph>
-          Containers are built from <Strong>images</Strong>, which are constructed using a
-          <Strong>Dockerfile</Strong>. Think of a Dockerfile as a set of instructions for
-          assembling your application's runtime environment. Creating one is often the first
-          “aha” moment because you see how predictable your environment can become.
+          Docker is a way to package and run software as <Strong>containers</Strong>. A container is an{" "}
+          <Strong>isolated process</Strong> for one part of your app, with its own filesystem view and the exact dependencies it needs.
+          That means your React UI, your API, and your database can each run in their own 'boxed' environments without fighting over
+          versions.
         </Paragraph>
 
         <Paragraph>
-          Here's a simple Dockerfile that runs a Node.js API:
+          Containers are powerful because they're designed to be:
+          <TextList>
+            <TextListItem><Strong>self-contained</Strong> - everything required to run is in the container</TextListItem>
+            <TextListItem><Strong>isolated</Strong> - minimal influence on your host and other containers</TextListItem>
+            <TextListItem><Strong>independent</Strong> - remove one container without breaking the others</TextListItem>
+            <TextListItem><Strong>portable</Strong> - the same container behaves consistently on your laptop, in CI, or in the cloud</TextListItem>
+          </TextList>
         </Paragraph>
 
-        <CodeBlockWithCopy code={simpleNodeDockerfile} />
+        <Paragraph>Let's now look to setup docker on your machine.</Paragraph>
 
+        <SectionHeading>Install, Setup and Configure</SectionHeading>
+
+        <SubSectionHeading>Set up Docker</SubSectionHeading>
         <Paragraph>
-          Once built, you can run it anywhere - your laptop, a server, or inside Kubernetes.
-          This is the magic of containers: consistency.
+          Install Docker using the <TextLink
+            href={dockerInstallation}
+            target="_blank"
+            rel="noreferrer"
+          >
+            official docs
+          </TextLink>, then verify the CLI is available.
         </Paragraph>
 
-        <SectionHeading>Building Dockerfiles Like a Pro</SectionHeading>
+        <Banner title="Warning" variant="warning">
+          <Paragraph>Please note that I'll be running the docker commands in CMD and PowerShell - The commands won't work in other terminals.</Paragraph>
+        </Banner>
 
+        <CodeBlockWithCopy code={verifyDocker} />
+
+        <Carousel
+          items={[
+            {
+              title: "Docker CLI",
+              description:
+                "Quick sanity check: the CLI can talk to the Docker Engine. If you see both Client and Server, you're ready to run containers.",
+              src: dockerCliPng,
+              alt: "Terminal showing docker version output",
+            },
+            {
+              title: "Docker Desktop GUI",
+              description:
+                "Visual confirmation: Docker Desktop is running and managing the local engine. Handy for seeing images, containers, and logs at a glance.",
+              src: dockerDesktopPng,
+              alt: "Docker Desktop showing the Docker engine running and containers/images list",
+            },
+          ]}
+        />
+
+        <SubSectionHeading>Meet the container</SubSectionHeading>
         <Paragraph>
-          After the basics, things get much more interesting. You'll quickly discover
-          multi-stage builds, which let you compile your code in one environment and run it
-          in another. This dramatically reduces image sizes and improves security.
-        </Paragraph>
-
-        <Paragraph>
-          Another essential optimisation technique is using a{' '}
-          <InlineHighlight>.dockerignore</InlineHighlight> file. This tells Docker which files
-          to skip copying into your image - keeping your builds fast and clean.
-        </Paragraph>
-
-        <Paragraph>
-          These techniques help transform your Dockerfiles from “it works” to
-          “production-ready”.
-        </Paragraph>
-
-        <SectionHeading>Docker Compose for Multi-Service Apps</SectionHeading>
-
-        <Paragraph>
-          Modern applications are rarely just one service. Even a simple project often has a
-          frontend, backend, and a database. Managing all these containers manually would be
-          a chore - which is why Docker Compose exists.
-        </Paragraph>
-
-        <Paragraph>
-          Compose lets you describe all your services in a single YAML file so you can bring
-          your entire application up with a single command:
-        </Paragraph>
-
-        <CodeBlockWithCopy code={dockerComposeExample} />
-
-        <Paragraph>
-          This makes local development significantly easier. You can spin up all services,
-          automatically link them, and restart them individually as you code.
-        </Paragraph>
-
-        <SectionHeading>Docker Networking & Volumes Deep Dive</SectionHeading>
-
-        <Paragraph>
-          Once you get comfortable with Compose, you'll naturally start asking questions like:
-          “how do these containers talk to each other?” and “how is my database data persisting?”
-          This is where Docker's networking and volume system becomes important.
+          Before containerising anything, run an interactive container. As you will see the container is an isolated process with its own filesystem view.
         </Paragraph>
 
         <Paragraph>
-          Docker creates isolated networks so containers can communicate using simple DNS names.
-          It also lets you persist data using volumes so your database doesn't reset every time
-          the container restarts. This is often the moment where Docker really starts to feel
-          like a professional tool rather than a toy.
+          Run this to start a tiny Linux container and drop into a shell:
         </Paragraph>
 
-        <SectionHeading>Kubernetes Basics</SectionHeading>
+        <CodeBlockWithCopy code={helloContainer} />
+
+        <TertiaryHeading>Breaking down the command</TertiaryHeading>
+
+        <TextList>
+          <TextListItem>
+            <InlineHighlight>docker run</InlineHighlight> - create a new container from an image and start it.
+          </TextListItem>
+          <TextListItem>
+            <InlineHighlight>alpine</InlineHighlight> - the image we're running (a tiny Linux distribution).
+          </TextListItem>
+          <TextListItem>
+            <InlineHighlight>sh</InlineHighlight> - the command to run <Strong>inside</Strong> the container (a shell).
+          </TextListItem>
+          <TextListItem>
+            <InlineHighlight>-i</InlineHighlight> - keep STDIN open so you can type into the container.
+          </TextListItem>
+          <TextListItem>
+            <InlineHighlight>-t</InlineHighlight> - allocate a pseudo-terminal so it behaves like a real interactive shell.
+          </TextListItem>
+          <TextListItem>
+            <InlineHighlight>--rm</InlineHighlight> - when the process exits, delete the container automatically.
+          </TextListItem>
+        </TextList>
+
+        <Paragraph>After running the command What you should now see is a docker container up and running in the Docker GUI.</Paragraph>
+
+        <Carousel
+          items={[
+            {
+              title: "alpine sh",
+              description: "A shell inside a container. This is the moment the container mental model clicks.",
+              src: alpineShellPng,
+              alt: "Alpine shell running inside a Docker container",
+            },
+          ]}
+        />
 
         <Paragraph>
-          Once your application grows or needs to run across multiple machines, a single Docker
-          host isn't enough. That's when Kubernetes comes in. At its core, Kubernetes is an
-          orchestrator - it decides where your containers should run, monitors them, restarts
-          them if needed, and scales them based on demand.
+          Now let's explore what we're able to do <Strong>inside</Strong> the container. These commands are simple, but the output is the lesson:
         </Paragraph>
 
-        <Paragraph>
-          A Kubernetes application usually starts with a <Strong>Deployment</Strong> and a{' '}
-          <Strong>Service</Strong>. Here's a minimal example:
-        </Paragraph>
-
-        <CodeBlockWithCopy code={kubernetesDeployment} />
-        <CodeBlockWithCopy code={kubernetesService} />
+        <CodeBlockWithCopy code={insideContainer} />
 
         <Paragraph>
-          These two manifests describe “run two copies of my app and expose it on a stable
-          network address”. Kubernetes handles the rest.
-        </Paragraph>
-
-        <SectionHeading>Kubernetes Architecture Explained</SectionHeading>
-
-        <Paragraph>
-          Kubernetes can feel complicated until you see the architecture. A cluster has a
-          <Strong>control plane</Strong> (API server, scheduler, etc.) and <Strong>worker
-            nodes</Strong> (machines that run your containers). Once you see how these pieces fit
-          together, everything becomes much more intuitive.
-        </Paragraph>
-
-        <Paragraph>
-          This section is all about building that mental map so future concepts fall into place.
-        </Paragraph>
-
-        <SectionHeading>Hands-On with Minikube & kubectl</SectionHeading>
-
-        <Paragraph>
-          With the fundamentals covered, it's time to drive Kubernetes yourself. Minikube creates
-          a small Kubernetes cluster on your machine. Using <InlineHighlight>kubectl</InlineHighlight>,
-          the Kubernetes command-line tool, you'll deploy apps, inspect pods, check logs, and scale
-          deployments up and down.
-        </Paragraph>
-
-        <Paragraph>
-          This hands-on practice builds your confidence before touching cloud-managed clusters like EKS.
-        </Paragraph>
-
-        <SectionHeading>Advanced Kubernetes</SectionHeading>
-
-        <Paragraph>
-          Once you're comfortable with Deployments and Services, Kubernetes opens up an entire
-          world of operational features: ConfigMaps for configuration, Secrets for sensitive data,
-          Ingress for routing, and readines/liveness probes to ensure Kubernetes correctly monitors
-          your applications.
+          What you're seeing: you've started a brand-new process with a minimal filesystem. It feels like a tiny machine because it has
+          its own root directory and OS files, but it starts instantly because it's not booting a whole operating system.
         </Paragraph>
 
         <Paragraph>
-          These features are what make Kubernetes production-grade. They help you design resilient,
-          stable, and secure applications.
+          When you type <InlineHighlight>exit</InlineHighlight>, the container stops - and because we used{" "}
+          <InlineHighlight>--rm</InlineHighlight>, Docker cleans it up automatically. That's the container lifecycle in one go:
+          <Strong> run → interact → stop → disappear</Strong>.
         </Paragraph>
 
-        <SectionHeading>Kubernetes on the Cloud (EKS)</SectionHeading>
+        <SubSectionHeading>Images vs Containers</SubSectionHeading>
 
         <Paragraph>
-          Running Kubernetes locally is great for learning, but the real power comes when deploying
-          to a managed cloud service like AWS EKS. This removes the complexity of maintaining your
-          own control plane and lets you focus purely on your application.
-        </Paragraph>
-
-        <Paragraph>
-          You'll create an EKS cluster, push Docker images to ECR, and deploy your app using the
-          same Kubernetes manifests from earlier - proving how portable Kubernetes really is.
-        </Paragraph>
-
-        <SectionHeading>CI/CD with GitHub Actions</SectionHeading>
-
-        <Paragraph>
-          Deploying your app manually works once or twice - but automation is the real goal. Using
-          GitHub Actions, you'll build Docker images on every push, publish them to ECR, and then
-          apply your Kubernetes manifests directly from the pipeline.
+          When you typed <InlineHighlight>exit</InlineHighlight>, that shell stopped because the container stopped. That's the first big idea:
+          containers are <Strong>temporary</Strong>. They're the running "instance" of something - not the thing itself.
         </Paragraph>
 
         <Paragraph>
-          This gives you a zero-click deployment workflow. Push code → ship to production.
-        </Paragraph>
-
-        <SectionHeading>Monitoring, Logging & Scaling</SectionHeading>
-
-        <Paragraph>
-          The final piece of the puzzle is understanding how your application behaves in production.
-          You'll use Kubernetes' metrics server to autoscale pods, inspect logs using{' '}
-          <InlineHighlight>kubectl logs</InlineHighlight>, and observe how Kubernetes responds to
-          changing loads.
+          The "thing itself" is the <Strong>image</Strong>. If a container is a running process, an image is the{" "}
+          <Strong>blueprint</Strong> of commands to run when it starts.
         </Paragraph>
 
         <Paragraph>
-          This is where everything “clicks” and Kubernetes starts to feel like a real operational
-          platform rather than a collection of YAML files.
+          So the relationship is simple:
         </Paragraph>
 
-        <SectionHeading>Capstone Project - Bringing It All Together</SectionHeading>
+        <TextList>
+          <TextListItem>
+            <Strong>Image</Strong> = what you <Strong>built</Strong> (a reusable snapshot you can ship)
+          </TextListItem>
+          <TextListItem>
+            <Strong>Container</Strong> = what you <Strong>run</Strong> (a live instance created from an image)
+          </TextListItem>
+        </TextList>
+
+        <Banner title="Quick Note" variant="info">
+          <Paragraph>You'll need to have the alpine container running in a separate
+            terminal before running these commands.</Paragraph>
+        </Banner>
+
+        <Paragraph>A quick test you can do that will help visualise the difference</Paragraph>
+
+        <CodeBlockWithCopy code={imageVsContainerQuickCheck} />
 
         <Paragraph>
-          The final project ties everything together by deploying a complete full-stack
-          application to Kubernetes:
+          Right now we've only been borrowing someone else's image (<InlineHighlight>alpine</InlineHighlight>). Next, we'll create our own:
+          we'll write a <Strong>Dockerfile</Strong> so the virtual shell playground has a repeatable home we can build, run, delete, and rebuild anytime.
         </Paragraph>
 
+        <SubSectionHeading>Give the playground a home (your first Dockerfile)</SubSectionHeading>
         <Paragraph>
-          <Strong>Frontend:</Strong> React (Vite) <br />
-          <Strong>Backend:</Strong> Express or FastAPI <br />
-          <Strong>Database:</Strong> Postgres <br />
-          <Strong>CI/CD:</Strong> GitHub Actions <br />
-          <Strong>Registry:</Strong> ECR <br />
-          <Strong>Ingress:</Strong> NGINX with TLS <br />
-          <Strong>Cluster:</Strong> AWS EKS
+          Now we give the playground a Dockerfile. The goal is a boring, readable build that produces a reliable image.
         </Paragraph>
 
+        <Carousel
+          items={[
+            {
+              title: "docker/Dockerfile",
+              description: "Start minimal. Make it readable before you make it clever.",
+              code: `# TODO: Dockerfile here`,
+            },
+            {
+              title: "docker/.dockerignore",
+              description: "Keep builds fast and clean by excluding noise.",
+              code: `# TODO: .dockerignore here`,
+            },
+          ]}
+        />
+
+        <TertiaryHeading>Build and run</TertiaryHeading>
+        <CodeBlockWithCopy code={buildImage} />
+        <CodeBlockWithCopy code={runImage} />
+
+        <SubSectionHeading>Make it reachable (ports + env)</SubSectionHeading>
         <Paragraph>
-          By the end, you'll have deployed a real cloud-native application - the same way modern
-          engineering teams do it every day.
+          Publishing ports is the bridge between the container's world and your machine.
+          Environment variables keep configuration out of the image.
         </Paragraph>
 
-      </AnimatedPostContainer>
+        <SubSectionHeading>Make it remember (volumes + bind mounts)</SubSectionHeading>
+        <Paragraph>
+          Bind mounts make the dev loop fast. Volumes keep data alive across container lifecycles.
+        </Paragraph>
+
+        <SubSectionHeading>Make it a system (multi-container + Compose)</SubSectionHeading>
+        <Paragraph>
+          A real app is rarely one container. Compose becomes the "system definition" - services, networking, ports, environment -
+          and a single command to run the whole playground.
+        </Paragraph>
+        <CodeBlockWithCopy code={composeUp} />
+        <CodeBlockWithCopy code={composeDown} />
+
+        <Carousel
+          items={[
+            {
+              title: "compose/compose.yml",
+              description: "Your local system contract: services + wiring in one place.",
+              code: `# TODO: compose.yml here`,
+            },
+          ]}
+        />
+
+        <SubSectionHeading>Make it shippable (best practices)</SubSectionHeading>
+        <Paragraph>
+          Once it works, we tidy it: smaller builds, fewer surprises, and (optionally) multi-stage builds.
+        </Paragraph>
+
+        <SubSectionHeading>Docker wrap-up</SubSectionHeading>
+        <Paragraph>
+          Docker is now "done": you can rebuild the playground, run it as a container, run it as a system with Compose,
+          and ship the image anywhere.
+        </Paragraph>
+
+        <SectionHeading>Kubernetes (managing containerized workloads)</SectionHeading>
+
+        <SubSectionHeading>Why Kubernetes exists</SubSectionHeading>
+        <Paragraph>
+          Kubernetes doesn't replace Docker fundamentals - it builds on them. You still ship images.
+          Kubernetes manages running them declaratively: scheduling, desired state, and stable networking.
+        </Paragraph>
+
+        <SubSectionHeading>Set up a local cluster + kubectl</SubSectionHeading>
+        <Paragraph>Install the tools and verify cluster access.</Paragraph>
+        <CodeBlockWithCopy code={verifyK8s} />
+
+        <SubSectionHeading>Deploy the playground (Deployment)</SubSectionHeading>
+        <Paragraph>
+          We describe the playground as a Deployment and let Kubernetes converge reality to match.
+        </Paragraph>
+        <Carousel
+          items={[
+            {
+              title: "k8s/deployment.yaml",
+              description: "The playground, declared as desired state.",
+              code: `# TODO: deployment.yaml here`,
+            },
+          ]}
+        />
+
+        <SubSectionHeading>Expose the playground (Service)</SubSectionHeading>
+        <Paragraph>
+          Pods come and go - Services provide stable access.
+        </Paragraph>
+        <Carousel
+          items={[
+            {
+              title: "k8s/service.yaml",
+              description: "Stable access to a moving set of Pods.",
+              code: `# TODO: service.yaml here`,
+            },
+          ]}
+        />
+
+        <TertiaryHeading>Apply and observe</TertiaryHeading>
+        <CodeBlockWithCopy code={k8sApply} />
+
+        <SubSectionHeading>Configure it properly (ConfigMaps + Secrets)</SubSectionHeading>
+        <Paragraph>
+          Keep configuration out of images. Use ConfigMaps for non-sensitive config and Secrets for sensitive values.
+        </Paragraph>
+
+        <Carousel
+          items={[
+            { title: "k8s/configmap.yaml", description: "Non-sensitive configuration.", code: `# TODO` },
+            { title: "k8s/secret.yaml", description: "Sensitive configuration.", code: `# TODO` },
+          ]}
+        />
+
+        <SubSectionHeading>The debugging loop</SubSectionHeading>
+        <Paragraph>
+          Kubernetes becomes manageable when you have a repeatable loop: inspect resources, describe failures, read logs, and check events.
+        </Paragraph>
+        <CodeBlockWithCopy code={k8sDebugLoop} />
+
+        <SectionHeading>References (official docs)</SectionHeading>
+
+        <TextList>
+          <TextListItem><TextLink href={dockerDocs} target="_blank" rel="noreferrer">Docker Docs</TextLink></TextListItem>
+          <TextListItem><TextLink href={k8sDocs} target="_blank" rel="noreferrer">Kubernetes Docs</TextLink></TextListItem>
+        </TextList>
+
+        <SubSectionHeading>Repo layout</SubSectionHeading>
+        <CodeBlockWithCopy code={playgroundTree} />
+      </PostContainer>
     </PageWrapper>
   );
 };
