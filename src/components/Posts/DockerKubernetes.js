@@ -46,6 +46,10 @@ import { DockerSVG, KubernetesSVG } from "../../resources/styles/icons";
 import dockerCliPng from "../../resources/images/blog/DockerKubernetes/docker-cli.png";
 import dockerDesktopPng from "../../resources/images/blog/DockerKubernetes/docker-desktop.png";
 import alpineShellPng from "../../resources/images/blog/DockerKubernetes/alpine-shell.png";
+import nodeApiTestPng from "../../resources/images/blog/DockerKubernetes/node-api-test.png";
+import dockerEnvVarsPng from "../../resources/images/blog/DockerKubernetes/docker-env-vars.png";
+import nodeApiNotesPng from "../../resources/images/blog/DockerKubernetes/node-api-notes.png";
+
 
 const dockerDocs = "https://docs.docker.com/";
 const dockerInstallation = "https://docs.docker.com/get-started/get-docker/";
@@ -150,15 +154,97 @@ Thumbs.db`;
 const runNodeApiLocally = `# run locally first (prove it works before Docker)
 npm i
 npm start`;
-
 const testNodeApi = `# CMD / PowerShell
 curl http://localhost:8080/health
 curl http://localhost:8080/message`;
-
 const buildNodeApiImage = `docker build -t node-api:dev .`;
 const runNodeApiContainer = `docker run --rm -p 8080:8080 node-api:dev`;
-
 const runNodeApiWithEnv = `docker run --rm -p 8080:8080 -e MESSAGE="Configured at runtime" node-api:dev`;
+const portMappingMentalModel = `# Port mapping
+# host (port on YOUR machine):container (port INSIDE the container)
+#
+docker run --rm -p 8080:8080 node-api:dev`;
+const findContainerPort = `# See what ports (if any) are published
+docker ps`;
+const publishDifferentHostPort = `# Useful if 8080 is already taken on your machine
+docker run --rm -p 3000:8080 node-api:dev
+# then:
+curl http://localhost:3000/health`;
+const envVarWithPortOverride = `# You *can* change the internal port, but then your container must listen on it
+# (our server reads PORT)
+docker run --rm -p 9090:9090 -e PORT=9090 node-api:dev
+curl http://localhost:9090/health`;
+const quickTroubleshootPorts = `# Quick troubleshooting loop
+docker ps
+docker logs <container_name_or_id>
+curl http://localhost:8080/health`;
+const nodeApiWithStorage = `// server.js (add storage endpoints)
+import fs from "fs";
+import path from "path";
+import express from "express";
+
+const app = express();
+app.use(express.json());
+
+const PORT = Number(process.env.PORT || 8080);
+const MESSAGE = process.env.MESSAGE || "API is running";
+
+// Where we store data inside the container.
+// We'll mount this path using a volume/bind mount.
+const DATA_DIR = process.env.DATA_DIR || "/data";
+const NOTES_FILE = path.join(DATA_DIR, "notes.txt");
+
+app.get("/health", (_req, res) => res.json({ ok: true }));
+app.get("/message", (_req, res) => res.json({ message: MESSAGE }));
+
+app.post("/notes", (req, res) => {
+  const text = String(req.body?.text || "").trim();
+  if (!text) return res.status(400).json({ error: "text is required" });
+
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.appendFileSync(NOTES_FILE, text + "\\n", "utf8");
+
+  res.json({ ok: true, wrote: text });
+});
+
+app.get("/notes", (_req, res) => {
+  try {
+    const content = fs.readFileSync(NOTES_FILE, "utf8");
+    res.type("text/plain").send(content);
+  } catch {
+    res.type("text/plain").send("");
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(\`[node-api] listening on http://0.0.0.0:\${PORT}\`);
+  console.log(\`[node-api] data dir: \${DATA_DIR}\`);
+});`;
+const rebuildNodeApiImage = `# from inside node-api/
+docker build -t node-api:dev .`;
+const writeNote = `# CMD (write a note)
+curl -X POST http://localhost:8080/notes ^
+  -H "Content-Type: application/json" ^
+  -d "{\\"text\\":\\"first note from container\\"}"`;
+const readNotes = `# CMD (read notes)
+curl http://localhost:8080/notes`;
+const runNoPersistence = `# No mounts → data disappears when the container is removed
+docker run --rm -p 8080:8080 node-api:dev`;
+const createNamedVolume = `# Create a Docker-managed volume
+docker volume create node-api-data
+docker volume ls`;
+const runWithVolume = `# Named volume → data survives container lifecycles
+docker run --rm -p 8080:8080 -v node-api-data:/data node-api:dev`;
+const runWithBindMount = `# Bind mount → store data on your machine (in this folder)
+# This maps .\\data (host) -> /data (container)
+mkdir data
+docker run --rm -p 8080:8080 -v "%cd%\\data:/data" node-api:dev`;
+const inspectVolume = `# See where Docker stores the volume on your machine
+docker volume inspect node-api-data`;
+const cleanupVolume = `# Remove the volume if you want to reset state
+docker volume rm node-api-data`;
+
+
 
 const composeUp = `docker compose -f compose/compose.yml up --build`;
 const composeDown = `docker compose -f compose/compose.yml down`;
@@ -330,7 +416,7 @@ const DockerKubernetes = () => {
           items={[
             {
               title: "alpine sh",
-              description: "A shell inside a container. This is the moment the container mental model clicks.",
+              description: "A shell inside a container.",
               src: alpineShellPng,
               alt: "Alpine shell running inside a Docker container",
             },
@@ -426,6 +512,16 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={runNodeApiLocally} />
         <CodeBlockWithCopy code={testNodeApi} />
 
+        <Carousel
+          items={[
+            {
+              title: "Node API Test",
+              description: "The API should return a response when hitting /health and /message",
+              src: nodeApiTestPng,
+            },
+          ]}
+        />
+
         <TertiaryHeading>Write the Dockerfile</TertiaryHeading>
 
         <Paragraph>
@@ -472,16 +568,175 @@ const DockerKubernetes = () => {
 
         <CodeBlockWithCopy code={runNodeApiWithEnv} />
 
+        <Carousel
+          items={[
+            {
+              title: "Override at runtime",
+              description: "The API returns the override message",
+              src: dockerEnvVarsPng,
+            },
+          ]}
+        />
+
         <SubSectionHeading>Make it reachable (ports + env)</SubSectionHeading>
+
         <Paragraph>
-          Publishing ports is the bridge between the container's world and your machine.
-          Environment variables keep configuration out of the image.
+          By default, a container lives in its own world. Your API might be running, but your laptop can't talk to it unless you explicitly
+          publish a port.
         </Paragraph>
 
-        <SubSectionHeading>Make it remember (volumes + bind mounts)</SubSectionHeading>
+        <TertiaryHeading>Port mapping: host vs container</TertiaryHeading>
+
         <Paragraph>
-          Bind mounts make the dev loop fast. Volumes keep data alive across container lifecycles.
+          The mental model is simple: <Strong>host:container</Strong>.
+          The left side is a port on <Strong>your machine</Strong>. The right side is the port the app listens on <Strong>inside the container</Strong>.
         </Paragraph>
+
+        <CodeBlockWithCopy code={portMappingMentalModel} />
+
+        <Banner title="Common mistake" variant="warning">
+          <Paragraph>
+            If you forget <InlineHighlight>-p</InlineHighlight>, the container can still be running - but it won't be reachable from your browser or curl.
+          </Paragraph>
+        </Banner>
+
+        <Paragraph>
+          You can sanity-check what's running and whether ports are published with:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={findContainerPort} />
+
+        <TertiaryHeading>When a port is already taken</TertiaryHeading>
+
+        <Paragraph>
+          If something on your machine already uses 8080, publish a different host port and keep the container port the same.
+          This is normal in real projects.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={publishDifferentHostPort} />
+
+        <TertiaryHeading>Optional: overriding the internal port</TertiaryHeading>
+
+        <Paragraph>
+          You can also change the port the app listens on (inside the container) by setting <InlineHighlight>PORT</InlineHighlight>.
+          If you do that, make sure the port mapping matches.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={envVarWithPortOverride} />
+
+        <TertiaryHeading>Quick troubleshooting loop</TertiaryHeading>
+
+        <Paragraph>
+          If something doesn't respond, don't guess. Check: is it running, what does it log, and does the endpoint respond?
+        </Paragraph>
+
+        <CodeBlockWithCopy code={quickTroubleshootPorts} />
+
+        <SubSectionHeading>Make it remember (volumes + bind mounts)</SubSectionHeading>
+
+        <Paragraph>
+          Containers are designed to be disposable. That's great - until you realise you need to keep something:
+          uploads, database files, logs, cache… anything that shouldn't vanish when the container stops.
+        </Paragraph>
+
+        <Paragraph>
+          Docker gives you two ways to persist data: <Strong>volumes</Strong> and <Strong>bind mounts</Strong>.
+          They look similar, but they're used for different reasons.
+        </Paragraph>
+
+        <TertiaryHeading>Give the API something to persist</TertiaryHeading>
+
+        <Paragraph>
+          To make the difference obvious, we'll add two tiny endpoints:
+          one that appends a line to a file (<InlineHighlight>POST /notes</InlineHighlight>),
+          and one that reads it back (<InlineHighlight>GET /notes</InlineHighlight>).
+        </Paragraph>
+
+        <Carousel
+          items={[
+            {
+              title: "server.js (storage endpoints)",
+              description: "Writes notes to /data/notes.txt so we can mount /data and prove persistence.",
+              code: nodeApiWithStorage,
+            },
+          ]}
+        />
+
+        <Paragraph>
+          Rebuild the image after updating the file:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={rebuildNodeApiImage} />
+
+        <TertiaryHeading>What happens without persistence</TertiaryHeading>
+
+        <Paragraph>
+          Start the container normally, write a note, read it back, then stop the container and run it again.
+          Because we're using <InlineHighlight>--rm</InlineHighlight>, the container is removed - and the file disappears with it.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={runNoPersistence} />
+
+        <Banner title="Windows note" variant="info">
+          <Paragraph>
+            In this post I'm using <Strong>CMD</Strong>. PowerShell has different syntax for HTTP requests.
+            If you're using PowerShell, use the PowerShell examples below (Invoke-RestMethod) instead of curl flags like -Method.
+          </Paragraph>
+        </Banner>
+
+        <CodeBlockWithCopy code={writeNote} />
+        <CodeBlockWithCopy code={readNotes} />
+
+        <Carousel
+          items={[
+            {
+              title: "Playing with data",
+              description: "The API should return a response when hitting GET /notes and POST /notes",
+              src: nodeApiNotesPng,
+            },
+          ]}
+        />
+
+        <Banner title="What you should notice" variant="warning">
+          <Paragraph>
+            If you stop the container and start it again, your notes will be gone. That's not a bug - it's the default container lifecycle.
+          </Paragraph>
+        </Banner>
+
+        <TertiaryHeading>Option 1: Named volumes (Docker-managed storage)</TertiaryHeading>
+
+        <Paragraph>
+          Volumes are managed by Docker. You don't care where the files live on disk - Docker handles it.
+          This is the normal choice for data you want to persist without wiring your app to your local filesystem layout.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={createNamedVolume} />
+        <CodeBlockWithCopy code={runWithVolume} />
+        <CodeBlockWithCopy code={writeNote} />
+        <CodeBlockWithCopy code={readNotes} />
+
+        <Paragraph>
+          You can inspect where Docker stores the volume:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={inspectVolume} />
+
+        <TertiaryHeading>Option 2: Bind mounts (use your local folder)</TertiaryHeading>
+
+        <Paragraph>
+          Bind mounts map a folder from your machine into the container. This is perfect for dev workflows because you can see
+          and edit files directly on your host.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={runWithBindMount} />
+        <CodeBlockWithCopy code={writeNote} />
+        <CodeBlockWithCopy code={readNotes} />
+
+        <Banner title="Rule of thumb" variant="info">
+          <Paragraph>
+            Use <Strong>bind mounts</Strong> for local development loops. Use <Strong>volumes</Strong> when you want Docker-managed persistence.
+          </Paragraph>
+        </Banner>
 
         <SubSectionHeading>Make it a system (multi-container + Compose)</SubSectionHeading>
         <Paragraph>
