@@ -120,7 +120,6 @@ export const IndentedTextListItem = styled.li`
 
 export const TertiaryHeading = styled.h3`
   margin: 2.4rem 0 1.2rem;
-  padding-left: 1.6rem; 
   font-size: 1.8rem;
   font-weight: 600;
   font-style: italic;

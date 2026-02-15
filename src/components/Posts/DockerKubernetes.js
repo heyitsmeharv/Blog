@@ -84,8 +84,81 @@ exit`;
 const imageVsContainerQuickCheck = `docker images    # List images stored locally (your reusable "blueprints")
 docker ps        # List running containers only (what's currently alive)
 docker ps -a     # List all containers, including stopped/exited ones`;
-const buildImage = `docker build -t virtual-shell-api:dev -f docker/Dockerfile .`;
-const runImage = `docker run --rm -p 8080:8080 virtual-shell-api:dev`;
+const createNodeApiFolder = `# CMD / PowerShell
+mkdir node-api
+cd node-api`;
+const npmInitNodeApi = `# initialise Node project
+npm init -y`;
+const nodeApiServer = `// server.js
+import express from "express";
+
+const app = express();
+
+const PORT = Number(process.env.PORT || 8080);
+const MESSAGE = process.env.MESSAGE || "API is running";
+
+app.get("/health", (_req, res) => {
+  res.json({ ok: true });
+});
+
+app.get("/message", (_req, res) => {
+  res.json({ message: MESSAGE });
+});
+
+app.listen(PORT, () => {
+  console.log(\`[node-api] listening on http://0.0.0.0:\${PORT}\`);
+});`;
+const nodeApiPackageJson = `{
+  "name": "node-api",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}`;
+const dockerfileNodeApi = `# Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy dependency manifests first (build caching)
+COPY package*.json ./
+
+# Install production deps
+RUN npm ci --omit=dev
+
+# Copy the rest of the app
+COPY . .
+
+EXPOSE 8080
+
+CMD ["npm", "start"]`;
+const dockerignoreNodeApi = `# .dockerignore
+node_modules
+npm-debug.log
+
+.git
+.github
+*.md
+
+.DS_Store
+Thumbs.db`;
+const runNodeApiLocally = `# run locally first (prove it works before Docker)
+npm i
+npm start`;
+
+const testNodeApi = `# CMD / PowerShell
+curl http://localhost:8080/health
+curl http://localhost:8080/message`;
+
+const buildNodeApiImage = `docker build -t node-api:dev .`;
+const runNodeApiContainer = `docker run --rm -p 8080:8080 node-api:dev`;
+
+const runNodeApiWithEnv = `docker run --rm -p 8080:8080 -e MESSAGE="Configured at runtime" node-api:dev`;
 
 const composeUp = `docker compose -f compose/compose.yml up --build`;
 const composeDown = `docker compose -f compose/compose.yml down`;
@@ -150,15 +223,8 @@ const DockerKubernetes = () => {
         </HeaderRow>
 
         <Paragraph>
-          This is a practical learning path built around one tiny project: a "virtual shell" playground - a small service that
-          feels like a terminal you can poke at safely.
-        </Paragraph>
-
-        <Paragraph>
-          Here is the companion repo if you'd rather dive into the code:{" "}
-          <TextLink href={playgroundRepo} target="_blank" rel="noreferrer">
-            <InlineHighlight>docker-k8s-virtual-shell</InlineHighlight>
-          </TextLink>
+          This post is a hands-on learning path through Docker fundamentals first, then Kubernetes.
+          We'll keep the examples intentionally small so you can run everything locally and build intuition without getting lost in a big project.
         </Paragraph>
 
         <Paragraph>
@@ -230,7 +296,7 @@ const DockerKubernetes = () => {
         </Paragraph>
 
         <Paragraph>
-          Run this to start a tiny Linux container and drop into a shell:
+          Run this to start a node Linux container and drop into a shell:
         </Paragraph>
 
         <CodeBlockWithCopy code={helloContainer} />
@@ -242,7 +308,7 @@ const DockerKubernetes = () => {
             <InlineHighlight>docker run</InlineHighlight> - create a new container from an image and start it.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>alpine</InlineHighlight> - the image we're running (a tiny Linux distribution).
+            <InlineHighlight>alpine</InlineHighlight> - the image we're running (a node Linux distribution).
           </TextListItem>
           <TextListItem>
             <InlineHighlight>sh</InlineHighlight> - the command to run <Strong>inside</Strong> the container (a shell).
@@ -278,7 +344,7 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={insideContainer} />
 
         <Paragraph>
-          What you're seeing: you've started a brand-new process with a minimal filesystem. It feels like a tiny machine because it has
+          What you're seeing: you've started a brand-new process with a minimal filesystem. It feels like a node machine because it has
           its own root directory and OS files, but it starts instantly because it's not booting a whole operating system.
         </Paragraph>
 
@@ -322,34 +388,89 @@ const DockerKubernetes = () => {
 
         <CodeBlockWithCopy code={imageVsContainerQuickCheck} />
 
+        <SubSectionHeading>Writing your own Dockerfile</SubSectionHeading>
+
         <Paragraph>
-          Right now we've only been borrowing someone else's image (<InlineHighlight>alpine</InlineHighlight>). Next, we'll create our own:
-          we'll write a <Strong>Dockerfile</Strong> so the virtual shell playground has a repeatable home we can build, run, delete, and rebuild anytime.
+          Right now we've been borrowing someone else's image (<InlineHighlight>alpine</InlineHighlight>).
+          Next, we'll build our own image using a small Node/Express API so the steps stay simple and repeatable.
         </Paragraph>
 
-        <SubSectionHeading>Give the playground a home (your first Dockerfile)</SubSectionHeading>
+        <TertiaryHeading>Setup</TertiaryHeading>
+
         <Paragraph>
-          Now we give the playground a Dockerfile. The goal is a boring, readable build that produces a reliable image.
+          Let's create the environment to build our node API.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={createNodeApiFolder} />
+        <CodeBlockWithCopy code={npmInitNodeApi} />
+
+        <TertiaryHeading>App files</TertiaryHeading>
+
+        <Carousel
+          items={[
+            {
+              title: "server.js",
+              description: "A minimal Express API with /health and /message. It binds to 0.0.0.0 so it's reachable from inside a container.",
+              code: nodeApiServer,
+            },
+            {
+              title: "package.json",
+              description: "ES modules + a start script. Keep it boring: one command that always starts the service.",
+              code: nodeApiPackageJson,
+            },
+          ]}
+        />
+
+        <Paragraph>Now let's run it and ping it to test that it works as intended.</Paragraph>
+
+        <CodeBlockWithCopy code={runNodeApiLocally} />
+        <CodeBlockWithCopy code={testNodeApi} />
+
+        <TertiaryHeading>Write the Dockerfile</TertiaryHeading>
+
+        <Paragraph>
+          A Dockerfile is a recipe. The key move is caching: copy dependency files first, install, then copy your source.
+          That way you don't reinstall dependencies every time you change code.
         </Paragraph>
 
         <Carousel
           items={[
             {
-              title: "docker/Dockerfile",
-              description: "Start minimal. Make it readable before you make it clever.",
-              code: `# TODO: Dockerfile here`,
+              title: "Dockerfile",
+              description: "Node base image → install deps → copy code → expose 8080 → start the server.",
+              code: dockerfileNodeApi,
             },
             {
-              title: "docker/.dockerignore",
-              description: "Keep builds fast and clean by excluding noise.",
-              code: `# TODO: .dockerignore here`,
+              title: ".dockerignore",
+              description: "Keeps builds fast by excluding node_modules and repo noise from the build context.",
+              code: dockerignoreNodeApi,
             },
           ]}
         />
 
-        <TertiaryHeading>Build and run</TertiaryHeading>
-        <CodeBlockWithCopy code={buildImage} />
-        <CodeBlockWithCopy code={runImage} />
+        <TertiaryHeading>Build and run the container</TertiaryHeading>
+
+        <Paragraph>
+          <InlineHighlight>docker build</InlineHighlight> turns the Dockerfile into an image.
+          <InlineHighlight>docker run</InlineHighlight> starts a container from that image.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={buildNodeApiImage} />
+        <CodeBlockWithCopy code={runNodeApiContainer} />
+
+        <Paragraph>
+          Hit the same endpoints again - this time you're talking to the container, not your local Node process:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={testNodeApi} />
+
+        <TertiaryHeading>Configuration without rebuilding (env vars)</TertiaryHeading>
+
+        <Paragraph>
+          A key container habit: build once, configure per environment. Here we override the message at runtime without rebuilding the image.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={runNodeApiWithEnv} />
 
         <SubSectionHeading>Make it reachable (ports + env)</SubSectionHeading>
         <Paragraph>
@@ -452,15 +573,25 @@ const DockerKubernetes = () => {
         </Paragraph>
         <CodeBlockWithCopy code={k8sDebugLoop} />
 
+        <SectionHeading>Next steps: a deeper sandbox repo</SectionHeading>
+
+        <Paragraph>
+          If you want a bigger playground after this post, here's a follow-up repo that turns these ideas into a mini system you can containerise,
+          run with Compose, and later deploy to Kubernetes.
+        </Paragraph>
+
+        <Paragraph>
+          <TextLink href={playgroundRepo} target="_blank" rel="noreferrer">
+            <InlineHighlight>docker-k8s-virtual-shell</InlineHighlight>
+          </TextLink>
+        </Paragraph>
+
         <SectionHeading>References (official docs)</SectionHeading>
 
         <TextList>
           <TextListItem><TextLink href={dockerDocs} target="_blank" rel="noreferrer">Docker Docs</TextLink></TextListItem>
           <TextListItem><TextLink href={k8sDocs} target="_blank" rel="noreferrer">Kubernetes Docs</TextLink></TextListItem>
         </TextList>
-
-        <SubSectionHeading>Repo layout</SubSectionHeading>
-        <CodeBlockWithCopy code={playgroundTree} />
       </PostContainer>
     </PageWrapper>
   );
