@@ -53,11 +53,6 @@ import nodeApiNotesPng from "../../resources/images/blog/DockerKubernetes/node-a
 
 const dockerDocs = "https://docs.docker.com/";
 const dockerInstallation = "https://docs.docker.com/get-started/get-docker/";
-const dockerWhatIsContainer = "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/";
-const dockerDockerfileRef = "https://docs.docker.com/reference/dockerfile/";
-const dockerBestPractices = "https://docs.docker.com/build/building/best-practices/";
-const dockerComposeDocs = "https://docs.docker.com/compose/";
-const dockerComposeFileRef = "https://docs.docker.com/reference/compose-file/";
 
 const k8sDocs = "https://kubernetes.io/docs/home/";
 const k8sOverview = "https://kubernetes.io/docs/concepts/overview/";
@@ -178,7 +173,7 @@ const quickTroubleshootPorts = `# Quick troubleshooting loop
 docker ps
 docker logs <container_name_or_id>
 curl http://localhost:8080/health`;
-const nodeApiWithStorage = `// server.js (add storage endpoints)
+const nodeApiWithStorage = `// server.js
 import fs from "fs";
 import path from "path";
 import express from "express";
@@ -243,11 +238,127 @@ const inspectVolume = `# See where Docker stores the volume on your machine
 docker volume inspect node-api-data`;
 const cleanupVolume = `# Remove the volume if you want to reset state
 docker volume rm node-api-data`;
+const nodeApiWithRedis = `// server.js
+import express from "express";
+import { createClient } from "redis";
 
+const app = express();
 
+const PORT = Number(process.env.PORT || 8080);
+const MESSAGE = process.env.MESSAGE || "API is running";
 
-const composeUp = `docker compose -f compose/compose.yml up --build`;
-const composeDown = `docker compose -f compose/compose.yml down`;
+// In Compose, this will be something like: redis://redis:6379
+const REDIS_URL = process.env.REDIS_URL || "";
+
+let redis = null;
+
+async function getRedis() {
+  if (!REDIS_URL) return null;
+
+  if (!redis) {
+    redis = createClient({ url: REDIS_URL });
+    redis.on("error", (err) => console.log("[redis] error", err?.message || err));
+    await redis.connect();
+    console.log("[redis] connected");
+  }
+
+  return redis;
+}
+
+app.get("/health", (_req, res) => res.json({ ok: true }));
+
+app.get("/message", (_req, res) => res.json({ message: MESSAGE }));
+
+// A tiny "system" demo: shared state via Redis
+app.post("/counter/incr", async (_req, res) => {
+  const client = await getRedis();
+  if (!client) return res.status(503).json({ error: "Redis not configured" });
+
+  const next = await client.incr("counter");
+  res.json({ counter: Number(next) });
+});
+
+app.get("/counter", async (_req, res) => {
+  const client = await getRedis();
+  if (!client) return res.status(503).json({ error: "Redis not configured" });
+
+  const value = await client.get("counter");
+  res.json({ counter: Number(value || 0) });
+});
+
+app.listen(PORT, () => {
+  console.log(\`[node-api] listening on http://0.0.0.0:\${PORT}\`);
+  console.log(\`[node-api] redis: \${REDIS_URL ? "enabled" : "disabled"}\`);
+});`;
+const installRedisClient = `# from inside node-api/
+npm install redis`;
+const composeNodeApi = `# compose.yml
+services:
+  api:
+    build: .
+    image: node-api:compose
+    ports:
+      - "8080:8080"
+    environment:
+      - MESSAGE=Running via Compose
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:`;
+const composeUp = `# from inside node-api/
+docker compose up --build`;
+const composeDownWithVolumes = `# removes volumes too (resets Redis state)
+docker compose down -v`;
+const testCounterCmd = `# CMD
+curl -X POST http://localhost:8080/counter/incr
+curl http://localhost:8080/counter`;
+const composePs = `docker compose ps`;
+const composeLogs = `docker compose logs -f --tail 50`;
+const composeDown = `docker compose down`;
+const dockerfileNodeApiShippable = `# Dockerfile
+
+FROM node:20-alpine
+
+ENV NODE_ENV=production
+WORKDIR /app
+
+# Copy dependency manifests first (build caching)
+COPY package*.json ./
+
+# Install production deps only, in a deterministic way
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copy the rest of the source
+COPY . .
+
+# Run as a non-root user (node image includes a 'node' user)
+USER node
+
+EXPOSE 8080
+
+# Run node directly (less overhead than "npm start")
+CMD ["node", "server.js"]`;
+const buildNodeApiProd = `# from inside node-api/
+docker build -t node-api:prod .`;
+const compareImageSizes = `docker images node-api`;
+const inspectImage = `docker inspect node-api:prod`;
+const viewLayers = `docker history node-api:prod`;
+const runNodeApiProd = `docker run --rm -p 8080:8080 node-api:prod`;
+const tagForRegistry = `# Example: tag for pushing later (Docker Hub / ECR etc)
+docker tag node-api:prod yourrepo/node-api:1.0.0`;
+const dockerCommands = `docker ps                          # what's running
+docker ps -a                       # what ran (and exited)
+docker images                      # what images you have locally
+docker logs <container>            # what the container printed
+docker exec -it <container> sh     # jump inside a running container (if it has a shell)
+docker inspect <image-or-container> # verify config (ports, env, cmd, user, mounts)`
 
 const verifyK8s = `kubectl version --client
 kubectl cluster-info`;
@@ -732,6 +843,15 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={writeNote} />
         <CodeBlockWithCopy code={readNotes} />
 
+        <TertiaryHeading>Resetting state (when you want a clean slate)</TertiaryHeading>
+
+        <Paragraph>
+          If you're experimenting and want to wipe everything and start fresh, remove the named volume.
+          Docker will recreate it next time you run with <InlineHighlight>-v node-api-data:/data</InlineHighlight>.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={cleanupVolume} />
+
         <Banner title="Rule of thumb" variant="info">
           <Paragraph>
             Use <Strong>bind mounts</Strong> for local development loops. Use <Strong>volumes</Strong> when you want Docker-managed persistence.
@@ -739,32 +859,207 @@ const DockerKubernetes = () => {
         </Banner>
 
         <SubSectionHeading>Make it a system (multi-container + Compose)</SubSectionHeading>
+
         <Paragraph>
-          A real app is rarely one container. Compose becomes the "system definition" - services, networking, ports, environment -
-          and a single command to run the whole playground.
+          Most real apps aren't one container. You'll usually have an API, a database, maybe a cache, maybe a worker.
+          Compose is how you define that whole local system in one file - then start it with one command.
         </Paragraph>
-        <CodeBlockWithCopy code={composeUp} />
-        <CodeBlockWithCopy code={composeDown} />
+
+        <Paragraph>
+          In this example, we'll add Redis as a second service. Not because Redis is required - but because it's a clean way to learn
+          container networking and shared state without introducing a full database.
+        </Paragraph>
+
+        <TertiaryHeading>Step 1: Add a Redis client to the API</TertiaryHeading>
+
+        <Paragraph>
+          We'll add two endpoints: one increments a counter, one reads it back. The counter lives in Redis, so it survives API restarts.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={installRedisClient} />
 
         <Carousel
           items={[
             {
-              title: "compose/compose.yml",
-              description: "Your local system contract: services + wiring in one place.",
-              code: `# TODO: compose.yml here`,
+              title: "server.js (Compose version)",
+              description: "Adds Redis-backed /counter endpoints. When REDIS_URL is set, the API becomes part of a small system.",
+              code: nodeApiWithRedis,
             },
           ]}
         />
 
-        <SubSectionHeading>Make it shippable (best practices)</SubSectionHeading>
         <Paragraph>
-          Once it works, we tidy it: smaller builds, fewer surprises, and (optionally) multi-stage builds.
+          Rebuild the image so the new dependency is included:
         </Paragraph>
 
-        <SubSectionHeading>Docker wrap-up</SubSectionHeading>
+        <CodeBlockWithCopy code={buildNodeApiImage} />
+
+        <TertiaryHeading>Step 2: Define the system in compose.yml</TertiaryHeading>
+
         <Paragraph>
-          Docker is now "done": you can rebuild the playground, run it as a container, run it as a system with Compose,
-          and ship the image anywhere.
+          Compose gives you a private network automatically. Each service name becomes a DNS name.
+          That's why the API can connect to Redis at <InlineHighlight>redis://redis:6379</InlineHighlight>.
+        </Paragraph>
+
+        <Carousel
+          items={[
+            {
+              title: "compose.yml",
+              description: "Two services, one network. API talks to Redis by service name, and Redis persists data via a named volume.",
+              code: composeNodeApi,
+            },
+          ]}
+        />
+
+        <TertiaryHeading>Step 3: Run the system</TertiaryHeading>
+
+        <CodeBlockWithCopy code={composeUp} />
+
+        <Paragraph>
+          In another terminal, hit the counter endpoints:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={testCounterCmd} />
+
+        <Banner title="What just happened?" variant="info">
+          <Paragraph>
+            You didn't expose Redis to your machine - only the API. Redis is reachable privately inside the Compose network.
+            That's a common real-world setup: internal services stay internal.
+          </Paragraph>
+        </Banner>
+
+        <TertiaryHeading>Useful Compose commands</TertiaryHeading>
+        <Paragraph>
+          Show the current state of the Compose stack (which services are up, container names, ports):
+        </Paragraph>
+        <CodeBlockWithCopy code={composePs} />
+        <Paragraph>
+          Stream the last 50 log lines from all services (Ctrl+C to stop). Great for debugging startup issues:
+        </Paragraph>
+        <CodeBlockWithCopy code={composeLogs} />
+        <Paragraph>
+          Stop and remove the containers + network created by Compose:
+        </Paragraph>
+        <CodeBlockWithCopy code={composeDown} />
+        <Paragraph>
+          If you want to reset Redis state completely, bring it down and remove volumes:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={composeDownWithVolumes} />
+
+        <SubSectionHeading>Make it shippable (best practices)</SubSectionHeading>
+
+        <Paragraph>
+          Once something runs, it's tempting to stop. But "shippable" containers have a few boring qualities that make them reliable:
+          predictable installs, small images, clean defaults, and no running as root unless you absolutely have to.
+        </Paragraph>
+
+        <TertiaryHeading>What we're improving</TertiaryHeading>
+
+        <TextList>
+          <TextListItem><Strong>Build caching</Strong> - don't reinstall dependencies on every code change.</TextListItem>
+          <TextListItem><Strong>Deterministic installs</Strong> - <InlineHighlight>npm ci</InlineHighlight> uses the lockfile for repeatable builds.</TextListItem>
+          <TextListItem><Strong>Production defaults</Strong> - set <InlineHighlight>NODE_ENV=production</InlineHighlight> and omit dev deps.</TextListItem>
+          <TextListItem><Strong>Non-root runtime</Strong> - reduce the blast radius if something goes wrong.</TextListItem>
+          <TextListItem><Strong>Simple entrypoint</Strong> - run Node directly instead of shelling through npm.</TextListItem>
+        </TextList>
+
+        <TertiaryHeading>Shippable Dockerfile</TertiaryHeading>
+
+        <Paragraph>
+          Here's a cleaned-up Dockerfile that keeps the same behaviour, but is more production-friendly:
+        </Paragraph>
+
+        <Carousel
+          items={[
+            {
+              title: "Dockerfile (shippable)",
+              description: "Same app, better defaults: deterministic installs, production deps only, and a non-root runtime.",
+              code: dockerfileNodeApiShippable,
+            },
+          ]}
+        />
+
+        <TertiaryHeading>Build and sanity-check</TertiaryHeading>
+
+        <CodeBlockWithCopy code={buildNodeApiProd} />
+        <CodeBlockWithCopy code={runNodeApiProd} />
+
+        <Paragraph>
+          Now compare the image size and look at what's inside:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={compareImageSizes} />
+        <CodeBlockWithCopy code={viewLayers} />
+
+        <Paragraph>
+          If you want to confirm the image has the runtime settings you expect (user, ports, env, command), inspect it:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={inspectImage} />
+
+        <Banner title="Why docker history matters" variant="info">
+          <Paragraph>
+            If your image grows unexpectedly, <InlineHighlight>docker history</InlineHighlight> usually makes the culprit obvious
+            (large COPY steps, unnecessary files, caches, etc.).
+          </Paragraph>
+        </Banner>
+
+        <TertiaryHeading>Tagging for “shipping”</TertiaryHeading>
+
+        <Paragraph>
+          Shipping usually means pushing to a registry (Docker Hub, ECR, GHCR). Tagging is how you create a clean, versioned artifact.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={tagForRegistry} />
+
+        <SubSectionHeading>Docker wrap-up</SubSectionHeading>
+
+        <Paragraph>
+          At this point, we've covered the full Docker loop: you can run containers, build images, wire services together, persist data, and make an image
+          that's actually safe to ship.
+        </Paragraph>
+
+        <TertiaryHeading>The mental model to keep</TertiaryHeading>
+
+        <TextList>
+          <TextListItem>
+            <Strong>Image</Strong> = a reusable blueprint you can build once and ship.
+          </TextListItem>
+          <TextListItem>
+            <Strong>Container</Strong> = a running instance created from an image (disposable by default).
+          </TextListItem>
+          <TextListItem>
+            <Strong>Ports</Strong> = how your machine reaches a process inside a container (<InlineHighlight>host:container</InlineHighlight>).
+          </TextListItem>
+          <TextListItem>
+            <Strong>Env vars</Strong> = configuration at runtime (build once, configure per environment).
+          </TextListItem>
+          <TextListItem>
+            <Strong>Volumes / bind mounts</Strong> = how containers “remember” and how dev loops stay fast.
+          </TextListItem>
+          <TextListItem>
+            <Strong>Compose</Strong> = the local system definition (multiple containers, one command).
+          </TextListItem>
+        </TextList>
+
+        <TertiaryHeading>Quick commands you'll reuse constantly</TertiaryHeading>
+
+        <Paragraph>
+          These are the ones you'll keep coming back to when something isn't behaving:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={dockerCommands} />
+
+        <TertiaryHeading>Key takeaway</TertiaryHeading>
+
+        <Paragraph>
+          Docker gives you a repeatable way to package and run software. Once you can reliably produce an image and run it locally (and as a small system),
+          you're ready for the next problem: running containers in a way that survives machines, restarts, and scale.
+        </Paragraph>
+
+        <Paragraph>
+          That's where Kubernetes comes in. You still ship images - Kubernetes is the layer that runs them declaratively and keeps them running.
         </Paragraph>
 
         <SectionHeading>Kubernetes (managing containerized workloads)</SectionHeading>
