@@ -8,7 +8,7 @@ import { ContactMeButton, DownloadCVButton } from "../Button/Button";
 import SlideInBottom from "../../animations/SlideInBottom";
 
 // images
-import ProfileImg from "../../resources/images/profile-portrait.jpeg";
+import ProfileImg from "../../resources/images/Profile.jpg";
 
 // helpers
 import { Analytics } from "../../helpers/analytics";
@@ -36,7 +36,7 @@ const ButtonWrapper = styled.div`
 `;
 
 const ProfileImage = styled.img`
-  border-radius: 50%;
+  border-radius: 30%;
   width: 30rem;
   margin: 0 4rem;
   @media only screen and (max-width: 600px) {

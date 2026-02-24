@@ -56,8 +56,8 @@ const dockerInstallation = "https://docs.docker.com/get-started/get-docker/";
 
 const k8sDocs = "https://kubernetes.io/docs/home/";
 const k8sOverview = "https://kubernetes.io/docs/concepts/overview/";
-const k8sTools = "https://kubernetes.io/docs/tasks/tools/";
-const k8sHelloMinikube = "https://kubernetes.io/docs/tutorials/hello-minikube/";
+const k8sKubectl = "https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/";
+const k8sMinikube = "https://kubernetes.io/docs/tutorials/hello-minikube/";
 const k8sDeployments = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/";
 const k8sServices = "https://kubernetes.io/docs/concepts/services-networking/service/";
 const k8sConfigMaps = "https://kubernetes.io/docs/concepts/configuration/configmap/";
@@ -358,20 +358,96 @@ docker ps -a                       # what ran (and exited)
 docker images                      # what images you have locally
 docker logs <container>            # what the container printed
 docker exec -it <container> sh     # jump inside a running container (if it has a shell)
-docker inspect <image-or-container> # verify config (ports, env, cmd, user, mounts)`
-
-const verifyK8s = `kubectl version --client
+docker inspect <image-or-container> # verify config (ports, env, cmd, user, mounts)`;
+const verifyK8s = `kubectl version --client`;
+const verifyMinikube = `minikube version
+minikube start
+kubectl get nodes
+kubectl get pods -A
 kubectl cluster-info`;
-
-const k8sApply = `kubectl apply -f k8s/
+const createNamespace = `kubectl create namespace demo
+kubectl config set-context --current --namespace=demo`;
+const minikubeStart = `minikube start
+kubectl config use-context minikube
+kubectl get nodes`;
+const minikubeDockerEnvPowerShell = `# PowerShell (recommended)
+minikube -p minikube docker-env | Invoke-Expression
+# Verify Docker is now pointing at Minikube
+docker info | findstr /i "Name Server Version"`;
+const minikubeDockerEnvCmd = `# CMD (manual method)
+minikube -p minikube docker-env`;
+const buildNodeApiInMinikube = `# from inside node-api/
+cd node-api
+docker build -t node-api:dev .`;
+const verifyImageTag = `docker images node-api`;
+const k8sApplyAndCheck = `kubectl apply -f k8s/
+kubectl get deploy
 kubectl get pods
 kubectl get svc`;
+const k8sPortForwardNodeApi = `kubectl port-forward svc/node-api 8080:8080`;
+const testNodeApiFromHost = `curl http://localhost:8080/health
+curl http://localhost:8080/message`;
 
+const k8sApply = `kubectl apply -f k8s/
+kubectl get deploy
+kubectl get pods
+kubectl get svc`;
+const k8sPortForward = `# Access the Service locally without exposing it publicly
+kubectl port-forward svc/node-api 8080:8080`;
 const k8sDebugLoop = `kubectl get pods
 kubectl describe pod <pod>
 kubectl logs <pod>
-kubectl get events --sort-by=.metadata.creationTimestamp
-kubectl get svc,endpoints`;
+kubectl get events --sort-by=.metadata.creationTimestamp`;
+const minikubeDockerEnv = `# Point your Docker CLI at Minikube's Docker daemon
+# CMD (prints env vars you can set manually):
+minikube -p minikube docker-env`;
+const buildNodeApiClusterImage = `# build into the *current* Docker daemon
+docker build -t node-api:dev .`;
+const k8sDeploymentNodeApi = `# k8s/node-api-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-api
+  template:
+    metadata:
+      labels:
+        app: node-api
+    spec:
+      containers:
+        - name: node-api
+          image: node-api:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MESSAGE
+              value: "Running in Kubernetes"`;
+
+const k8sServiceNodeApi = `# k8s/node-api-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-api
+spec:
+  selector:
+    app: node-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080`;
+
+
+
+
+
+
+
+
 
 const playgroundTree = `docker-k8s-virtual-shell/
 ├─ app/
@@ -1062,66 +1138,193 @@ const DockerKubernetes = () => {
           That's where Kubernetes comes in. You still ship images - Kubernetes is the layer that runs them declaratively and keeps them running.
         </Paragraph>
 
-        <SectionHeading>Kubernetes (managing containerized workloads)</SectionHeading>
+        <SectionHeading>Kubernetes (managing containerised workloads)</SectionHeading>
 
-        <SubSectionHeading>Why Kubernetes exists</SubSectionHeading>
         <Paragraph>
-          Kubernetes doesn't replace Docker fundamentals - it builds on them. You still ship images.
-          Kubernetes manages running them declaratively: scheduling, desired state, and stable networking.
+          Docker helped us build and run containers. Kubernetes solves the next problem: how do you run containers in a reliable way when it's
+          not just your laptop anymore?
         </Paragraph>
 
-        <SubSectionHeading>Set up a local cluster + kubectl</SubSectionHeading>
-        <Paragraph>Install the tools and verify cluster access.</Paragraph>
+        <Paragraph>
+          Kubernetes is a system for running containerised applications using <Strong>desired state</Strong>.
+          Instead of "run this container", you declare "I want 1 copy of this API running" - and Kubernetes continuously works to make reality match.
+        </Paragraph>
+
+        <SubSectionHeading>kubectl and Minikube</SubSectionHeading>
+
+        <Paragraph>
+          Before we deploy anything, we need two tools:
+          <Strong> kubectl</Strong> (the CLI that talks to Kubernetes) and <Strong>Minikube</Strong> (a local Kubernetes cluster you can run on your machine).
+        </Paragraph>
+
+        <TextList>
+          <TextListItem>
+            <Strong>kubectl</Strong> - the command line tool you use to create resources, inspect them, and debug them.
+            Think of it as "the Kubernetes remote control":{" "} <TextLink
+              href={k8sKubectl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Kubernetes tools install docs
+            </TextLink>
+          </TextListItem>
+          <TextListItem>
+            <Strong>Minikube</Strong> - gives you a real Kubernetes cluster locally so you can practice without needing cloud infrastructure:{" "} <TextLink
+              href={k8sMinikube}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Hello Minikube
+            </TextLink>
+          </TextListItem>
+        </TextList>
+
+        <TertiaryHeading>Check installation</TertiaryHeading>
+
+        <Paragraph>
+          Install <InlineHighlight>kubectl</InlineHighlight> first. Once installed, we want to confirm it's on your PATH and runnable from CMD / PowerShell.
+        </Paragraph>
+
         <CodeBlockWithCopy code={verifyK8s} />
 
-        <SubSectionHeading>Deploy the playground (Deployment)</SubSectionHeading>
+        <Banner title="If kubectl isn't found" variant="warning">
+          <Paragraph>
+            If <InlineHighlight>kubectl version --client</InlineHighlight> returns nothing, it means kubectl isn't on your PATH.
+            Re-run the install steps and make sure the kubectl install location is added to PATH.
+          </Paragraph>
+        </Banner>
+
         <Paragraph>
-          We describe the playground as a Deployment and let Kubernetes converge reality to match.
+          We'll use Minikube for a local Kubernetes cluster. Once it's running, kubectl can talk to the cluster.
         </Paragraph>
+
+        <CodeBlockWithCopy code={verifyMinikube} />
+
+        <Banner title="What these commands prove" variant="info">
+          <Paragraph>
+            <Strong>cluster-info</Strong> confirms kubectl can reach the Kubernetes API.{" "}
+            <Strong>get nodes</Strong>{" "} proves the cluster exists and is healthy.{" "}
+            <Strong>get pods -A</Strong>{" "} shows system workloads are running (Kubernetes is doing its thing).
+          </Paragraph>
+        </Banner>
+
+        <TertiaryHeading>Keep your examples tidy (namespace)</TertiaryHeading>
+
+        <Paragraph>
+          Namespaces are just a way to group resources. We'll use a <InlineHighlight>demo</InlineHighlight> namespace so we can clean up easily and avoid cluttering the default namespace.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={createNamespace} />
+
+        <Banner title="Heads up (local images)" variant="warning">
+          <Paragraph>
+            Minikube has its own container runtime. If we want Kubernetes to run an image you built locally (like <InlineHighlight>node-api:dev</InlineHighlight>),
+            we need to build it into Minikube's Docker environment or push it to a registry. We'll do the Minikube method next.
+          </Paragraph>
+        </Banner>
+
+        <SubSectionHeading>Minikube method: build images inside the cluster</SubSectionHeading>
+
+        <Paragraph>
+          When you're using Minikube, your Kubernetes cluster has its <Strong>own</Strong> container runtime.
+          That means images you build on your laptop aren't automatically visible to the cluster.
+        </Paragraph>
+
+        <TertiaryHeading>Start Minikube and switch kubectl to it</TertiaryHeading>
+        <CodeBlockWithCopy code={minikubeStart} />
+
+        <Banner title="What you're checking" variant="info">
+          <Paragraph>
+            <InlineHighlight>kubectl get nodes</InlineHighlight> should show one node in <Strong>Ready</Strong> state.
+          </Paragraph>
+        </Banner>
+
+        <TertiaryHeading>Point Docker at Minikube's Docker daemon</TertiaryHeading>
+
+        <CodeBlockWithCopy code={minikubeDockerEnvPowerShell} />
+        <CodeBlockWithCopy code={minikubeDockerEnvCmd} />
+
+        <TertiaryHeading>Build the image inside Minikube</TertiaryHeading>
+        <CodeBlockWithCopy code={buildNodeApiInMinikube} />
+        <CodeBlockWithCopy code={verifyImageTag} />
+
+        <TertiaryHeading>Deploy and check</TertiaryHeading>
+        <CodeBlockWithCopy code={k8sApplyAndCheck} />
+
+        <TertiaryHeading>Access it locally (port-forward)</TertiaryHeading>
+        <CodeBlockWithCopy code={k8sPortForwardNodeApi} />
+        <CodeBlockWithCopy code={testNodeApiFromHost} />
+
+        <SubSectionHeading>Key Kubernetes concepts</SubSectionHeading>
+
+        <TextList>
+          <TextListItem>
+            <Strong>Pod</Strong> - the smallest unit you deploy. Usually one container (sometimes more).
+          </TextListItem>
+          <TextListItem>
+            <Strong>Deployment</Strong> - declares how many Pods you want and handles rolling updates.
+          </TextListItem>
+          <TextListItem>
+            <Strong>Service</Strong> - a stable network endpoint that points at Pods (Pods come and go, Services stay).
+          </TextListItem>
+        </TextList>
+
+        <SubSectionHeading>Deploy node-api to Kubernetes</SubSectionHeading>
+
+        <Paragraph>
+          We'll take the same image concept and run it in Kubernetes. The main difference is the interface:
+          Docker runs containers directly, Kubernetes runs them through objects like Deployments and Services.
+        </Paragraph>
+
+        <TertiaryHeading>Important: make sure the cluster can see your image</TertiaryHeading>
+
+        <Paragraph>
+          Because we're using a local cluster, we need the image to exist inside the cluster's runtime.
+          The simplest approach with Minikube is to point Docker at Minikube's Docker daemon and build the image there.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={minikubeDockerEnv} />
+
         <Carousel
           items={[
             {
-              title: "k8s/deployment.yaml",
-              description: "The playground, declared as desired state.",
-              code: `# TODO: deployment.yaml here`,
+              title: "k8s/node-api-deployment.yaml",
+              description: "Desired state: run 1 replica of node-api. imagePullPolicy IfNotPresent lets the cluster use a locally-built image.",
+              code: k8sDeploymentNodeApi,
+            },
+            {
+              title: "k8s/node-api-service.yaml",
+              description: "Stable access to node-api Pods. The Service finds Pods by label and routes traffic to port 8080.",
+              code: k8sServiceNodeApi,
             },
           ]}
         />
 
-        <SubSectionHeading>Expose the playground (Service)</SubSectionHeading>
-        <Paragraph>
-          Pods come and go - Services provide stable access.
-        </Paragraph>
-        <Carousel
-          items={[
-            {
-              title: "k8s/service.yaml",
-              description: "Stable access to a moving set of Pods.",
-              code: `# TODO: service.yaml here`,
-            },
-          ]}
-        />
+        <CodeBlockWithCopy code={buildNodeApiClusterImage} />
 
         <TertiaryHeading>Apply and observe</TertiaryHeading>
         <CodeBlockWithCopy code={k8sApply} />
 
-        <SubSectionHeading>Configure it properly (ConfigMaps + Secrets)</SubSectionHeading>
         <Paragraph>
-          Keep configuration out of images. Use ConfigMaps for non-sensitive config and Secrets for sensitive values.
+          To access the Service locally without opening anything up publicly, we'll use port-forwarding:
         </Paragraph>
 
-        <Carousel
-          items={[
-            { title: "k8s/configmap.yaml", description: "Non-sensitive configuration.", code: `# TODO` },
-            { title: "k8s/secret.yaml", description: "Sensitive configuration.", code: `# TODO` },
-          ]}
-        />
+        <CodeBlockWithCopy code={k8sPortForward} />
 
-        <SubSectionHeading>The debugging loop</SubSectionHeading>
         <Paragraph>
-          Kubernetes becomes manageable when you have a repeatable loop: inspect resources, describe failures, read logs, and check events.
+          With port-forward running in one terminal, test the endpoints from another:
         </Paragraph>
+
+        <CodeBlockWithCopy code={testNodeApi} />
+
+        <SubSectionHeading>The Kubernetes debugging loop</SubSectionHeading>
+
+        <Paragraph>
+          Kubernetes feels hard until you adopt a repeatable debug loop: check Pods, describe the failing one, read logs, then check events.
+        </Paragraph>
+
         <CodeBlockWithCopy code={k8sDebugLoop} />
+
 
         <SectionHeading>Next steps: a deeper sandbox repo</SectionHeading>
 
