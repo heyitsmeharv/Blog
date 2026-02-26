@@ -200,7 +200,7 @@ export default function Blog() {
     },
     {
       name: "DevOps",
-      colour: "#005F02",
+      colour: "#EE4266",
       active: false,
     },
   ]);
