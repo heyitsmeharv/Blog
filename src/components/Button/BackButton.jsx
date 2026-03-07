@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { ChevronBackCircle } from "@styled-icons/ionicons-solid/ChevronBackCircle";
-import { StyledNavButton, StyledNavLink } from "../Button/Button";
+import { StyledNavButton, StyledNavLink } from "./Button";
 
 const StyledBackIcon = styled(ChevronBackCircle)`
   color: ${({ theme }) => theme.secondary};

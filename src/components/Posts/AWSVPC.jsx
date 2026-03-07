@@ -38,7 +38,7 @@ import {
 
 // components
 import BackButton from "../Button/BackButton";
-import Table from "../../components/Table/Table";
+import Table from "../Table/Table";
 
 // images
 import VPCOctects from "../../resources/images/blog/AWSVPC/vpc_octets_memo.jpeg";

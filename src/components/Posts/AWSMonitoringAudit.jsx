@@ -2,10 +2,10 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 
 // helpers
-import { Analytics } from "../../helpers/analytics";
+import { Analytics } from "../../helpers/analytics.js";
 
 // animations
-import SlideInBottom from "../../animations/SlideInBottom";
+import SlideInBottom from "../../animations/SlideInBottom.js";
 
 // layout
 import {
@@ -16,7 +16,7 @@ import {
   IconWrapper,
   HeaderIcon,
   PostImage,
-} from "../BlogLayout/BlogLayout";
+} from "../BlogLayout/BlogLayout.jsx";
 
 // typography
 import {
@@ -31,7 +31,7 @@ import {
   TextListItem,
   IndentedTextList,
   IndentedTextListItem,
-} from "../Typography/Typography";
+} from "../Typography/Typography.jsx";
 
 // icons
 import {
@@ -39,12 +39,12 @@ import {
   AWSCloudWatchSVG,
   AWSCloudTrailSVG,
   AWSConfigSVG,
-} from "../../resources/styles/icons";
+} from "../../resources/styles/icons.jsx";
 
 // components
-import BackButton from "../Button/BackButton";
-import Table from "../Table/Table";
-import { CodeBlockWithCopy } from "../Code/Code";
+import BackButton from "../Button/BackButton.jsx";
+import Table from "../Table/Table.jsx";
+import { CodeBlockWithCopy } from "../Code/Code.jsx";
 
 // images
 import CloudWatchMetric from "../../resources/images/blog/AWSMonitoringAudit/aws_monitoring_audit_cw_metrics.jpeg";

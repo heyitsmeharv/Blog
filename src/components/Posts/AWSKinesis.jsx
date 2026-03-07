@@ -37,7 +37,7 @@ import {
 
 // components
 import BackButton from "../Button/BackButton";
-import Table from "../../components/Table/Table";
+import Table from "../Table/Table";
 
 // images
 import KinesisDataStreams from "../../resources/images/blog/AWSKinesis/kinesis_data_streams.jpeg";
