@@ -1,4 +1,4 @@
-const GA_ID = process.env.REACT_APP_GOOGLE_ANALYTICS;
+const GA_ID = import.meta.env.REACT_APP_GOOGLE_ANALYTICS;
 
 const KEY = { consent: "consent", anon: "anon_id_v1" };
 

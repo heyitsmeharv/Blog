@@ -32,31 +32,31 @@ import SocialMediaBar from "./components/SocialMedia/SocialMediaBar";
 import Languages from "./components/Language/Language";
 
 // blog posts
-import TheStart from "./components/Posts/TheStart";
+import TheStart from "./components/Posts/TheStart.jsx";
 import JavaScriptArray from "./components/Posts/JavaScriptArray";
-import JavaScriptObjects from "./components/Posts/JavaScriptObjects";
-import ReactAdventureGame from "./components/Posts/ReactAdventureGame";
+import JavaScriptObjects from "./components/Posts/JavaScriptObjects.jsx";
+import ReactAdventureGame from "./components/Posts/ReactAdventureGame.jsx";
 import AWSIdentityAccessManagement from "./components/Posts/AWSIdentityAccessManagement";
 import AWSElasticComputeCloud from "./components/Posts/AWSElasticComputeCloud";
 import AWSDatabases from "./components/Posts/AWSDatabases";
 import AWSRoute53 from "./components/Posts/AWSRoute53";
-import AWSS3 from "./components/Posts/AWSS3";
+import AWSS3 from "./components/Posts/AWSS3.jsx";
 import AWSCloudFront from "./components/Posts/AWSCloudFront";
-import AWSSQS from "./components/Posts/AWSSQS";
-import AWSSNS from "./components/Posts/AWSSNS";
+import AWSSQS from "./components/Posts/AWSSQS.jsx";
+import AWSSNS from "./components/Posts/AWSSNS.jsx";
 import AWSContainers from "./components/Posts/AWSContainers";
-import AWSVPC from "./components/Posts/AWSVPC";
+import AWSVPC from "./components/Posts/AWSVPC.jsx";
 import AWSKinesis from "./components/Posts/AWSKinesis";
 import AWSDataAnalytics from "./components/Posts/AWSDataAnalytics";
-import AWSServerless from "./components/Posts/AWSServerless";
-import AWSMachineLearning from "./components/Posts/AWSMachineLearning";
+import AWSServerless from "./components/Posts/AWSServerless.jsx";
+import AWSMachineLearning from "./components/Posts/AWSMachineLearning.jsx";
 import AWSMonitoringAudit from "./components/Posts/AWSMonitoringAudit";
-import AWSSecurityEncryption from "./components/Posts/AWSSecurityEncryption";
+import AWSSecurityEncryption from "./components/Posts/AWSSecurityEncryption.jsx";
 import BashScripting from "./components/Posts/BashScripting";
 import GitHubCICD from "./components/Posts/GitHubCICD";
 import DockerKubernetes from "./components/Posts/DockerKubernetes";
 import IaCTerraform from "./components/Posts/IaCTerraform";
-import ConventionalCommits from "./components/Posts/ConventionalCommits";
+import ConventionalCommits from "./components/Posts/ConventionalCommits.jsx";
 
 const Wrapper = styled.div`
   display: flex;

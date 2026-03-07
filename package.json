@@ -7,23 +7,24 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "canvas-confetti": "^1.5.1",
-    "framer-motion": "^1.11.0",
     "human-date": "^1.4.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-notifications": "^1.7.2",
+    "motion": "12.35.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-router-dom": "^5.3.4",
-    "react-scripts": "3.4.1",
     "react-select": "^5.7.2",
+    "react-toastify": "11.0.5",
     "styled-components": "^5.1.1",
     "styled-icons": "^10.45.0",
     "styled-system": "^5.1.5"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "husky",
+    "release": "commit-and-tag-version"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -38,6 +39,21 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.4.3",
+    "@commitlint/config-conventional": "^20.4.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "commit-and-tag-version": "^12.6.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.2",
+    "prettier": "^3.8.1",
+    "vite": "^7.3.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,md,yml,yaml}": [
+      "prettier --write"
     ]
   }
 }

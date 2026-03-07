@@ -42,7 +42,7 @@ import {
 } from "../Typography/Typography";
 
 // components
-import Table from "../../components/Table/Table";
+import Table from "../Table/Table";
 
 // images
 import S3Objects from "../../resources/images/blog/AWSS3/s3_objects.jpeg";

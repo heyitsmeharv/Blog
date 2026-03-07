@@ -2,10 +2,10 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 
 // helpers
-import { Analytics } from "../../helpers/analytics";
+import { Analytics } from "../../helpers/analytics.js";
 
 // animations
-import SlideInBottom from "../../animations/SlideInBottom";
+import SlideInBottom from "../../animations/SlideInBottom.js";
 
 // layout
 import {
@@ -16,7 +16,7 @@ import {
   IconWrapper,
   HeaderIcon,
   PostImage,
-} from "../BlogLayout/BlogLayout";
+} from "../BlogLayout/BlogLayout.jsx";
 
 // typography
 import {
@@ -29,7 +29,7 @@ import {
   TextLink,
   TextList,
   TextListItem,
-} from "../Typography/Typography";
+} from "../Typography/Typography.jsx";
 
 // icons
 import {
@@ -39,7 +39,7 @@ import {
   AWSLexSVG,
   AWSComprehendSVG,
   AWSSageMakerSVG,
-} from "../../resources/styles/icons";
+} from "../../resources/styles/icons.jsx";
 
 // images
 import Rekognition from "../../resources/images/blog/AWSMachineLearning/aws_machine_learning_rekognition.jpeg";
@@ -53,9 +53,9 @@ import PersonalizeExample from "../../resources/images/blog/AWSMachineLearning/a
 import { SSMLExample } from "../../helpers/codeblocks.js";
 
 // components
-import BackButton from "../Button/BackButton";
-import Table from "../Table/Table";
-import { CodeBlockWithCopy } from "../Code/Code";
+import BackButton from "../Button/BackButton.jsx";
+import Table from "../Table/Table.jsx";
+import { CodeBlockWithCopy } from "../Code/Code.jsx";
 
 const PostContainer = styled(BasePostContainer)`
   animation: ${SlideInBottom} 0.5s forwards;
