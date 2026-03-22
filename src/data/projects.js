@@ -25,13 +25,12 @@ export const projects = [
     tags: ["AWS", "React", "Node.js"],
   },
   {
-    name: "Quiz App",
+    name: "Text Based Adventure",
     description:
-      "A full-stack trivia quiz with multiple categories and a leaderboard.",
-    image: HarvsQuizzy,
-    github: "https://github.com/heyitsmeharv/quizzy",
-    link: "https://harvs-quizzy.com/#/quizzy",
-    tags: ["React", "Node.js"],
+      "A choose-your-own-adventure game built in React with branching narrative paths.",
+    image: TextBasedAdventure,
+    github: "https://github.com/heyitsmeharv/react-text-based-adventure",
+    tags: ["React"],
   },
   {
     name: "Coolours",
@@ -43,20 +42,21 @@ export const projects = [
     tags: ["React"],
   },
   {
+    name: "Quiz App",
+    description:
+      "A full-stack trivia quiz with multiple categories and a leaderboard.",
+    image: HarvsQuizzy,
+    github: "https://github.com/heyitsmeharv/quizzy",
+    link: "https://harvs-quizzy.com/#/quizzy",
+    tags: ["React", "Node.js"],
+  },
+  {
     name: "Rock Paper Scissors",
     description:
       "A classic Rock Paper Scissors game with score tracking and animated results.",
     image: RockPaperScissors,
     github: "https://github.com/heyitsmeharv/rock-paper-scissors",
     link: "https://heyitsmeharv-rockpaperscissors.herokuapp.com/",
-    tags: ["React"],
-  },
-  {
-    name: "Text Based Adventure",
-    description:
-      "A choose-your-own-adventure game built in React with branching narrative paths.",
-    image: TextBasedAdventure,
-    github: "https://github.com/heyitsmeharv/react-text-based-adventure",
     tags: ["React"],
   },
   {
