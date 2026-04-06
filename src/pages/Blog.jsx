@@ -640,7 +640,7 @@ export default function Blog() {
     },
     {
       title: "Introduction to Docker and Kubernetes",
-      readingTime: "N/A",
+      readingTime: "approx 60 mins",
       type: "Practical",
       date: "10/12/2025",
       tags: [
@@ -656,7 +656,7 @@ export default function Blog() {
     {
       title:
         "Docker & Kubernetes: Security, StatefulSets, and Cluster Management",
-      readingTime: "N/A",
+      readingTime: "approx 20 mins",
       type: "Practical",
       date: "06/04/2026",
       tags: [
@@ -1129,7 +1129,7 @@ export default function Blog() {
     },
     {
       title: "Introduction to Docker and Kubernetes",
-      readingTime: "N/A",
+      readingTime: "approx 60 mins",
       type: "Practical",
       date: "10/12/2025",
       tags: [
@@ -1145,7 +1145,7 @@ export default function Blog() {
     {
       title:
         "Docker & Kubernetes: Security, StatefulSets, and Cluster Management",
-      readingTime: "N/A",
+      readingTime: "approx 20 mins",
       type: "Practical",
       date: "06/04/2026",
       tags: [
