@@ -648,10 +648,25 @@ export default function Blog() {
         { name: "Docker", background: "#D3ECEC", icon: <DockerSVG /> },
         { name: "Kubernetes", background: "#326DE6", icon: <KubernetesSVG /> },
       ],
-      intro: `This is a practical learning path built around one tiny project: a "virtual shell" playground: a small service that feels like a terminal you can poke at safely, plus a helper service 
+      intro: `This is a practical learning path built around one tiny project: a "virtual shell" playground: a small service that feels like a terminal you can poke at safely, plus a helper service
       so it becomes a real system instead of a single container...`,
       navigate: "intro-to-docker-kubernetes",
-      published: false,
+      published: true,
+    },
+    {
+      title:
+        "Docker & Kubernetes: Security, StatefulSets, and Cluster Management",
+      readingTime: "N/A",
+      type: "Practical",
+      date: "06/04/2026",
+      tags: [
+        { name: "DevOps" },
+        { name: "Docker", background: "#D3ECEC", icon: <DockerSVG /> },
+        { name: "Kubernetes", background: "#326DE6", icon: <KubernetesSVG /> },
+      ],
+      intro: `Part two of the Docker and Kubernetes series. Covers Pod Security Standards, container security contexts, StatefulSets with persistent storage, and cluster management with namespaces and resource quotas...`,
+      navigate: "docker-kubernetes-advanced",
+      published: true,
     },
     {
       title: "Infrastructure as Code (IaC) with Terraform",
@@ -662,7 +677,7 @@ export default function Blog() {
         { name: "Terraform", background: "#2E71E5", icon: <TerraformSVG /> },
         { name: "DevOps" },
       ],
-      intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the 
+      intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the
       same setup from local development into CI and multiple environments...`,
       navigate: "infrastructure-as-code-with-terraform",
       published: true,
@@ -1122,10 +1137,25 @@ export default function Blog() {
         { name: "Docker", background: "#D3ECEC", icon: <DockerSVG /> },
         { name: "Kubernetes", background: "#326DE6", icon: <KubernetesSVG /> },
       ],
-      intro: `This is a practical learning path built around one tiny project: a "virtual shell" playground: a small service that feels like a terminal you can poke at safely, plus a helper service 
+      intro: `This is a practical learning path built around one tiny project: a "virtual shell" playground: a small service that feels like a terminal you can poke at safely, plus a helper service
       so it becomes a real system instead of a single container...`,
       navigate: "intro-to-docker-kubernetes",
-      published: false,
+      published: true,
+    },
+    {
+      title:
+        "Docker & Kubernetes: Security, StatefulSets, and Cluster Management",
+      readingTime: "N/A",
+      type: "Practical",
+      date: "06/04/2026",
+      tags: [
+        { name: "DevOps" },
+        { name: "Docker", background: "#D3ECEC", icon: <DockerSVG /> },
+        { name: "Kubernetes", background: "#326DE6", icon: <KubernetesSVG /> },
+      ],
+      intro: `Part two of the Docker and Kubernetes series. Covers Pod Security Standards, container security contexts, StatefulSets with persistent storage, and cluster management with namespaces and resource quotas...`,
+      navigate: "docker-kubernetes-advanced",
+      published: true,
     },
     {
       title: "Infrastructure as Code (IaC) with Terraform",
@@ -1136,7 +1166,7 @@ export default function Blog() {
         { name: "Terraform", background: "#2E71E5", icon: <TerraformSVG /> },
         { name: "DevOps" },
       ],
-      intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the 
+      intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the
       same setup from local development into CI and multiple environments...`,
       navigate: "infrastructure-as-code-with-terraform",
       published: true,

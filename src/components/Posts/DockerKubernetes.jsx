@@ -58,15 +58,20 @@ const dockerInstallation = "https://docs.docker.com/get-started/get-docker/";
 
 const k8sDocs = "https://kubernetes.io/docs/home/";
 const k8sOverview = "https://kubernetes.io/docs/concepts/overview/";
-const k8sKubectl = "https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/";
+const k8sKubectl =
+  "https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/";
 const k8sMinikube = "https://kubernetes.io/docs/tutorials/hello-minikube/";
-const k8sDeployments = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/";
-const k8sServices = "https://kubernetes.io/docs/concepts/services-networking/service/";
-const k8sConfigMaps = "https://kubernetes.io/docs/concepts/configuration/configmap/";
+const k8sDeployments =
+  "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/";
+const k8sServices =
+  "https://kubernetes.io/docs/concepts/services-networking/service/";
+const k8sConfigMaps =
+  "https://kubernetes.io/docs/concepts/configuration/configmap/";
 const k8sSecrets = "https://kubernetes.io/docs/concepts/configuration/secret/";
 const k8sDebug = "https://kubernetes.io/docs/tasks/debug/";
 
-const playgroundRepo = "https://github.com/heyitsmeharv/docker-k8s-virtual-shell";
+const playgroundRepo =
+  "https://github.com/heyitsmeharv/docker-k8s-virtual-shell";
 
 // const verifyDocker = `docker version`;
 // const helloContainer = `docker run --rm -it alpine sh`;
@@ -1306,7 +1311,6 @@ app.listen(PORT, () => {
   console.log(\`[node-api] redis: \${REDIS_URL ? "enabled" : "disabled"}\`);
 });`;
 
-
 const composeNodeApi = `# compose.yml
 services:
   api:
@@ -1671,13 +1675,225 @@ for /L %i in (1,1,8) do @curl -s http://localhost:8080/identity & echo.`;
 const k8sScaleExplain = `# Inspect desired vs current state
 kubectl get deployment node-api -o yaml`;
 
+// ─── Update Your App ──────────────────────────────────────────────────────────
+
+const minikubeBuildV100 = `# Build the current code as version 1.0.0
+# Run this from inside your node-api/ folder
+minikube image build -t node-api:1.0.0 .`;
+
+const minikubeBuildV101 = `# Make a small change to server.js, then build 1.0.1
+minikube image build -t node-api:1.0.1 .`;
+
+const k8sDeploymentV100 = `# k8s/node-api-deployment.yaml (updated to use a specific version tag)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-api
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-api
+  template:
+    metadata:
+      labels:
+        app: node-api
+    spec:
+      containers:
+        - name: node-api
+          image: node-api:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MESSAGE
+              value: "Running in Kubernetes"
+            - name: VERSION
+              value: "1.0.0"`;
+
+const k8sRolloutWatch = `# Watch Pods change in real time (open this before triggering the update)
+kubectl get pods -l app=node-api -w`;
+
+const k8sRolloutSetImage = `# Tell the Deployment to use the new image version
+kubectl set image deployment/node-api node-api=node-api:1.0.1
+
+# Watch until the rollout completes (or fails)
+kubectl rollout status deployment/node-api`;
+
+const k8sRolloutHistory = `# List what Kubernetes knows about this Deployment's revisions
+kubectl rollout history deployment/node-api
+
+# Inspect a specific revision in detail
+kubectl rollout history deployment/node-api --revision=2`;
+
+const k8sRolloutUndo = `# Roll back to the previous revision
+kubectl rollout undo deployment/node-api
+
+# Or roll back to a specific revision
+kubectl rollout undo deployment/node-api --to-revision=1
+
+# Confirm the rollback completed
+kubectl rollout status deployment/node-api`;
+
+// ─── Services deep dive ───────────────────────────────────────────────────────
+
+const k8sDnsProof = `# Run a temporary container with network debug tools
+kubectl run -it --rm netshoot --image=nicolaka/netshoot --namespace=demo -- sh
+
+# Inside the container:
+# Each Service gets a DNS name matching its resource name
+nslookup node-api
+nslookup redis
+
+# Kubernetes also injects env vars for Services that existed at Pod start time
+# (less reliable than DNS - values are baked in at container startup only)
+env | grep NODE_API
+
+exit`;
+
+const k8sSourceIpCheck = `# Check the current externalTrafficPolicy on your NodePort Service
+kubectl get svc node-api-nodeport -o jsonpath='{.spec.externalTrafficPolicy}'
+
+# Patch to Local: preserves original client IP, but only routes to nodes running that Pod
+kubectl patch svc node-api-nodeport -p '{"spec":{"externalTrafficPolicy":"Local"}}'
+
+# Patch back to Cluster (the default): hides source IP, more even distribution
+kubectl patch svc node-api-nodeport -p '{"spec":{"externalTrafficPolicy":"Cluster"}}'`;
+
+const k8sEndpointWatch = `# Watch the endpoint list during a rollout or scale event
+# Run this before you change anything, then observe
+kubectl get endpoints node-api -w`;
+
+// ─── Configuration ────────────────────────────────────────────────────────────
+
+const k8sConfigMapEnvCreate = `# Create a ConfigMap from literal key-value pairs
+kubectl create configmap node-api-config \\
+  --from-literal=MESSAGE="Hello from ConfigMap" \\
+  --from-literal=VERSION="1.0.1" \\
+  -o yaml --dry-run=client | kubectl apply -f -
+
+# Inspect what was created
+kubectl describe configmap node-api-config`;
+
+const k8sDeploymentWithConfigMapEnv = `# k8s/node-api-deployment.yaml (env section - sourced from ConfigMap)
+env:
+  - name: MESSAGE
+    valueFrom:
+      configMapKeyRef:
+        name: node-api-config
+        key: MESSAGE
+  - name: VERSION
+    valueFrom:
+      configMapKeyRef:
+        name: node-api-config
+        key: VERSION`;
+
+const k8sConfigMapEnvApply = `kubectl apply -f k8s/node-api-deployment.yaml
+
+# Env var changes only take effect in new Pods
+kubectl rollout restart deployment/node-api
+kubectl rollout status deployment/node-api
+
+# Confirm the new value is visible
+curl http://localhost:8080/message`;
+
+const k8sSettingsJson = `// k8s/settings.json
+{
+  "featureFlag": true,
+  "maxRetries": 3
+}`;
+
+const k8sConfigMapFileCreateCmd = `# Create a ConfigMap from a local file
+kubectl create configmap node-api-settings \\
+  --from-file=settings.json=./k8s/settings.json \\
+  -o yaml --dry-run=client | kubectl apply -f -`;
+
+const k8sConfigMapFileMountSnippet = `# Add this under the container in the Deployment spec
+volumeMounts:
+  - name: settings
+    mountPath: /etc/node-api
+
+# Add this at Pod spec level (same level as containers)
+volumes:
+  - name: settings
+    configMap:
+      name: node-api-settings`;
+
+const k8sConfigMapFileProof = `# Exec into a running Pod to verify the file is present
+kubectl exec -it deployment/node-api -- sh
+
+# Inside the container:
+cat /etc/node-api/settings.json
+exit`;
+
+const k8sRedisManifest = `# k8s/redis.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: demo
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379`;
+
+const k8sConfigMapRedisUrl = `kubectl create configmap node-api-redis \\
+  --from-literal=REDIS_URL="redis://redis:6379" \\
+  -o yaml --dry-run=client | kubectl apply -f -`;
+
+const k8sDeploymentWithRedis = `# Add to the env section of the node-api Deployment
+- name: REDIS_URL
+  valueFrom:
+    configMapKeyRef:
+      name: node-api-redis
+      key: REDIS_URL`;
+
+const k8sApplyRedis = `kubectl apply -f k8s/redis.yaml
+kubectl rollout status deployment/redis
+
+# Restart node-api so it picks up the REDIS_URL env var
+kubectl rollout restart deployment/node-api
+kubectl rollout status deployment/node-api
+
+# Increment the counter (POST creates state in Redis)
+curl -X POST http://localhost:8080/counter/incr
+
+# Read the current value
+curl http://localhost:8080/counter`;
+
 const PostContainer = styled(BasePostContainer)`
   animation: ${SlideInBottom} 0.5s forwards;
 `;
 
 const DockerKubernetes = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "introduction-to-docker-kubernetes" });
+    Analytics.event("blog_opened", {
+      slug: "introduction-to-docker-kubernetes",
+    });
   }, []);
 
   return (
@@ -1701,32 +1917,37 @@ const DockerKubernetes = () => {
 
         <Paragraph>
           This post is a hands-on path through Docker first, then Kubernetes.
-          The goal is to understand what changes on your machine when you build an image, run a container, publish a port, or wire services together.
+          The goal is to understand what changes on your machine when you build
+          an image, run a container, publish a port, or wire services together.
         </Paragraph>
 
         <SectionHeading>What Docker actually does</SectionHeading>
 
         <Paragraph>
-          Docker lets you run software as a <Strong>process</Strong> with an isolated view of the world: its own filesystem,
-          its own network namespace, and a controlled set of resources. It's not a VM - you're not booting an OS - you're starting a process
-          with a different "view" of the host.
+          Docker lets you run software as a <Strong>process</Strong> with an
+          isolated view of the world: its own filesystem, its own network
+          namespace, and a controlled set of resources. It's not a VM - you're
+          not booting an OS - you're starting a process with a different "view"
+          of the host.
         </Paragraph>
 
-        <Paragraph>
-          You'll hear two words constantly:
-        </Paragraph>
+        <Paragraph>You'll hear two words constantly:</Paragraph>
 
         <TextList>
           <TextListItem>
-            <Strong>Image</Strong> - a packaged filesystem + metadata that describes how to start something (a reusable blueprint).
+            <Strong>Image</Strong> - a packaged filesystem + metadata that
+            describes how to start something (a reusable blueprint).
           </TextListItem>
           <TextListItem>
-            <Strong>Container</Strong> - a running instance created from an image (a process with isolation + a writable layer).
+            <Strong>Container</Strong> - a running instance created from an
+            image (a process with isolation + a writable layer).
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          A useful way to think about it is: images are <Strong>artifacts</Strong> you build and ship; containers are <Strong>runtime</Strong> instances you start and stop.
+          A useful way to think about it is: images are{" "}
+          <Strong>artifacts</Strong> you build and ship; containers are{" "}
+          <Strong>runtime</Strong> instances you start and stop.
         </Paragraph>
 
         <SectionHeading>Install, Setup and Configure</SectionHeading>
@@ -1743,12 +1964,14 @@ const DockerKubernetes = () => {
 
         <Banner title="Warning" variant="warning">
           <Paragraph>
-            I'll be running commands in CMD and PowerShell. Some copy/paste examples won't work in other terminals.
+            I'll be running commands in CMD and PowerShell. Some copy/paste
+            examples won't work in other terminals.
           </Paragraph>
         </Banner>
 
         <Paragraph>
-          First: check version output. Second: check the engine details (runtime, storage driver, etc). If both work, you're ready.
+          First: check version output. Second: check the engine details
+          (runtime, storage driver, etc). If both work, you're ready.
         </Paragraph>
 
         <CodeBlockWithCopy code={verifyDocker} />
@@ -1776,12 +1999,14 @@ const DockerKubernetes = () => {
         <SubSectionHeading>Meet the container</SubSectionHeading>
 
         <Paragraph>
-          Before we containerise our own app, we'll run a tiny Linux image and drop into a shell.
-          This is the simplest way to see what a container is: a process with an isolated filesystem + hostname + networking.
+          Before we containerise our own app, we'll run a tiny Linux image and
+          drop into a shell. This is the simplest way to see what a container
+          is: a process with an isolated filesystem + hostname + networking.
         </Paragraph>
 
         <Paragraph>
-          Run this to start an Alpine Linux container and open a shell inside it:
+          Run this to start an Alpine Linux container and open a shell inside
+          it:
         </Paragraph>
 
         <CodeBlockWithCopy code={helloContainer} />
@@ -1790,19 +2015,24 @@ const DockerKubernetes = () => {
 
         <TextList>
           <TextListItem>
-            <InlineHighlight>docker run</InlineHighlight> creates a container from an image and starts it.
+            <InlineHighlight>docker run</InlineHighlight> creates a container
+            from an image and starts it.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>alpine</InlineHighlight> is the image (a minimal Linux distribution).
+            <InlineHighlight>alpine</InlineHighlight> is the image (a minimal
+            Linux distribution).
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>sh</InlineHighlight> is the process that runs inside the container (the shell).
+            <InlineHighlight>sh</InlineHighlight> is the process that runs
+            inside the container (the shell).
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>-it</InlineHighlight> attaches your terminal so it behaves like an interactive shell.
+            <InlineHighlight>-it</InlineHighlight> attaches your terminal so it
+            behaves like an interactive shell.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>--rm</InlineHighlight> deletes the container metadata when the process exits (the image remains).
+            <InlineHighlight>--rm</InlineHighlight> deletes the container
+            metadata when the process exits (the image remains).
           </TextListItem>
         </TextList>
 
@@ -1812,19 +2042,20 @@ const DockerKubernetes = () => {
 
         <CodeBlockWithCopy code={insideContainer} />
 
-        <Paragraph>
-          What you should notice:
-        </Paragraph>
+        <Paragraph>What you should notice:</Paragraph>
 
         <TextList>
           <TextListItem>
-            The filesystem is tiny and looks like a "fresh machine", but it starts instantly because nothing is booting.
+            The filesystem is tiny and looks like a "fresh machine", but it
+            starts instantly because nothing is booting.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>hostname</InlineHighlight> shows you're in a different namespace than your host.
+            <InlineHighlight>hostname</InlineHighlight> shows you're in a
+            different namespace than your host.
           </TextListItem>
           <TextListItem>
-            When the shell exits, the container stops - because the container's lifetime is tied to the main process you started.
+            When the shell exits, the container stops - because the container's
+            lifetime is tied to the main process you started.
           </TextListItem>
         </TextList>
 
@@ -1832,7 +2063,8 @@ const DockerKubernetes = () => {
           items={[
             {
               title: "alpine sh",
-              description: "A shell running inside a container (a process with an isolated view).",
+              description:
+                "A shell running inside a container (a process with an isolated view).",
               src: alpineShellPng,
               alt: "Alpine shell running inside a Docker container",
             },
@@ -1842,7 +2074,9 @@ const DockerKubernetes = () => {
         <TertiaryHeading>Prove the lifecycle</TertiaryHeading>
 
         <Paragraph>
-          This is a quick observation loop: start a container, see it running, exit, then confirm it disappeared because of <InlineHighlight>--rm</InlineHighlight>.
+          This is a quick observation loop: start a container, see it running,
+          exit, then confirm it disappeared because of{" "}
+          <InlineHighlight>--rm</InlineHighlight>.
         </Paragraph>
 
         <CodeBlockWithCopy code={containerLifecycleProof} />
@@ -1855,16 +2089,19 @@ const DockerKubernetes = () => {
 
         <TextList>
           <TextListItem>
-            An <Strong>image</Strong> is a stored artifact. You build it once, tag it, and reuse it.
+            An <Strong>image</Strong> is a stored artifact. You build it once,
+            tag it, and reuse it.
           </TextListItem>
           <TextListItem>
-            A <Strong>container</Strong> is what happens when you start the image. It has a writable layer and a running process.
+            A <Strong>container</Strong> is what happens when you start the
+            image. It has a writable layer and a running process.
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          A simple rule: if you delete a container, you haven't deleted the image. If you delete the image tag, you haven't necessarily deleted the underlying layers
-          if another tag still points to them.
+          A simple rule: if you delete a container, you haven't deleted the
+          image. If you delete the image tag, you haven't necessarily deleted
+          the underlying layers if another tag still points to them.
         </Paragraph>
 
         <Paragraph>
@@ -1875,20 +2112,24 @@ const DockerKubernetes = () => {
 
         <Banner title="Observation" variant="info">
           <Paragraph>
-            If you ran containers with <InlineHighlight>--rm</InlineHighlight>, they won't show up in <InlineHighlight>docker ps -a</InlineHighlight>.
-            That's not Docker "hiding" them - you told Docker to remove them when they stop.
+            If you ran containers with <InlineHighlight>--rm</InlineHighlight>,
+            they won't show up in{" "}
+            <InlineHighlight>docker ps -a</InlineHighlight>. That's not Docker
+            "hiding" them - you told Docker to remove them when they stop.
           </Paragraph>
         </Banner>
 
         <Paragraph>
-          Next we'll build our own image so we control the filesystem, the dependencies, and the startup command - and we'll keep using this same idea:
-          images are what you build, containers are what you run.
+          Next we'll build our own image so we control the filesystem, the
+          dependencies, and the startup command - and we'll keep using this same
+          idea: images are what you build, containers are what you run.
         </Paragraph>
 
         <SubSectionHeading>Writing your own Dockerfile</SubSectionHeading>
 
         <Paragraph>
-          So far we've been running somebody else's image. Now we'll build our own so we control three important things:
+          So far we've been running somebody else's image. Now we'll build our
+          own so we control three important things:
         </Paragraph>
 
         <TextList>
@@ -1904,14 +2145,19 @@ const DockerKubernetes = () => {
         </TextList>
 
         <Paragraph>
-          This is where Docker starts becoming useful rather than just interesting. Instead of depending on whatever happens to be installed on your machine,
-          you describe the runtime environment in a Dockerfile and turn that into a reusable image.
+          This is where Docker starts becoming useful rather than just
+          interesting. Instead of depending on whatever happens to be installed
+          on your machine, you describe the runtime environment in a Dockerfile
+          and turn that into a reusable image.
         </Paragraph>
 
-        <TertiaryHeading>Step 1: Create a tiny app worth containerising</TertiaryHeading>
+        <TertiaryHeading>
+          Step 1: Create a tiny app worth containerising
+        </TertiaryHeading>
 
         <Paragraph>
-          We'll use a very small Node/Express API so the moving parts stay obvious. It has just enough surface area to teach the important bits:
+          We'll use a very small Node/Express API so the moving parts stay
+          obvious. It has just enough surface area to teach the important bits:
           a server process, a port, and a response we can verify.
         </Paragraph>
 
@@ -1935,11 +2181,14 @@ const DockerKubernetes = () => {
           ]}
         />
 
-        <TertiaryHeading>Step 2: Prove the app works before Docker is involved</TertiaryHeading>
+        <TertiaryHeading>
+          Step 2: Prove the app works before Docker is involved
+        </TertiaryHeading>
 
         <Paragraph>
-          This matters more than people think. If the app doesn't work locally first, Docker just adds another layer of confusion.
-          Always separate "my app is broken" from "my container setup is broken".
+          This matters more than people think. If the app doesn't work locally
+          first, Docker just adds another layer of confusion. Always separate
+          "my app is broken" from "my container setup is broken".
         </Paragraph>
 
         <CodeBlockWithCopy code={runNodeApiLocally} />
@@ -1949,7 +2198,8 @@ const DockerKubernetes = () => {
           items={[
             {
               title: "Node API Test",
-              description: "Before Docker enters the picture, prove the app responds locally.",
+              description:
+                "Before Docker enters the picture, prove the app responds locally.",
               src: nodeApiTestPng,
             },
           ]}
@@ -1957,16 +2207,21 @@ const DockerKubernetes = () => {
 
         <Banner title="What this proves" variant="info">
           <Paragraph>
-            At this point you know Node, Express, your routes, and your port are all fine on the host.
-            If the container later fails, the problem is likely in the container boundary - not the app logic itself.
+            At this point you know Node, Express, your routes, and your port are
+            all fine on the host. If the container later fails, the problem is
+            likely in the container boundary - not the app logic itself.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Step 3: Describe the runtime in a Dockerfile</TertiaryHeading>
+        <TertiaryHeading>
+          Step 3: Describe the runtime in a Dockerfile
+        </TertiaryHeading>
 
         <Paragraph>
-          A Dockerfile is not "Docker magic" - it's just a recipe for building an image layer by layer.
-          Each instruction changes the image filesystem or metadata, and Docker can cache those steps to avoid unnecessary rebuilds.
+          A Dockerfile is not "Docker magic" - it's just a recipe for building
+          an image layer by layer. Each instruction changes the image filesystem
+          or metadata, and Docker can cache those steps to avoid unnecessary
+          rebuilds.
         </Paragraph>
 
         <Carousel
@@ -1987,32 +2242,39 @@ const DockerKubernetes = () => {
         />
 
         <Paragraph>
-          The order of instructions matters. We copy <InlineHighlight>package.json</InlineHighlight> first and install dependencies before copying the rest of the source
-          because dependency installs are expensive and app code changes more often.
+          The order of instructions matters. We copy{" "}
+          <InlineHighlight>package.json</InlineHighlight> first and install
+          dependencies before copying the rest of the source because dependency
+          installs are expensive and app code changes more often.
         </Paragraph>
 
         <Paragraph>
-          That means Docker can often reuse the cached dependency layer when only your application code changes.
+          That means Docker can often reuse the cached dependency layer when
+          only your application code changes.
         </Paragraph>
 
         <TertiaryHeading>Step 4: Build the image</TertiaryHeading>
 
         <Paragraph>
-          Building turns the Dockerfile into an image stored on your machine. The final dot matters - it means "use this folder as the build context".
+          Building turns the Dockerfile into an image stored on your machine.
+          The final dot matters - it means "use this folder as the build
+          context".
         </Paragraph>
 
         <CodeBlockWithCopy code={dockerBuildWithContext} />
 
         <Paragraph>
-          Once the build finishes, you now have a reusable image called <InlineHighlight>node-api:dev</InlineHighlight>.
-          Nothing is running yet - you've created an artifact, not started a process.
+          Once the build finishes, you now have a reusable image called{" "}
+          <InlineHighlight>node-api:dev</InlineHighlight>. Nothing is running
+          yet - you've created an artifact, not started a process.
         </Paragraph>
 
         <CodeBlockWithCopy code={inspectNodeApiImage} />
 
         <Banner title="Important distinction" variant="info">
           <Paragraph>
-            <Strong>docker build</Strong> creates an image. <Strong>docker run</Strong> starts a container from that image.
+            <Strong>docker build</Strong> creates an image.{" "}
+            <Strong>docker run</Strong> starts a container from that image.
             Mixing those two ideas up is where a lot of Docker confusion starts.
           </Paragraph>
         </Banner>
@@ -2020,94 +2282,114 @@ const DockerKubernetes = () => {
         <TertiaryHeading>Step 5: Run the image as a container</TertiaryHeading>
 
         <Paragraph>
-          Now we take the stored image and start a container from it. This launches the Node process inside the isolated filesystem created from the image.
+          Now we take the stored image and start a container from it. This
+          launches the Node process inside the isolated filesystem created from
+          the image.
         </Paragraph>
 
         <CodeBlockWithCopy code={runNodeApiContainer} />
 
         <Paragraph>
-          The port mapping is the key part here: <InlineHighlight>8080:8080</InlineHighlight> means "listen on port 8080 on my machine,
-          and forward that traffic to port 8080 inside the container".
+          The port mapping is the key part here:{" "}
+          <InlineHighlight>8080:8080</InlineHighlight> means "listen on port
+          8080 on my machine, and forward that traffic to port 8080 inside the
+          container".
         </Paragraph>
 
-        <Paragraph>
-          Test the same endpoints again:
-        </Paragraph>
+        <Paragraph>Test the same endpoints again:</Paragraph>
 
         <CodeBlockWithCopy code={testNodeApi} />
 
         <Paragraph>
-          The responses look the same as before, but the execution environment is different now:
+          The responses look the same as before, but the execution environment
+          is different now:
         </Paragraph>
 
         <TextList>
           <TextListItem>
-            the process is running <Strong>inside the container</Strong>, not directly on your host
+            the process is running <Strong>inside the container</Strong>, not
+            directly on your host
           </TextListItem>
           <TextListItem>
-            the dependencies came from the <Strong>image build</Strong>, not your host machine's state
+            the dependencies came from the <Strong>image build</Strong>, not
+            your host machine's state
           </TextListItem>
           <TextListItem>
-            the container only becomes reachable because you explicitly <Strong>published a port</Strong>
+            the container only becomes reachable because you explicitly{" "}
+            <Strong>published a port</Strong>
           </TextListItem>
         </TextList>
 
-        <Paragraph>In both cases, you're running the same app code. The difference is where the process gets its filesystem, dependencies, and startup config from.</Paragraph>
+        <Paragraph>
+          In both cases, you're running the same app code. The difference is
+          where the process gets its filesystem, dependencies, and startup
+          config from.
+        </Paragraph>
 
         <TextList>
           <TextListItem>
             <Strong>Local process</Strong> - npm start
           </TextListItem>
           <TextListItem>
-            <Strong>Containerised process</Strong> - docker run --rm -p 8080:8080 node-api:dev
+            <Strong>Containerised process</Strong> - docker run --rm -p
+            8080:8080 node-api:dev
           </TextListItem>
         </TextList>
 
         <Banner title="What changed - and what didn't" variant="warning">
           <Paragraph>
-            The application code did not suddenly become different because of Docker. What changed is the runtime boundary:
-            filesystem, startup command, dependency installation, and network exposure are now described by the image/container setup rather than assumed from your machine.
+            The application code did not suddenly become different because of
+            Docker. What changed is the runtime boundary: filesystem, startup
+            command, dependency installation, and network exposure are now
+            described by the image/container setup rather than assumed from your
+            machine.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Configuration without rebuilding (environment variables)</TertiaryHeading>
+        <TertiaryHeading>
+          Configuration without rebuilding (environment variables)
+        </TertiaryHeading>
 
         <Paragraph>
-          One of the main benefits of containers is that you can build the application image once, then change its behaviour at runtime
-          without rebuilding it. That is the job of environment variables.
+          One of the main benefits of containers is that you can build the
+          application image once, then change its behaviour at runtime without
+          rebuilding it. That is the job of environment variables.
         </Paragraph>
 
-        <Paragraph>
-          This is an important separation:
-        </Paragraph>
+        <Paragraph>This is an important separation:</Paragraph>
 
         <TextList>
           <TextListItem>
-            the <Strong>image</Strong> contains the application code and runtime dependencies
+            the <Strong>image</Strong> contains the application code and runtime
+            dependencies
           </TextListItem>
           <TextListItem>
-            the <Strong>container</Strong> supplies environment-specific configuration when it starts
+            the <Strong>container</Strong> supplies environment-specific
+            configuration when it starts
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          In our API, the <InlineHighlight>MESSAGE</InlineHighlight> value is read from{" "}
-          <InlineHighlight>process.env.MESSAGE</InlineHighlight>. That means the code stays the same, but the container can behave differently
-          depending on how you start it.
+          In our API, the <InlineHighlight>MESSAGE</InlineHighlight> value is
+          read from <InlineHighlight>process.env.MESSAGE</InlineHighlight>. That
+          means the code stays the same, but the container can behave
+          differently depending on how you start it.
         </Paragraph>
 
         <CodeBlockWithCopy code={runNodeApiWithEnv} />
 
         <Paragraph>
-          Hit the <InlineHighlight>/message</InlineHighlight> route again and the response changes - not because the image changed,
-          but because the container started with different configuration.
+          Hit the <InlineHighlight>/message</InlineHighlight> route again and
+          the response changes - not because the image changed, but because the
+          container started with different configuration.
         </Paragraph>
 
         <Carousel
           items={[
             {
               title: "Override at runtime",
-              description: "The same image can return a different message because configuration is supplied when the container starts.",
+              description:
+                "The same image can return a different message because configuration is supplied when the container starts.",
               src: dockerEnvVarsPng,
             },
           ]}
@@ -2115,47 +2397,54 @@ const DockerKubernetes = () => {
 
         <Banner title="Why this matters" variant="info">
           <Paragraph>
-            This is the container pattern you'll keep using later in Compose, Kubernetes, and cloud platforms:
+            This is the container pattern you'll keep using later in Compose,
+            Kubernetes, and cloud platforms:
             <Strong> build once, configure per environment</Strong>.
           </Paragraph>
         </Banner>
 
-        <SubSectionHeading>Make it reachable (ports + networking)</SubSectionHeading>
+        <SubSectionHeading>
+          Make it reachable (ports + networking)
+        </SubSectionHeading>
 
         <Paragraph>
-          At this point the app is running inside a container, but that does not automatically make it reachable from your machine.
-          Containers have their own network namespace, so Docker has to explicitly forward traffic from the host into the container.
+          At this point the app is running inside a container, but that does not
+          automatically make it reachable from your machine. Containers have
+          their own network namespace, so Docker has to explicitly forward
+          traffic from the host into the container.
         </Paragraph>
 
         <TertiaryHeading>Host port vs container port</TertiaryHeading>
 
-        <Paragraph>
-          The syntax is:
-        </Paragraph>
+        <Paragraph>The syntax is:</Paragraph>
 
         <CodeBlockWithCopy code={portMappingMentalModel} />
 
-        <Paragraph>
-          Read it left to right:
-        </Paragraph>
+        <Paragraph>Read it left to right:</Paragraph>
 
         <TextList>
           <TextListItem>
-            the <Strong>left side</Strong> is the port on <Strong>your machine</Strong>
+            the <Strong>left side</Strong> is the port on{" "}
+            <Strong>your machine</Strong>
           </TextListItem>
           <TextListItem>
-            the <Strong>right side</Strong> is the port the app listens on <Strong>inside the container</Strong>
+            the <Strong>right side</Strong> is the port the app listens on{" "}
+            <Strong>inside the container</Strong>
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          So <InlineHighlight>-p 8080:8080</InlineHighlight> means: "listen on port 8080 on my host, and forward that traffic to port 8080 in the container".
+          So <InlineHighlight>-p 8080:8080</InlineHighlight> means: "listen on
+          port 8080 on my host, and forward that traffic to port 8080 in the
+          container".
         </Paragraph>
 
         <Banner title="Important distinction" variant="warning">
           <Paragraph>
-            <InlineHighlight>EXPOSE 8080</InlineHighlight> in the Dockerfile does <Strong>not</Strong> publish the port to your machine.
-            It is image metadata - useful documentation, but not the thing that opens host access.
+            <InlineHighlight>EXPOSE 8080</InlineHighlight> in the Dockerfile
+            does <Strong>not</Strong> publish the port to your machine. It is
+            image metadata - useful documentation, but not the thing that opens
+            host access.
           </Paragraph>
         </Banner>
 
@@ -2164,108 +2453,137 @@ const DockerKubernetes = () => {
         <TertiaryHeading>Why 0.0.0.0 matters</TertiaryHeading>
 
         <Paragraph>
-          There's a subtle but important detail in your <InlineHighlight>server.js</InlineHighlight>: the app listens on{" "}
-          <InlineHighlight>0.0.0.0</InlineHighlight>, not <InlineHighlight>localhost</InlineHighlight>.
+          There's a subtle but important detail in your{" "}
+          <InlineHighlight>server.js</InlineHighlight>: the app listens on{" "}
+          <InlineHighlight>0.0.0.0</InlineHighlight>, not{" "}
+          <InlineHighlight>localhost</InlineHighlight>.
         </Paragraph>
 
         <Paragraph>
-          Inside a container, <InlineHighlight>localhost</InlineHighlight> means "only accept connections from inside this container".
-          If your app binds to <InlineHighlight>127.0.0.1</InlineHighlight>, Docker can publish the port on the host and it still won't be reachable from outside.
+          Inside a container, <InlineHighlight>localhost</InlineHighlight> means
+          "only accept connections from inside this container". If your app
+          binds to <InlineHighlight>127.0.0.1</InlineHighlight>, Docker can
+          publish the port on the host and it still won't be reachable from
+          outside.
         </Paragraph>
 
         <Paragraph>
-          Binding to <InlineHighlight>0.0.0.0</InlineHighlight> means "listen on all interfaces inside the container", which allows the published port to work.
+          Binding to <InlineHighlight>0.0.0.0</InlineHighlight> means "listen on
+          all interfaces inside the container", which allows the published port
+          to work.
         </Paragraph>
 
         <TertiaryHeading>Prove which ports are published</TertiaryHeading>
 
         <Paragraph>
-          If you're unsure whether Docker is actually forwarding traffic, inspect the running container rather than guessing.
+          If you're unsure whether Docker is actually forwarding traffic,
+          inspect the running container rather than guessing.
         </Paragraph>
 
         <CodeBlockWithCopy code={inspectPublishedPorts} />
 
-        <Paragraph>
-          The useful habit here is simple:
-        </Paragraph>
+        <Paragraph>The useful habit here is simple:</Paragraph>
 
         <TextList>
           <TextListItem>
-            <InlineHighlight>docker ps</InlineHighlight> tells you whether the container is running and which host ports are published
+            <InlineHighlight>docker ps</InlineHighlight> tells you whether the
+            container is running and which host ports are published
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>curl</InlineHighlight> tells you whether the application is actually responding
+            <InlineHighlight>curl</InlineHighlight> tells you whether the
+            application is actually responding
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>docker logs</InlineHighlight> tells you what the process inside the container thinks is happening
+            <InlineHighlight>docker logs</InlineHighlight> tells you what the
+            process inside the container thinks is happening
           </TextListItem>
         </TextList>
 
         <TertiaryHeading>When the host port changes</TertiaryHeading>
 
         <Paragraph>
-          The host port and container port do not have to match. This is useful when the host port you want is already in use.
+          The host port and container port do not have to match. This is useful
+          when the host port you want is already in use.
         </Paragraph>
 
         <CodeBlockWithCopy code={publishDifferentHostPort} />
 
         <Paragraph>
-          Here the application still listens on port <InlineHighlight>8080</InlineHighlight> inside the container.
-          Only the <Strong>host-side entry point</Strong> changed.
+          Here the application still listens on port{" "}
+          <InlineHighlight>8080</InlineHighlight> inside the container. Only the{" "}
+          <Strong>host-side entry point</Strong> changed.
         </Paragraph>
 
         <TertiaryHeading>When the container port changes</TertiaryHeading>
 
         <Paragraph>
-          You can also change the port the app listens on inside the container, but then the mapping must match that new internal port.
+          You can also change the port the app listens on inside the container,
+          but then the mapping must match that new internal port.
         </Paragraph>
 
         <CodeBlockWithCopy code={envVarWithPortOverride} />
 
         <Paragraph>
-          This works because your server reads <InlineHighlight>PORT</InlineHighlight> from the environment.
-          If the app ignored that variable and kept listening on 8080, the container would still start - but the published port would point at the wrong place.
+          This works because your server reads{" "}
+          <InlineHighlight>PORT</InlineHighlight> from the environment. If the
+          app ignored that variable and kept listening on 8080, the container
+          would still start - but the published port would point at the wrong
+          place.
         </Paragraph>
 
         <Banner title="A common failure pattern" variant="warning">
           <Paragraph>
-            "My container is running but the app doesn't respond" usually comes down to one of three things:
-            the app is listening on the wrong internal port, the host port was never published, or the app is bound to localhost inside the container.
+            "My container is running but the app doesn't respond" usually comes
+            down to one of three things: the app is listening on the wrong
+            internal port, the host port was never published, or the app is
+            bound to localhost inside the container.
           </Paragraph>
         </Banner>
 
         <TertiaryHeading>Fast troubleshooting loop</TertiaryHeading>
 
         <Paragraph>
-          When the app is unreachable, avoid random changes. Check the runtime state in this order:
+          When the app is unreachable, avoid random changes. Check the runtime
+          state in this order:
         </Paragraph>
 
         <CodeBlockWithCopy code={containerReachabilityChecklist} />
 
         <Paragraph>
-          If the container is <Strong>not running</Strong>, check the startup logs. If it <Strong>is running</Strong> but the route fails,
-          compare the published host port with the internal app port, then confirm the app is listening on <InlineHighlight>0.0.0.0</InlineHighlight>.
+          If the container is <Strong>not running</Strong>, check the startup
+          logs. If it <Strong>is running</Strong> but the route fails, compare
+          the published host port with the internal app port, then confirm the
+          app is listening on <InlineHighlight>0.0.0.0</InlineHighlight>.
         </Paragraph>
 
         <CodeBlockWithCopy code={quickTroubleshootPorts} />
 
-        <SubSectionHeading>Make it remember (volumes + bind mounts)</SubSectionHeading>
+        <SubSectionHeading>
+          Make it remember (volumes + bind mounts)
+        </SubSectionHeading>
 
         <Paragraph>
-          Containers are designed to be disposable. That's a feature, not a flaw - but it also means you need to be very clear about
+          Containers are designed to be disposable. That's a feature, not a flaw
+          - but it also means you need to be very clear about
           <Strong> where data lives</Strong>.
         </Paragraph>
 
         <Paragraph>
-          By default, when a process inside a container writes to disk, it writes into the container's <Strong>writable layer</Strong>.
-          That writable layer belongs to that specific container instance. If the container is removed, that layer disappears with it.
+          By default, when a process inside a container writes to disk, it
+          writes into the container's <Strong>writable layer</Strong>. That
+          writable layer belongs to that specific container instance. If the
+          container is removed, that layer disappears with it.
         </Paragraph>
 
         <Paragraph>
-          That is why "my app worked until I restarted the container" is such a common Docker problem. The process restarted, but the data was never stored anywhere persistent.
+          That is why "my app worked until I restarted the container" is such a
+          common Docker problem. The process restarted, but the data was never
+          stored anywhere persistent.
         </Paragraph>
 
-        <TertiaryHeading>Step 1: Give the API something to persist</TertiaryHeading>
+        <TertiaryHeading>
+          Step 1: Give the API something to persist
+        </TertiaryHeading>
 
         <Paragraph>
           To make persistence visible, we'll extend the API with two endpoints:
@@ -2273,7 +2591,8 @@ const DockerKubernetes = () => {
 
         <TextList>
           <TextListItem>
-            <InlineHighlight>POST /notes</InlineHighlight> appends a line to a file
+            <InlineHighlight>POST /notes</InlineHighlight> appends a line to a
+            file
           </TextListItem>
           <TextListItem>
             <InlineHighlight>GET /notes</InlineHighlight> reads the file back
@@ -2281,8 +2600,10 @@ const DockerKubernetes = () => {
         </TextList>
 
         <Paragraph>
-          The important detail is that the file is written to <InlineHighlight>/data/notes.txt</InlineHighlight>.
-          That gives us a single path we can leave unmanaged, attach to a volume, or map to a host folder.
+          The important detail is that the file is written to{" "}
+          <InlineHighlight>/data/notes.txt</InlineHighlight>. That gives us a
+          single path we can leave unmanaged, attach to a volume, or map to a
+          host folder.
         </Paragraph>
 
         <Carousel
@@ -2300,17 +2621,22 @@ const DockerKubernetes = () => {
 
         <CodeBlockWithCopy code={rebuildNodeApiImage} />
 
-        <TertiaryHeading>Step 2: Observe the default behaviour (no persistence)</TertiaryHeading>
+        <TertiaryHeading>
+          Step 2: Observe the default behaviour (no persistence)
+        </TertiaryHeading>
 
         <Paragraph>
-          First, do nothing special. Run the container normally, write a note, read it back, then stop the container and start it again.
+          First, do nothing special. Run the container normally, write a note,
+          read it back, then stop the container and start it again.
         </Paragraph>
 
         <CodeBlockWithCopy code={runNoPersistence} />
 
         <Banner title="Windows note" variant="info">
           <Paragraph>
-            I'm using <Strong>CMD</Strong> syntax for the request examples. PowerShell uses different HTTP request syntax, so adjust accordingly if you're not in CMD.
+            I'm using <Strong>CMD</Strong> syntax for the request examples.
+            PowerShell uses different HTTP request syntax, so adjust accordingly
+            if you're not in CMD.
           </Paragraph>
         </Banner>
 
@@ -2321,40 +2647,49 @@ const DockerKubernetes = () => {
           items={[
             {
               title: "Playing with data",
-              description: "You can write notes and read them back while this container instance exists.",
+              description:
+                "You can write notes and read them back while this container instance exists.",
               src: nodeApiNotesPng,
             },
           ]}
         />
 
         <Paragraph>
-          Now stop the container, run it again, and hit <InlineHighlight>/notes</InlineHighlight> one more time.
-          The file will be gone.
+          Now stop the container, run it again, and hit{" "}
+          <InlineHighlight>/notes</InlineHighlight> one more time. The file will
+          be gone.
         </Paragraph>
 
         <Banner title="Why the note disappeared" variant="warning">
           <Paragraph>
-            The file was written into the container's writable layer. Because you ran the container with <InlineHighlight>--rm</InlineHighlight>,
-            Docker removed the container - and its writable layer - when it stopped.
+            The file was written into the container's writable layer. Because
+            you ran the container with <InlineHighlight>--rm</InlineHighlight>,
+            Docker removed the container - and its writable layer - when it
+            stopped.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Option 1: Named volumes (Docker-managed persistence)</TertiaryHeading>
+        <TertiaryHeading>
+          Option 1: Named volumes (Docker-managed persistence)
+        </TertiaryHeading>
 
         <Paragraph>
-          A <Strong>named volume</Strong> moves the important data out of the container's writable layer and into storage that Docker manages separately.
-          The container can come and go; the volume remains.
+          A <Strong>named volume</Strong> moves the important data out of the
+          container's writable layer and into storage that Docker manages
+          separately. The container can come and go; the volume remains.
         </Paragraph>
 
         <Paragraph>
-          This is usually the right choice when you want persistence but don't care exactly where the files live on your machine.
-          Databases are the classic example.
+          This is usually the right choice when you want persistence but don't
+          care exactly where the files live on your machine. Databases are the
+          classic example.
         </Paragraph>
 
         <CodeBlockWithCopy code={createNamedVolume} />
 
         <Paragraph>
-          Now run the API again, but mount the named volume at <InlineHighlight>/data</InlineHighlight>:
+          Now run the API again, but mount the named volume at{" "}
+          <InlineHighlight>/data</InlineHighlight>:
         </Paragraph>
 
         <CodeBlockWithCopy code={runWithVolume} />
@@ -2362,7 +2697,9 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={readNotes} />
 
         <Paragraph>
-          Stop the container, run it again with the same volume, and read the notes back. This time the file survives because it was written into the volume, not the container layer.
+          Stop the container, run it again with the same volume, and read the
+          notes back. This time the file survives because it was written into
+          the volume, not the container layer.
         </Paragraph>
 
         <CodeBlockWithCopy code={inspectVolume} />
@@ -2375,20 +2712,28 @@ const DockerKubernetes = () => {
 
         <Banner title="What changed" variant="info">
           <Paragraph>
-            The app still writes to <InlineHighlight>/data/notes.txt</InlineHighlight>. The difference is that <InlineHighlight>/data</InlineHighlight>
-            is no longer ordinary container storage - it is backed by a volume that lives independently of the container.
+            The app still writes to{" "}
+            <InlineHighlight>/data/notes.txt</InlineHighlight>. The difference
+            is that <InlineHighlight>/data</InlineHighlight>
+            is no longer ordinary container storage - it is backed by a volume
+            that lives independently of the container.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Option 2: Bind mounts (use your local filesystem directly)</TertiaryHeading>
+        <TertiaryHeading>
+          Option 2: Bind mounts (use your local filesystem directly)
+        </TertiaryHeading>
 
         <Paragraph>
-          A <Strong>bind mount</Strong> maps a real folder from your machine into the container. Instead of Docker managing the storage location,
+          A <Strong>bind mount</Strong> maps a real folder from your machine
+          into the container. Instead of Docker managing the storage location,
           <Strong> you</Strong> choose it.
         </Paragraph>
 
         <Paragraph>
-          This is especially useful in development because you can inspect the files directly on your host, edit them, back them up, or delete them without going through Docker.
+          This is especially useful in development because you can inspect the
+          files directly on your host, edit them, back them up, or delete them
+          without going through Docker.
         </Paragraph>
 
         <CodeBlockWithCopy code={runWithBindMount} />
@@ -2396,8 +2741,9 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={readNotes} />
 
         <Paragraph>
-          If you open the local <InlineHighlight>data</InlineHighlight> folder on your machine, you should see the file appear there.
-          The container and your host are now both looking at the same underlying directory.
+          If you open the local <InlineHighlight>data</InlineHighlight> folder
+          on your machine, you should see the file appear there. The container
+          and your host are now both looking at the same underlying directory.
         </Paragraph>
 
         <CodeBlockWithCopy code={volumeVsBindMountSummary} />
@@ -2406,15 +2752,18 @@ const DockerKubernetes = () => {
 
         <TextList>
           <TextListItem>
-            <Strong>Named volume</Strong> - use when you want Docker-managed persistence and don't need to care about the exact host path.
+            <Strong>Named volume</Strong> - use when you want Docker-managed
+            persistence and don't need to care about the exact host path.
           </TextListItem>
           <TextListItem>
-            <Strong>Bind mount</Strong> - use when you want the container to work directly against files on your machine.
+            <Strong>Bind mount</Strong> - use when you want the container to
+            work directly against files on your machine.
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          They solve similar problems, but they are not interchangeable in intent:
+          They solve similar problems, but they are not interchangeable in
+          intent:
         </Paragraph>
 
         <IndentedTextList>
@@ -2429,47 +2778,61 @@ const DockerKubernetes = () => {
         <TertiaryHeading>Resetting state</TertiaryHeading>
 
         <Paragraph>
-          If you want to deliberately wipe the named volume and start fresh, remove it. The next container run will create it again.
+          If you want to deliberately wipe the named volume and start fresh,
+          remove it. The next container run will create it again.
         </Paragraph>
 
         <CodeBlockWithCopy code={cleanupVolume} />
 
         <Banner title="Key distinction" variant="warning">
           <Paragraph>
-            Containers are disposable. Volumes are not. That separation is exactly what makes containers safe to replace without losing important state.
+            Containers are disposable. Volumes are not. That separation is
+            exactly what makes containers safe to replace without losing
+            important state.
           </Paragraph>
         </Banner>
 
-        <SubSectionHeading>Make it a system (multi-container + Compose)</SubSectionHeading>
+        <SubSectionHeading>
+          Make it a system (multi-container + Compose)
+        </SubSectionHeading>
 
         <Paragraph>
-          Up to now, we've been running one container at a time. That's useful for learning, but it's not how most real applications are structured.
-          Usually you have several cooperating processes: an API, a database, a cache, maybe a worker.
+          Up to now, we've been running one container at a time. That's useful
+          for learning, but it's not how most real applications are structured.
+          Usually you have several cooperating processes: an API, a database, a
+          cache, maybe a worker.
         </Paragraph>
 
         <Paragraph>
-          Docker Compose is a way to describe that <Strong>whole local system</Strong> in one file:
-          which services exist, which images they use, which ports are published, which environment variables they receive,
-          which volumes they mount, and which networks they share.
+          Docker Compose is a way to describe that{" "}
+          <Strong>whole local system</Strong> in one file: which services exist,
+          which images they use, which ports are published, which environment
+          variables they receive, which volumes they mount, and which networks
+          they share.
         </Paragraph>
 
         <TertiaryHeading>Why we're adding Redis</TertiaryHeading>
 
         <Paragraph>
-          Redis gives us a clean way to show that one container can depend on another without dragging in a full database setup.
-          The API will increment and read a counter, but the actual state will live in Redis.
+          Redis gives us a clean way to show that one container can depend on
+          another without dragging in a full database setup. The API will
+          increment and read a counter, but the actual state will live in Redis.
         </Paragraph>
 
         <Paragraph>
-          That means we'll be proving something important: the API container is not "remembering" the counter itself.
-          It is talking to another service over the network.
+          That means we'll be proving something important: the API container is
+          not "remembering" the counter itself. It is talking to another service
+          over the network.
         </Paragraph>
 
-        <TertiaryHeading>Step 1: Extend the API so it can use Redis</TertiaryHeading>
+        <TertiaryHeading>
+          Step 1: Extend the API so it can use Redis
+        </TertiaryHeading>
 
         <Paragraph>
-          The app now reads <InlineHighlight>REDIS_URL</InlineHighlight>. If that variable is missing, Redis behaviour is disabled.
-          If it is present, the API connects to Redis and uses it as shared state.
+          The app now reads <InlineHighlight>REDIS_URL</InlineHighlight>. If
+          that variable is missing, Redis behaviour is disabled. If it is
+          present, the API connects to Redis and uses it as shared state.
         </Paragraph>
 
         <CodeBlockWithCopy code={installRedisClient} />
@@ -2493,16 +2856,20 @@ const DockerKubernetes = () => {
 
         <Banner title="What changed" variant="info">
           <Paragraph>
-            The app is no longer just "a Node process responding to HTTP". It is now a process that may depend on another service being reachable.
+            The app is no longer just "a Node process responding to HTTP". It is
+            now a process that may depend on another service being reachable.
             That is the beginning of system-level behaviour.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Step 2: Describe the system in compose.yml</TertiaryHeading>
+        <TertiaryHeading>
+          Step 2: Describe the system in compose.yml
+        </TertiaryHeading>
 
         <Paragraph>
-          This is the big shift. Instead of starting containers one by one with long <InlineHighlight>docker run</InlineHighlight> commands,
-          we describe the whole setup declaratively in a single Compose file.
+          This is the big shift. Instead of starting containers one by one with
+          long <InlineHighlight>docker run</InlineHighlight> commands, we
+          describe the whole setup declaratively in a single Compose file.
         </Paragraph>
 
         <Carousel
@@ -2516,16 +2883,16 @@ const DockerKubernetes = () => {
           ]}
         />
 
-        <Paragraph>
-          Read the file as a system description:
-        </Paragraph>
+        <Paragraph>Read the file as a system description:</Paragraph>
 
         <TextList>
           <TextListItem>
-            <Strong>api</Strong> is built from the current folder and publishes port 8080 to your machine
+            <Strong>api</Strong> is built from the current folder and publishes
+            port 8080 to your machine
           </TextListItem>
           <TextListItem>
-            <Strong>redis</Strong> runs from an existing Redis image and stores its data in a named volume
+            <Strong>redis</Strong> runs from an existing Redis image and stores
+            its data in a named volume
           </TextListItem>
           <TextListItem>
             both services are attached to the same project network automatically
@@ -2537,20 +2904,22 @@ const DockerKubernetes = () => {
         <TertiaryHeading>Why the hostname is just 'redis'</TertiaryHeading>
 
         <Paragraph>
-          Compose creates a private network for the project and gives each service a DNS name that matches its service name.
-          That is why the API can connect using <InlineHighlight>redis://redis:6379</InlineHighlight>.
+          Compose creates a private network for the project and gives each
+          service a DNS name that matches its service name. That is why the API
+          can connect using{" "}
+          <InlineHighlight>redis://redis:6379</InlineHighlight>.
         </Paragraph>
 
         <Paragraph>
-          There is no magic here: the hostname <InlineHighlight>redis</InlineHighlight> works because both containers are on the same Compose network.
-          Your laptop is not resolving that name - the containers are.
+          There is no magic here: the hostname{" "}
+          <InlineHighlight>redis</InlineHighlight> works because both containers
+          are on the same Compose network. Your laptop is not resolving that
+          name - the containers are.
         </Paragraph>
 
         <TertiaryHeading>Step 3: Start the whole system</TertiaryHeading>
 
-        <Paragraph>
-          Now start both services together:
-        </Paragraph>
+        <Paragraph>Now start both services together:</Paragraph>
 
         <CodeBlockWithCopy code={composeUp} />
 
@@ -2560,9 +2929,7 @@ const DockerKubernetes = () => {
 
         <CodeBlockWithCopy code={composeInspect} />
 
-        <Paragraph>
-          In another terminal, hit the counter endpoints:
-        </Paragraph>
+        <Paragraph>In another terminal, hit the counter endpoints:</Paragraph>
 
         <CodeBlockWithCopy code={testCounterCmd} />
 
@@ -2577,56 +2944,60 @@ const DockerKubernetes = () => {
           ]}
         />
 
-        <Paragraph>
-          What you've just proved:
-        </Paragraph>
+        <Paragraph>What you've just proved:</Paragraph>
 
         <TextList>
-          <TextListItem>
-            the API container is serving HTTP
-          </TextListItem>
+          <TextListItem>the API container is serving HTTP</TextListItem>
           <TextListItem>
             the API can resolve and reach the Redis container by service name
           </TextListItem>
           <TextListItem>
-            the counter value lives outside the API process, so it behaves like shared state
+            the counter value lives outside the API process, so it behaves like
+            shared state
           </TextListItem>
         </TextList>
 
         <Banner title="A useful note" variant="info">
           <Paragraph>
-            Notice that only the API publishes a host port. Redis does not need to be reachable from your machine to do its job.
-            It only needs to be reachable from the API inside the project network.
+            Notice that only the API publishes a host port. Redis does not need
+            to be reachable from your machine to do its job. It only needs to be
+            reachable from the API inside the project network.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>What depends_on does - and what it does not do</TertiaryHeading>
+        <TertiaryHeading>
+          What depends_on does - and what it does not do
+        </TertiaryHeading>
 
         <Paragraph>
-          The <InlineHighlight>depends_on</InlineHighlight> line is helpful, but it is often misunderstood.
-          It controls startup order, not application readiness. It does NOT guarantee that Redis is fully ready to accept connections.
-          That means the API may still need retry logic or reconnection logic if Redis takes a moment to become ready.
+          The <InlineHighlight>depends_on</InlineHighlight> line is helpful, but
+          it is often misunderstood. It controls startup order, not application
+          readiness. It does NOT guarantee that Redis is fully ready to accept
+          connections. That means the API may still need retry logic or
+          reconnection logic if Redis takes a moment to become ready.
         </Paragraph>
 
         <Paragraph>
-          In other words: Compose can start the Redis container before the API container, but that does not guarantee Redis is fully ready at the exact moment the API first tries to connect.
+          In other words: Compose can start the Redis container before the API
+          container, but that does not guarantee Redis is fully ready at the
+          exact moment the API first tries to connect.
         </Paragraph>
 
         <Paragraph>
-          In simple demos this is often fine. In real systems, the application usually also needs retry or reconnect logic.
+          In simple demos this is often fine. In real systems, the application
+          usually also needs retry or reconnect logic.
         </Paragraph>
 
         <TertiaryHeading>Useful Compose commands</TertiaryHeading>
 
         <Paragraph>
-          These are the commands that matter most when you're trying to understand what Compose actually created:
+          These are the commands that matter most when you're trying to
+          understand what Compose actually created:
         </Paragraph>
 
         <CodeBlockWithCopy code={composeProjectResources} />
 
-        <Paragraph>
-          Use them to answer:
-        </Paragraph>
+        <Paragraph>Use them to answer:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
@@ -2645,16 +3016,21 @@ const DockerKubernetes = () => {
 
         <Banner title="Why Compose matters" variant="info">
           <Paragraph>
-            Compose is not just a shorter way to type <InlineHighlight>docker run</InlineHighlight>.
-            It is a way to describe a repeatable local environment where multiple services, networks, and volumes come up together with predictable names and wiring.
+            Compose is not just a shorter way to type{" "}
+            <InlineHighlight>docker run</InlineHighlight>. It is a way to
+            describe a repeatable local environment where multiple services,
+            networks, and volumes come up together with predictable names and
+            wiring.
           </Paragraph>
         </Banner>
 
         <SubSectionHeading>Moving to Production</SubSectionHeading>
 
         <Paragraph>
-          Getting a container to run is only the beginning. A production image should be predictable, small enough to move around efficiently,
-          safe enough to run with sensible defaults, and simple enough to inspect when something looks wrong.
+          Getting a container to run is only the beginning. A production image
+          should be predictable, small enough to move around efficiently, safe
+          enough to run with sensible defaults, and simple enough to inspect
+          when something looks wrong.
         </Paragraph>
 
         <Paragraph>
@@ -2662,15 +3038,9 @@ const DockerKubernetes = () => {
         </Paragraph>
 
         <TextList>
-          <TextListItem>
-            how dependencies are installed
-          </TextListItem>
-          <TextListItem>
-            what environment defaults are set
-          </TextListItem>
-          <TextListItem>
-            which user the process runs as
-          </TextListItem>
+          <TextListItem>how dependencies are installed</TextListItem>
+          <TextListItem>what environment defaults are set</TextListItem>
+          <TextListItem>which user the process runs as</TextListItem>
           <TextListItem>
             how much unnecessary data ends up in the image
           </TextListItem>
@@ -2683,30 +3053,39 @@ const DockerKubernetes = () => {
 
         <TextList>
           <TextListItem>
-            <Strong>Deterministic installs</Strong> - <InlineHighlight>npm ci</InlineHighlight> uses the lockfile and avoids the "it worked differently on another machine" problem.
+            <Strong>Deterministic installs</Strong> -{" "}
+            <InlineHighlight>npm ci</InlineHighlight> uses the lockfile and
+            avoids the "it worked differently on another machine" problem.
           </TextListItem>
           <TextListItem>
-            <Strong>Production defaults</Strong> - <InlineHighlight>NODE_ENV=production</InlineHighlight> makes the runtime intent explicit.
+            <Strong>Production defaults</Strong> -{" "}
+            <InlineHighlight>NODE_ENV=production</InlineHighlight> makes the
+            runtime intent explicit.
           </TextListItem>
           <TextListItem>
-            <Strong>Smaller attack surface</Strong> - running as a non-root user reduces the damage a compromised process can do.
+            <Strong>Smaller attack surface</Strong> - running as a non-root user
+            reduces the damage a compromised process can do.
           </TextListItem>
           <TextListItem>
-            <Strong>Cleaner layers</Strong> - fewer unnecessary files means faster pulls, less storage, and easier inspection.
+            <Strong>Cleaner layers</Strong> - fewer unnecessary files means
+            faster pulls, less storage, and easier inspection.
           </TextListItem>
           <TextListItem>
-            <Strong>Simpler startup</Strong> - running Node directly removes an unnecessary layer between Docker and your application process.
+            <Strong>Simpler startup</Strong> - running Node directly removes an
+            unnecessary layer between Docker and your application process.
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          None of these changes alter what the app does. They improve how confidently you can build, move, run, and inspect it.
+          None of these changes alter what the app does. They improve how
+          confidently you can build, move, run, and inspect it.
         </Paragraph>
 
         <TertiaryHeading>Production Dockerfile</TertiaryHeading>
 
         <Paragraph>
-          This version keeps the same app behaviour, but makes the image more disciplined:
+          This version keeps the same app behaviour, but makes the image more
+          disciplined:
         </Paragraph>
 
         <Carousel
@@ -2720,22 +3099,24 @@ const DockerKubernetes = () => {
           ]}
         />
 
-        <Paragraph>
-          A few details are worth calling out explicitly:
-        </Paragraph>
+        <Paragraph>A few details are worth calling out explicitly:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
-            <InlineHighlight>npm ci</InlineHighlight> is for repeatable installs from the lockfile
+            <InlineHighlight>npm ci</InlineHighlight> is for repeatable installs
+            from the lockfile
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>--omit=dev</InlineHighlight> keeps development-only dependencies out of the runtime image
+            <InlineHighlight>--omit=dev</InlineHighlight> keeps development-only
+            dependencies out of the runtime image
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>USER node</InlineHighlight> means the application no longer runs as root
+            <InlineHighlight>USER node</InlineHighlight> means the application
+            no longer runs as root
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>CMD ["node", "server.js"]</InlineHighlight> makes the application process the container's main process directly
+            <InlineHighlight>CMD ["node", "server.js"]</InlineHighlight> makes
+            the application process the container's main process directly
           </IndentedTextListItem>
         </IndentedTextList>
 
@@ -2748,14 +3129,17 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={buildNodeApiProd} />
 
         <Paragraph>
-          At this point you now have a second image tag: one for local/dev learning and one for a more production-oriented build.
-          The important distinction is that a <Strong>tag</Strong> is just a human-friendly pointer to an image ID.
+          At this point you now have a second image tag: one for local/dev
+          learning and one for a more production-oriented build. The important
+          distinction is that a <Strong>tag</Strong> is just a human-friendly
+          pointer to an image ID.
         </Paragraph>
 
         <TertiaryHeading>Run it and verify the behaviour</TertiaryHeading>
 
         <Paragraph>
-          The app should behave the same at the HTTP level. What changed is the quality of the runtime package, not the route responses.
+          The app should behave the same at the HTTP level. What changed is the
+          quality of the runtime package, not the route responses.
         </Paragraph>
 
         <CodeBlockWithCopy code={runNodeApiProd} />
@@ -2763,40 +3147,34 @@ const DockerKubernetes = () => {
 
         <Banner title="What production means here" variant="info">
           <Paragraph>
-            "Production" in this section does not mean "ready for the public internet on its own".
-            It means the image itself is built with cleaner runtime defaults and is easier to reason about as a deployable artifact.
+            "Production" in this section does not mean "ready for the public
+            internet on its own". It means the image itself is built with
+            cleaner runtime defaults and is easier to reason about as a
+            deployable artifact.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Inspect the image instead of trusting it</TertiaryHeading>
+        <TertiaryHeading>
+          Inspect the image instead of trusting it
+        </TertiaryHeading>
 
         <Paragraph>
-          A useful habit is to stop treating images like black boxes. Docker gives you enough metadata to confirm what is actually inside and how it is expected to run.
+          A useful habit is to stop treating images like black boxes. Docker
+          gives you enough metadata to confirm what is actually inside and how
+          it is expected to run.
         </Paragraph>
 
-        <Paragraph>
-          Start with image-level metadata:
-        </Paragraph>
+        <Paragraph>Start with image-level metadata:</Paragraph>
 
         <CodeBlockWithCopy code={inspectProdImageConfig} />
 
-        <Paragraph>
-          This tells you things like:
-        </Paragraph>
+        <Paragraph>This tells you things like:</Paragraph>
 
         <TextList>
-          <TextListItem>
-            the default user
-          </TextListItem>
-          <TextListItem>
-            the startup command
-          </TextListItem>
-          <TextListItem>
-            the configured environment variables
-          </TextListItem>
-          <TextListItem>
-            the exposed port metadata
-          </TextListItem>
+          <TextListItem>the default user</TextListItem>
+          <TextListItem>the startup command</TextListItem>
+          <TextListItem>the configured environment variables</TextListItem>
+          <TextListItem>the exposed port metadata</TextListItem>
         </TextList>
 
         <Paragraph>
@@ -2807,7 +3185,9 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={viewLayers} />
 
         <Paragraph>
-          The history output shows how the image was assembled. If an image grows unexpectedly, this is often the fastest way to see whether the cause is:
+          The history output shows how the image was assembled. If an image
+          grows unexpectedly, this is often the fastest way to see whether the
+          cause is:
         </Paragraph>
 
         <IndentedTextList>
@@ -2824,107 +3204,126 @@ const DockerKubernetes = () => {
 
         <Banner title="Why layer history matters" variant="warning">
           <Paragraph>
-            Image size problems are usually build-logic problems. <InlineHighlight>docker history</InlineHighlight> shows you where that logic added weight.
+            Image size problems are usually build-logic problems.{" "}
+            <InlineHighlight>docker history</InlineHighlight> shows you where
+            that logic added weight.
           </Paragraph>
         </Banner>
 
         <TertiaryHeading>Inspect the running container as well</TertiaryHeading>
 
         <Paragraph>
-          Image metadata tells you what Docker <Strong>plans</Strong> to run. Container inspection tells you what is actually running right now.
+          Image metadata tells you what Docker <Strong>plans</Strong> to run.
+          Container inspection tells you what is actually running right now.
         </Paragraph>
 
         <CodeBlockWithCopy code={inspectProdRunState} />
 
         <Paragraph>
-          That distinction becomes important later when you start injecting runtime configuration, mounting volumes, or overriding commands.
+          That distinction becomes important later when you start injecting
+          runtime configuration, mounting volumes, or overriding commands.
         </Paragraph>
 
         <TertiaryHeading>Tagging (what a tag actually is)</TertiaryHeading>
 
         <Paragraph>
-          Shipping usually means pushing an image to a registry such as Docker Hub, GHCR, or ECR.
-          Tags are how you give that artifact meaningful names.
+          Shipping usually means pushing an image to a registry such as Docker
+          Hub, GHCR, or ECR. Tags are how you give that artifact meaningful
+          names.
         </Paragraph>
 
         <CodeBlockWithCopy code={tagForRegistry} />
 
         <Paragraph>
-          The important thing to understand is that tagging does <Strong>not</Strong> create a second copy of the image layers.
-          It creates another label pointing at the same image ID.
+          The important thing to understand is that tagging does{" "}
+          <Strong>not</Strong> create a second copy of the image layers. It
+          creates another label pointing at the same image ID.
         </Paragraph>
 
         <CodeBlockWithCopy code={tagSameImageTwice} />
 
-        <Paragraph>
-          That is why one image can have multiple tags:
-        </Paragraph>
+        <Paragraph>That is why one image can have multiple tags:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
-            <InlineHighlight>node-api:prod</InlineHighlight> for a human-friendly local name
+            <InlineHighlight>node-api:prod</InlineHighlight> for a
+            human-friendly local name
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>node-api:1.0.0</InlineHighlight> for a versioned local tag
+            <InlineHighlight>node-api:1.0.0</InlineHighlight> for a versioned
+            local tag
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>repo/node-api:1.0.0</InlineHighlight> for a registry-ready push target
+            <InlineHighlight>repo/node-api:1.0.0</InlineHighlight> for a
+            registry-ready push target
           </IndentedTextListItem>
         </IndentedTextList>
 
         <Paragraph>
-          You should now be able to see those tags in Docker Desktop or in the CLI:
+          You should now be able to see those tags in Docker Desktop or in the
+          CLI:
         </Paragraph>
 
         <Carousel
           items={[
             {
               title: "Tags via Docker Desktop",
-              description: "Multiple tags can point at the same underlying image.",
+              description:
+                "Multiple tags can point at the same underlying image.",
               src: dockerTaggingPng,
             },
             {
               title: "Tags via CLI",
-              description: "docker images shows tags alongside the image ID they reference.",
+              description:
+                "docker images shows tags alongside the image ID they reference.",
               src: dockerTaggingCliPng,
             },
           ]}
         />
 
-        <TertiaryHeading>Container lifecycle: docker run vs docker compose</TertiaryHeading>
+        <TertiaryHeading>
+          Container lifecycle: docker run vs docker compose
+        </TertiaryHeading>
 
         <Paragraph>
-          One final distinction matters here because it affects how you stop and manage the container later.
+          One final distinction matters here because it affects how you stop and
+          manage the container later.
         </Paragraph>
 
-        <Paragraph>
-          If you start the production image like this:
-        </Paragraph>
+        <Paragraph>If you start the production image like this:</Paragraph>
 
         <CodeBlockWithCopy code={runNodeApiProd} />
 
         <Paragraph>
-          then Docker creates a plain container outside of any Compose project. That means <InlineHighlight>docker compose down</InlineHighlight>
-          will not stop or remove it, because Compose only manages containers it created itself.
+          then Docker creates a plain container outside of any Compose project.
+          That means <InlineHighlight>docker compose down</InlineHighlight>
+          will not stop or remove it, because Compose only manages containers it
+          created itself.
         </Paragraph>
 
         <Banner title="Why this catches people out" variant="warning">
           <Paragraph>
-            <InlineHighlight>docker run</InlineHighlight> and <InlineHighlight>docker compose up</InlineHighlight> can both start containers,
-            but they do not create the same management boundary. A Compose project has its own resources, names, and lifecycle.
+            <InlineHighlight>docker run</InlineHighlight> and{" "}
+            <InlineHighlight>docker compose up</InlineHighlight> can both start
+            containers, but they do not create the same management boundary. A
+            Compose project has its own resources, names, and lifecycle.
           </Paragraph>
         </Banner>
 
         <Paragraph>
-          That does not make <InlineHighlight>docker run</InlineHighlight> wrong - it just means you should be clear whether you are testing an image directly
-          or managing a multi-service application through Compose.
+          That does not make <InlineHighlight>docker run</InlineHighlight> wrong
+          - it just means you should be clear whether you are testing an image
+          directly or managing a multi-service application through Compose.
         </Paragraph>
 
         <SubSectionHeading>Docker wrap-up</SubSectionHeading>
 
         <Paragraph>
-          At this point, Docker should feel less like a list of commands and more like a way of reasoning about runtime boundaries.
-          You've built images, started containers, published ports, injected configuration, persisted data, and described a small multi-service system with Compose.
+          At this point, Docker should feel less like a list of commands and
+          more like a way of reasoning about runtime boundaries. You've built
+          images, started containers, published ports, injected configuration,
+          persisted data, and described a small multi-service system with
+          Compose.
         </Paragraph>
 
         <Paragraph>
@@ -2939,17 +3338,21 @@ const DockerKubernetes = () => {
             running a <Strong>process</Strong> from that artifact
           </TextListItem>
           <TextListItem>
-            publishing a port creating a <Strong>host-to-container network path</Strong>
+            publishing a port creating a{" "}
+            <Strong>host-to-container network path</Strong>
           </TextListItem>
           <TextListItem>
             mounting storage showing <Strong>where data lives</Strong>
           </TextListItem>
           <TextListItem>
-            Compose described a <Strong>whole local system</Strong>, not just one container
+            Compose described a <Strong>whole local system</Strong>, not just
+            one container
           </TextListItem>
         </TextList>
 
-        <TertiaryHeading>What you should now be able to explain</TertiaryHeading>
+        <TertiaryHeading>
+          What you should now be able to explain
+        </TertiaryHeading>
 
         <IndentedTextList>
           <IndentedTextListItem>
@@ -2962,10 +3365,12 @@ const DockerKubernetes = () => {
             why data disappears by default unless you mount storage explicitly
           </IndentedTextListItem>
           <IndentedTextListItem>
-            why Compose makes service-to-service networking easier to reason about
+            why Compose makes service-to-service networking easier to reason
+            about
           </IndentedTextListItem>
           <IndentedTextListItem>
-            why a production image is more than "the same image with a different tag"
+            why a production image is more than "the same image with a different
+            tag"
           </IndentedTextListItem>
         </IndentedTextList>
 
@@ -2974,36 +3379,44 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={dockerCommands} />
 
         <Paragraph>
-          A useful habit is to map each command to the kind of problem it solves:
+          A useful habit is to map each command to the kind of problem it
+          solves:
         </Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
-            <InlineHighlight>docker ps</InlineHighlight> - what is actually running?
+            <InlineHighlight>docker ps</InlineHighlight> - what is actually
+            running?
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>docker logs</InlineHighlight> - what does the process think is happening?
+            <InlineHighlight>docker logs</InlineHighlight> - what does the
+            process think is happening?
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>docker inspect</InlineHighlight> - what config, ports, env vars, mounts, and entrypoint does Docker see?
+            <InlineHighlight>docker inspect</InlineHighlight> - what config,
+            ports, env vars, mounts, and entrypoint does Docker see?
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>docker exec</InlineHighlight> - what does the world look like from inside the container?
+            <InlineHighlight>docker exec</InlineHighlight> - what does the world
+            look like from inside the container?
           </IndentedTextListItem>
         </IndentedTextList>
 
         <Banner title="The useful question" variant="info">
           <Paragraph>
-            When something fails, avoid asking "which command do I try next?". Ask "what boundary is involved here - process, network, filesystem, or configuration?".
-            That usually tells you where to inspect first.
+            When something fails, avoid asking "which command do I try next?".
+            Ask "what boundary is involved here - process, network, filesystem,
+            or configuration?". That usually tells you where to inspect first.
           </Paragraph>
         </Banner>
 
         <TertiaryHeading>Where Docker stops</TertiaryHeading>
 
         <Paragraph>
-          Docker solves packaging and local runtime really well. It gives you a repeatable way to build an application and run it as isolated processes.
-          But it does not, by itself, answer the next set of questions:
+          Docker solves packaging and local runtime really well. It gives you a
+          repeatable way to build an application and run it as isolated
+          processes. But it does not, by itself, answer the next set of
+          questions:
         </Paragraph>
 
         <TextList>
@@ -3024,29 +3437,36 @@ const DockerKubernetes = () => {
           </TextListItem>
         </TextList>
 
+        <Paragraph>That is the gap Kubernetes is designed to fill.</Paragraph>
+
+        <SectionHeading>
+          Kubernetes (what it adds on top of containers)
+        </SectionHeading>
+
         <Paragraph>
-          That is the gap Kubernetes is designed to fill.
+          Kubernetes does not replace containers. It assumes you already have
+          them. The image you built with Docker is still the thing that runs -
+          Kubernetes is the system that decides <Strong>where</Strong> it runs,
+          <Strong> how many copies</Strong> exist,{" "}
+          <Strong>how they are exposed</Strong>, and{" "}
+          <Strong>
+            what should happen when reality drifts from what you declared
+          </Strong>
+          .
         </Paragraph>
 
-        <SectionHeading>Kubernetes (what it adds on top of containers)</SectionHeading>
-
         <Paragraph>
-          Kubernetes does not replace containers. It assumes you already have them.
-          The image you built with Docker is still the thing that runs - Kubernetes is the system that decides <Strong>where</Strong> it runs,
-          <Strong> how many copies</Strong> exist, <Strong>how they are exposed</Strong>, and <Strong>what should happen when reality drifts from what you declared</Strong>.
-        </Paragraph>
-
-        <Paragraph>
-          The shift in thinking is this: with Docker, you often say "run this container".
-          With Kubernetes, you declare something closer to "I want one healthy copy of this application available behind a stable endpoint",
-          and Kubernetes keeps working until that becomes true.
+          The shift in thinking is this: with Docker, you often say "run this
+          container". With Kubernetes, you declare something closer to "I want
+          one healthy copy of this application available behind a stable
+          endpoint", and Kubernetes keeps working until that becomes true.
         </Paragraph>
 
         <TertiaryHeading>What Kubernetes is really managing</TertiaryHeading>
 
         <Paragraph>
-          Under the hood, Kubernetes is constantly reconciling desired state against actual state.
-          That sounds abstract, but in practice it means:
+          Under the hood, Kubernetes is constantly reconciling desired state
+          against actual state. That sounds abstract, but in practice it means:
         </Paragraph>
 
         <IndentedTextList>
@@ -3054,27 +3474,34 @@ const DockerKubernetes = () => {
             if a Pod dies, something notices and creates another one
           </IndentedTextListItem>
           <IndentedTextListItem>
-            if you ask for three replicas instead of one, Kubernetes works to make three exist
+            if you ask for three replicas instead of one, Kubernetes works to
+            make three exist
           </IndentedTextListItem>
           <IndentedTextListItem>
             if a Pod is not healthy, it should stop receiving traffic
           </IndentedTextListItem>
           <IndentedTextListItem>
-            if you update an image, Kubernetes can roll that change out gradually rather than all at once
+            if you update an image, Kubernetes can roll that change out
+            gradually rather than all at once
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <TertiaryHeading>The core objects we'll keep coming back to</TertiaryHeading>
+        <TertiaryHeading>
+          The core objects we'll keep coming back to
+        </TertiaryHeading>
 
         <TextList>
           <TextListItem>
-            <Strong>Pod</Strong> - the smallest unit Kubernetes runs; usually one main container, sometimes more
+            <Strong>Pod</Strong> - the smallest unit Kubernetes runs; usually
+            one main container, sometimes more
           </TextListItem>
           <TextListItem>
-            <Strong>Deployment</Strong> - manages Pods for stateless applications and keeps the requested number running
+            <Strong>Deployment</Strong> - manages Pods for stateless
+            applications and keeps the requested number running
           </TextListItem>
           <TextListItem>
-            <Strong>Service</Strong> - provides a stable network identity for a changing set of Pods
+            <Strong>Service</Strong> - provides a stable network identity for a
+            changing set of Pods
           </TextListItem>
           <TextListItem>
             <Strong>ConfigMap</Strong> - supplies non-secret configuration
@@ -3085,21 +3512,29 @@ const DockerKubernetes = () => {
         </TextList>
 
         <Paragraph>
-          If Docker taught you how to package and run one process well, Kubernetes is the layer that turns those processes into a managed application.
+          If Docker taught you how to package and run one process well,
+          Kubernetes is the layer that turns those processes into a managed
+          application.
         </Paragraph>
 
         <Banner title="What we are trying to learn next" variant="warning">
           <Paragraph>
-            The goal is not to memorise more YAML. It is to understand what Kubernetes creates in response to what you declare,
-            how those pieces relate to each other, and where to look when the outcome is not what you expected.
+            The goal is not to memorise more YAML. It is to understand what
+            Kubernetes creates in response to what you declare, how those pieces
+            relate to each other, and where to look when the outcome is not what
+            you expected.
           </Paragraph>
         </Banner>
 
-        <SubSectionHeading>Hello Minikube (local Kubernetes cluster)</SubSectionHeading>
+        <SubSectionHeading>
+          Hello Minikube (local Kubernetes cluster)
+        </SubSectionHeading>
 
         <Paragraph>
-          Before we can learn Kubernetes properly, we need a cluster to point at. Minikube gives you that locally:
-          a small single-node Kubernetes environment running on your machine so you can work through the same ideas you would use in a larger cluster.
+          Before we can learn Kubernetes properly, we need a cluster to point
+          at. Minikube gives you that locally: a small single-node Kubernetes
+          environment running on your machine so you can work through the same
+          ideas you would use in a larger cluster.
         </Paragraph>
 
         <Paragraph>
@@ -3110,23 +3545,28 @@ const DockerKubernetes = () => {
           <TextListItem>
             <TextLink href={k8sKubectl} target="_blank" rel="noreferrer">
               kubectl
-            </TextLink> is the client. It sends requests to the Kubernetes API.
+            </TextLink>{" "}
+            is the client. It sends requests to the Kubernetes API.
           </TextListItem>
           <TextListItem>
             <TextLink href={k8sMinikube} target="_blank" rel="noreferrer">
               Minikube
-            </TextLink> creates and runs the local cluster that receives those requests.
+            </TextLink>{" "}
+            creates and runs the local cluster that receives those requests.
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          That distinction matters. <InlineHighlight>kubectl</InlineHighlight> does not "run Kubernetes" - it talks to a cluster that already exists.
+          That distinction matters. <InlineHighlight>kubectl</InlineHighlight>{" "}
+          does not "run Kubernetes" - it talks to a cluster that already exists.
         </Paragraph>
 
         <TertiaryHeading>Step 1: Check the tools exist</TertiaryHeading>
 
         <Paragraph>
-          First confirm the client is installed, then confirm Minikube is installed. At this point we are only proving the tools exist - not that the cluster is running yet.
+          First confirm the client is installed, then confirm Minikube is
+          installed. At this point we are only proving the tools exist - not
+          that the cluster is running yet.
         </Paragraph>
 
         <CodeBlockWithCopy code={verifyK8s} />
@@ -3134,67 +3574,75 @@ const DockerKubernetes = () => {
 
         <Banner title="What this proves" variant="info">
           <Paragraph>
-            If these commands work, your machine has the Kubernetes client and the local cluster runtime available.
-            The next step is creating a cluster for them to work against.
+            If these commands work, your machine has the Kubernetes client and
+            the local cluster runtime available. The next step is creating a
+            cluster for them to work against.
           </Paragraph>
         </Banner>
 
         <TertiaryHeading>Step 2: Create the cluster</TertiaryHeading>
 
         <Paragraph>
-          This starts a local Kubernetes cluster. In Minikube terms, you can think of this as bringing up a small environment that includes
-          the control plane and a worker node all packaged for local use.
+          This starts a local Kubernetes cluster. In Minikube terms, you can
+          think of this as bringing up a small environment that includes the
+          control plane and a worker node all packaged for local use.
         </Paragraph>
 
         <CodeBlockWithCopy code={minikubeCreateCluster} />
 
         <Paragraph>
-          Once that finishes, Kubernetes now has somewhere to store objects like Deployments and Services.
-          Before this point, there was nothing for <InlineHighlight>kubectl</InlineHighlight> to talk to.
+          Once that finishes, Kubernetes now has somewhere to store objects like
+          Deployments and Services. Before this point, there was nothing for{" "}
+          <InlineHighlight>kubectl</InlineHighlight> to talk to.
         </Paragraph>
 
-        <TertiaryHeading>Step 3: Check cluster health from two angles</TertiaryHeading>
+        <TertiaryHeading>
+          Step 3: Check cluster health from two angles
+        </TertiaryHeading>
 
-        <Paragraph>
-          We now verify the cluster from two perspectives:
-        </Paragraph>
+        <Paragraph>We now verify the cluster from two perspectives:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
             <Strong>Minikube's view</Strong> - is the local cluster process up?
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <Strong>Kubernetes' view</Strong> - does the API respond, and does the node look healthy?
+            <Strong>Kubernetes' view</Strong> - does the API respond, and does
+            the node look healthy?
           </IndentedTextListItem>
         </IndentedTextList>
 
         <CodeBlockWithCopy code={minikubeCheckCluster} />
 
-        <Paragraph>
-          The most important signals here are:
-        </Paragraph>
+        <Paragraph>The most important signals here are:</Paragraph>
 
         <TextList>
           <TextListItem>
-            <InlineHighlight>minikube status</InlineHighlight> tells you whether the local cluster runtime is up
+            <InlineHighlight>minikube status</InlineHighlight> tells you whether
+            the local cluster runtime is up
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>kubectl get nodes</InlineHighlight> tells you whether Kubernetes sees a node it can schedule onto
+            <InlineHighlight>kubectl get nodes</InlineHighlight> tells you
+            whether Kubernetes sees a node it can schedule onto
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>kubectl get pods -A</InlineHighlight> shows system Pods already running in the cluster
+            <InlineHighlight>kubectl get pods -A</InlineHighlight> shows system
+            Pods already running in the cluster
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          Those system Pods are useful proof that Kubernetes is already doing work before your application exists.
+          Those system Pods are useful proof that Kubernetes is already doing
+          work before your application exists.
         </Paragraph>
 
         <TertiaryHeading>Step 4: Use a namespace on purpose</TertiaryHeading>
 
         <Paragraph>
-          A namespace is a logical boundary inside the cluster. It helps separate one set of resources from another.
-          We'll use a <InlineHighlight>demo</InlineHighlight> namespace so the objects for this post stay grouped together.
+          A namespace is a logical boundary inside the cluster. It helps
+          separate one set of resources from another. We'll use a{" "}
+          <InlineHighlight>demo</InlineHighlight> namespace so the objects for
+          this post stay grouped together.
         </Paragraph>
 
         <CodeBlockWithCopy code={createNamespace} />
@@ -3202,16 +3650,21 @@ const DockerKubernetes = () => {
 
         <Banner title="Why this matters" variant="info">
           <Paragraph>
-            Namespace mistakes are one of the easiest ways to confuse yourself in Kubernetes.
-            If something seems to have disappeared, check whether you are looking in the right namespace before assuming it was deleted.
+            Namespace mistakes are one of the easiest ways to confuse yourself
+            in Kubernetes. If something seems to have disappeared, check whether
+            you are looking in the right namespace before assuming it was
+            deleted.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Step 5: Make the image available to the cluster</TertiaryHeading>
+        <TertiaryHeading>
+          Step 5: Make the image available to the cluster
+        </TertiaryHeading>
 
         <Paragraph>
-          This is the first place where Kubernetes feels different from plain Docker.
-          Your cluster has its own container runtime, so the image you built on your host is not automatically visible inside the cluster.
+          This is the first place where Kubernetes feels different from plain
+          Docker. Your cluster has its own container runtime, so the image you
+          built on your host is not automatically visible inside the cluster.
         </Paragraph>
 
         <Paragraph>
@@ -3222,15 +3675,18 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={minikubeListImages} />
 
         <Paragraph>
-          The important change here is not "the image got rebuilt". The important change is: the cluster can now see a tag called{" "}
-          <InlineHighlight>node-api:dev</InlineHighlight> and is able to start Pods from it.
+          The important change here is not "the image got rebuilt". The
+          important change is: the cluster can now see a tag called{" "}
+          <InlineHighlight>node-api:dev</InlineHighlight> and is able to start
+          Pods from it.
         </Paragraph>
 
         <TertiaryHeading>Step 6: Create a Deployment</TertiaryHeading>
 
         <Paragraph>
-          A Deployment does not run containers directly. It declares how many copies of an application you want and which Pod template should be used.
-          Kubernetes then works backwards from that declaration.
+          A Deployment does not run containers directly. It declares how many
+          copies of an application you want and which Pod template should be
+          used. Kubernetes then works backwards from that declaration.
         </Paragraph>
 
         <Carousel
@@ -3244,15 +3700,11 @@ const DockerKubernetes = () => {
           ]}
         />
 
-        <Paragraph>
-          Apply the Deployment:
-        </Paragraph>
+        <Paragraph>Apply the Deployment:</Paragraph>
 
         <CodeBlockWithCopy code={k8sApplyNodeApiDeployment} />
 
-        <Paragraph>
-          What should happen after that?
-        </Paragraph>
+        <Paragraph>What should happen after that?</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
@@ -3280,16 +3732,19 @@ const DockerKubernetes = () => {
 
         <Banner title="What to look for" variant="warning">
           <Paragraph>
-            If you see a Deployment but no Pod, the problem is somewhere between the controller and the scheduler.
-            If you see a Pod but it is not ready, the problem is usually image pull, startup, or application health.
+            If you see a Deployment but no Pod, the problem is somewhere between
+            the controller and the scheduler. If you see a Pod but it is not
+            ready, the problem is usually image pull, startup, or application
+            health.
           </Paragraph>
         </Banner>
 
         <TertiaryHeading>Step 7: Create a Service</TertiaryHeading>
 
         <Paragraph>
-          Pods are replaceable. Their IPs are not meant to be your stable access point.
-          A Service solves that by giving you one stable name and one stable virtual IP that points at whichever Pods match its selector.
+          Pods are replaceable. Their IPs are not meant to be your stable access
+          point. A Service solves that by giving you one stable name and one
+          stable virtual IP that points at whichever Pods match its selector.
         </Paragraph>
 
         <Carousel
@@ -3306,30 +3761,33 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={k8sApplyNodeApiService} />
 
         <Paragraph>
-          The most important idea here is that Services do not attach to Deployments directly. They attach to <Strong>Pods via labels</Strong>.
+          The most important idea here is that Services do not attach to
+          Deployments directly. They attach to <Strong>Pods via labels</Strong>.
           That is why selectors matter so much later on.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sServiceProof} />
 
         <Paragraph>
-          If the Service exists but the endpoints list is empty, the Service itself is not the problem.
-          It means the selector matched nothing useful.
+          If the Service exists but the endpoints list is empty, the Service
+          itself is not the problem. It means the selector matched nothing
+          useful.
         </Paragraph>
 
-        <TertiaryHeading>Step 8: Reach the Service from your machine</TertiaryHeading>
+        <TertiaryHeading>
+          Step 8: Reach the Service from your machine
+        </TertiaryHeading>
 
         <Paragraph>
-          Right now the Service is internal to the cluster. To test it locally, we use port-forwarding.
-          This creates a temporary path from your machine into that Service without changing the Service type.
+          Right now the Service is internal to the cluster. To test it locally,
+          we use port-forwarding. This creates a temporary path from your
+          machine into that Service without changing the Service type.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sPortForwardNodeApi} />
         <CodeBlockWithCopy code={testNodeApiFromHost} />
 
-        <Paragraph>
-          At this point, the request path is:
-        </Paragraph>
+        <Paragraph>At this point, the request path is:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
@@ -3338,9 +3796,7 @@ const DockerKubernetes = () => {
           <IndentedTextListItem>
             kubectl port-forward carries that traffic into the cluster
           </IndentedTextListItem>
-          <IndentedTextListItem>
-            the Service receives it
-          </IndentedTextListItem>
+          <IndentedTextListItem>the Service receives it</IndentedTextListItem>
           <IndentedTextListItem>
             the Service forwards it to a matching Pod
           </IndentedTextListItem>
@@ -3349,11 +3805,16 @@ const DockerKubernetes = () => {
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <TertiaryHeading>Step 9: Look at the cluster through the dashboard</TertiaryHeading>
+        <TertiaryHeading>
+          Step 9: Look at the cluster through the dashboard
+        </TertiaryHeading>
 
         <Paragraph>
-          The dashboard is useful because it lets you see the same objects visually: Deployments, ReplicaSets, Pods, Services, and their status.
-          It is not a replacement for <InlineHighlight>kubectl</InlineHighlight>, but it can help you connect the names and relationships more quickly.
+          The dashboard is useful because it lets you see the same objects
+          visually: Deployments, ReplicaSets, Pods, Services, and their status.
+          It is not a replacement for <InlineHighlight>kubectl</InlineHighlight>
+          , but it can help you connect the names and relationships more
+          quickly.
         </Paragraph>
 
         <CodeBlockWithCopy code={minikubeDashboard} />
@@ -3361,34 +3822,44 @@ const DockerKubernetes = () => {
         <TertiaryHeading>Step 10: Enable metrics</TertiaryHeading>
 
         <Paragraph>
-          Addons are optional cluster features. We'll enable the metrics server so the cluster can report resource usage back through the API.
+          Addons are optional cluster features. We'll enable the metrics server
+          so the cluster can report resource usage back through the API.
         </Paragraph>
 
         <CodeBlockWithCopy code={minikubeEnableAddons} />
 
         <Paragraph>
-          Once it is ready, these commands start telling you how much CPU and memory the node and Pods are using:
+          Once it is ready, these commands start telling you how much CPU and
+          memory the node and Pods are using:
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sTopIfMetricsServer} />
 
         <Banner title="What changed" variant="info">
           <Paragraph>
-            Before the addon, the cluster could run workloads but had no metrics API available for <InlineHighlight>kubectl top</InlineHighlight>.
-            After the addon is running, resource usage becomes another signal you can inspect.
+            Before the addon, the cluster could run workloads but had no metrics
+            API available for <InlineHighlight>kubectl top</InlineHighlight>.
+            After the addon is running, resource usage becomes another signal
+            you can inspect.
           </Paragraph>
         </Banner>
 
-        <SectionHeading>Understanding Kubernetes (what you just created)</SectionHeading>
+        <SectionHeading>
+          Understanding Kubernetes (what you just created)
+        </SectionHeading>
 
         <Paragraph>
-          At this point, the cluster is no longer empty. You have created application objects, and Kubernetes has reacted by creating more objects on your behalf.
-          This is the part that matters most: if you can explain what now exists and how those pieces connect, you stop treating Kubernetes as a black box.
+          At this point, the cluster is no longer empty. You have created
+          application objects, and Kubernetes has reacted by creating more
+          objects on your behalf. This is the part that matters most: if you can
+          explain what now exists and how those pieces connect, you stop
+          treating Kubernetes as a black box.
         </Paragraph>
 
         <Paragraph>
-          The easiest mistake to make is thinking "I created a Deployment, so Kubernetes ran my app".
-          That skips the interesting part. A Deployment is only the starting point.
+          The easiest mistake to make is thinking "I created a Deployment, so
+          Kubernetes ran my app". That skips the interesting part. A Deployment
+          is only the starting point.
         </Paragraph>
 
         <SubSectionHeading>Explore Your App</SubSectionHeading>
@@ -3396,19 +3867,19 @@ const DockerKubernetes = () => {
         <TertiaryHeading>Step 1: List what exists</TertiaryHeading>
 
         <Paragraph>
-          Start by listing the main resources in the namespace. This gives you the shape of the system before you zoom in on any one object.
+          Start by listing the main resources in the namespace. This gives you
+          the shape of the system before you zoom in on any one object.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sExploreGetEverything} />
         <CodeBlockWithCopy code={k8sGetWide} />
 
-        <Paragraph>
-          What you should expect to see:
-        </Paragraph>
+        <Paragraph>What you should expect to see:</Paragraph>
 
         <TextList>
           <TextListItem>
-            a <Strong>Deployment</Strong> describing the desired application state
+            a <Strong>Deployment</Strong> describing the desired application
+            state
           </TextListItem>
           <TextListItem>
             a <Strong>ReplicaSet</Strong> created by that Deployment
@@ -3420,7 +3891,8 @@ const DockerKubernetes = () => {
             a <Strong>Service</Strong> providing a stable network entry point
           </TextListItem>
           <TextListItem>
-            <Strong>endpoints</Strong> showing which Pod IPs the Service can currently send traffic to
+            <Strong>endpoints</Strong> showing which Pod IPs the Service can
+            currently send traffic to
           </TextListItem>
         </TextList>
 
@@ -3432,10 +3904,12 @@ const DockerKubernetes = () => {
 
         <IndentedTextList>
           <IndentedTextListItem>
-            the <Strong>Deployment</Strong> owns the rollout strategy and replica intent
+            the <Strong>Deployment</Strong> owns the rollout strategy and
+            replica intent
           </IndentedTextListItem>
           <IndentedTextListItem>
-            the <Strong>ReplicaSet</Strong> owns the current set of matching Pods
+            the <Strong>ReplicaSet</Strong> owns the current set of matching
+            Pods
           </IndentedTextListItem>
           <IndentedTextListItem>
             the <Strong>Pod</Strong> is where the container actually runs
@@ -3443,119 +3917,137 @@ const DockerKubernetes = () => {
         </IndentedTextList>
 
         <Paragraph>
-          That is why a Pod disappearing is not automatically a problem. If the Deployment still wants one replica, Kubernetes will create another Pod to replace it.
+          That is why a Pod disappearing is not automatically a problem. If the
+          Deployment still wants one replica, Kubernetes will create another Pod
+          to replace it.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sExploreDescribe} />
 
         <Paragraph>
-          When you run <InlineHighlight>describe</InlineHighlight>, you are reading the object's current state plus the recent events that shaped it.
-          This is usually more useful than staring at YAML once the resource already exists.
+          When you run <InlineHighlight>describe</InlineHighlight>, you are
+          reading the object's current state plus the recent events that shaped
+          it. This is usually more useful than staring at YAML once the resource
+          already exists.
         </Paragraph>
 
         <Banner title="What to notice" variant="info">
           <Paragraph>
-            In the Deployment description, look for the selector and the Pod template. In the Pod description, look for container state, restart count,
-            image name, IP address, and the events at the bottom.
+            In the Deployment description, look for the selector and the Pod
+            template. In the Pod description, look for container state, restart
+            count, image name, IP address, and the events at the bottom.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Step 3: Labels are how objects find each other</TertiaryHeading>
+        <TertiaryHeading>
+          Step 3: Labels are how objects find each other
+        </TertiaryHeading>
 
         <Paragraph>
-          Kubernetes does not wire the Service to the Deployment by name. It wires things together through labels and selectors.
-          That is one of the most important ideas in the whole platform.
+          Kubernetes does not wire the Service to the Deployment by name. It
+          wires things together through labels and selectors. That is one of the
+          most important ideas in the whole platform.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sExploreLabels} />
 
-        <Paragraph>
-          In this example:
-        </Paragraph>
+        <Paragraph>In this example:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
-            the Pod has a label such as <InlineHighlight>app=node-api</InlineHighlight>
+            the Pod has a label such as{" "}
+            <InlineHighlight>app=node-api</InlineHighlight>
           </IndentedTextListItem>
           <IndentedTextListItem>
-            the Service selector says "send traffic to Pods with <InlineHighlight>app=node-api</InlineHighlight>"
+            the Service selector says "send traffic to Pods with{" "}
+            <InlineHighlight>app=node-api</InlineHighlight>"
           </IndentedTextListItem>
         </IndentedTextList>
 
         <Paragraph>
-          If those two do not line up, the Service still exists - but it has nowhere useful to send traffic.
+          If those two do not line up, the Service still exists - but it has
+          nowhere useful to send traffic.
         </Paragraph>
 
-        <TertiaryHeading>Step 4: Read the Service as a routing rule</TertiaryHeading>
+        <TertiaryHeading>
+          Step 4: Read the Service as a routing rule
+        </TertiaryHeading>
 
         <Paragraph>
-          A Service is best understood as "stable address + selector + port mapping".
-          It does not run code. It points traffic at Pods that match its selector and are ready to receive requests.
+          A Service is best understood as "stable address + selector + port
+          mapping". It does not run code. It points traffic at Pods that match
+          its selector and are ready to receive requests.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sExploreServiceEndpoints} />
         <CodeBlockWithCopy code={k8sDescribeService} />
 
-        <Paragraph>
-          The crucial output here is the endpoints list.
-        </Paragraph>
+        <Paragraph>The crucial output here is the endpoints list.</Paragraph>
 
         <TextList>
           <TextListItem>
-            If endpoints are present, the Service has at least one Pod it can route to.
+            If endpoints are present, the Service has at least one Pod it can
+            route to.
           </TextListItem>
           <TextListItem>
-            If endpoints are empty, either the selector matched nothing, the Pods are not ready, or you are looking in the wrong namespace.
+            If endpoints are empty, either the selector matched nothing, the
+            Pods are not ready, or you are looking in the wrong namespace.
           </TextListItem>
         </TextList>
 
         <Banner title="Useful distinction" variant="warning">
           <Paragraph>
-            A Service existing is not proof that routing works. Endpoints are the proof.
+            A Service existing is not proof that routing works. Endpoints are
+            the proof.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Step 5: Read logs from the application, not just object status</TertiaryHeading>
+        <TertiaryHeading>
+          Step 5: Read logs from the application, not just object status
+        </TertiaryHeading>
 
         <Paragraph>
-          Kubernetes object state tells you whether something exists and what condition it is in. Application logs tell you what the process itself is experiencing.
+          Kubernetes object state tells you whether something exists and what
+          condition it is in. Application logs tell you what the process itself
+          is experiencing.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sExploreLogs} />
 
-        <Paragraph>
-          This distinction matters:
-        </Paragraph>
+        <Paragraph>This distinction matters:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
-            <InlineHighlight>kubectl get</InlineHighlight> answers "what exists?"
+            <InlineHighlight>kubectl get</InlineHighlight> answers "what
+            exists?"
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>kubectl describe</InlineHighlight> answers "why is it in this state?"
+            <InlineHighlight>kubectl describe</InlineHighlight> answers "why is
+            it in this state?"
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>kubectl logs</InlineHighlight> answers "what is the process actually doing?"
+            <InlineHighlight>kubectl logs</InlineHighlight> answers "what is the
+            process actually doing?"
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <TertiaryHeading>Step 6: Inspect the world from inside the Pod</TertiaryHeading>
+        <TertiaryHeading>
+          Step 6: Inspect the world from inside the Pod
+        </TertiaryHeading>
 
         <Paragraph>
-          Sometimes the best way to stop guessing is to step inside the Pod and inspect what the application can see from its own point of view.
-          This is the Kubernetes equivalent of <InlineHighlight>docker exec</InlineHighlight>.
+          Sometimes the best way to stop guessing is to step inside the Pod and
+          inspect what the application can see from its own point of view. This
+          is the Kubernetes equivalent of{" "}
+          <InlineHighlight>docker exec</InlineHighlight>.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sExecChecks} />
 
-        <Paragraph>
-          Inside the Pod, you are checking three things:
-        </Paragraph>
+        <Paragraph>Inside the Pod, you are checking three things:</Paragraph>
 
         <TextList>
-          <TextListItem>
-            the container really started
-          </TextListItem>
+          <TextListItem>the container really started</TextListItem>
           <TextListItem>
             the expected environment variables are present
           </TextListItem>
@@ -3565,29 +4057,28 @@ const DockerKubernetes = () => {
         </TextList>
 
         <Paragraph>
-          That helps separate "the app is broken" from "networking into the app is broken".
+          That helps separate "the app is broken" from "networking into the app
+          is broken".
         </Paragraph>
 
         <TertiaryHeading>Step 7: Break one thing on purpose</TertiaryHeading>
 
         <Paragraph>
-          This is where the section becomes useful rather than just descriptive. Deliberately break the Service selector, apply it, and inspect the result.
-          Watching traffic disappear for a clear reason is much more memorable than reading "selectors matter".
+          This is where the section becomes useful rather than just descriptive.
+          Deliberately break the Service selector, apply it, and inspect the
+          result. Watching traffic disappear for a clear reason is much more
+          memorable than reading "selectors matter".
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sBrokenSelectorExercise} />
 
-        <Paragraph>
-          What should happen after you break the selector:
-        </Paragraph>
+        <Paragraph>What should happen after you break the selector:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
             the Service object still exists
           </IndentedTextListItem>
-          <IndentedTextListItem>
-            the Pods still exist
-          </IndentedTextListItem>
+          <IndentedTextListItem>the Pods still exist</IndentedTextListItem>
           <IndentedTextListItem>
             the endpoints become empty
           </IndentedTextListItem>
@@ -3597,95 +4088,121 @@ const DockerKubernetes = () => {
         </IndentedTextList>
 
         <Paragraph>
-          Then restore the correct selector and re-apply the Service. The endpoints should return and traffic should start flowing again.
+          Then restore the correct selector and re-apply the Service. The
+          endpoints should return and traffic should start flowing again.
         </Paragraph>
 
         <Banner title="Why this exercise matters" variant="info">
           <Paragraph>
-            It proves that Service routing is not "magic networking". It is label matching plus a current list of healthy endpoints.
+            It proves that Service routing is not "magic networking". It is
+            label matching plus a current list of healthy endpoints.
           </Paragraph>
         </Banner>
 
         <SubSectionHeading>Debugging loop</SubSectionHeading>
 
         <Paragraph>
-          When the result is not what you expected, use a consistent order instead of jumping between random commands.
+          When the result is not what you expected, use a consistent order
+          instead of jumping between random commands.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sDebugLoop} />
 
-        <Paragraph>
-          Read that loop as a sequence of questions:
-        </Paragraph>
+        <Paragraph>Read that loop as a sequence of questions:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
             <InlineHighlight>get</InlineHighlight> - what exists right now?
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>describe</InlineHighlight> - why is that object in this condition?
+            <InlineHighlight>describe</InlineHighlight> - why is that object in
+            this condition?
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>logs</InlineHighlight> - what does the process say is happening?
+            <InlineHighlight>logs</InlineHighlight> - what does the process say
+            is happening?
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <InlineHighlight>events</InlineHighlight> - what changed recently at the cluster level?
+            <InlineHighlight>events</InlineHighlight> - what changed recently at
+            the cluster level?
           </IndentedTextListItem>
         </IndentedTextList>
 
         <Paragraph>
-          That order matters because it narrows the problem:
-          object existence first, object condition second, application behaviour third, surrounding cluster context last.
+          That order matters because it narrows the problem: object existence
+          first, object condition second, application behaviour third,
+          surrounding cluster context last.
         </Paragraph>
 
         <SectionHeading>Expose Your App Publicly</SectionHeading>
 
         <Paragraph>
-          So far, we've reached the application using <InlineHighlight>kubectl port-forward</InlineHighlight>. That is useful, but it is not the same thing as the cluster exposing the app itself.
+          So far, we've reached the application using{" "}
+          <InlineHighlight>kubectl port-forward</InlineHighlight>. That is
+          useful, but it is not the same thing as the cluster exposing the app
+          itself.
         </Paragraph>
 
         <Paragraph>
-          Port-forward creates a temporary path from <Strong>your machine</Strong> into the cluster. A Service of type <Strong>NodePort</Strong> or <Strong>LoadBalancer</Strong>{` `}
+          Port-forward creates a temporary path from{" "}
+          <Strong>your machine</Strong> into the cluster. A Service of type{" "}
+          <Strong>NodePort</Strong> or <Strong>LoadBalancer</Strong>
+          {` `}
           changes the cluster's own network surface.
         </Paragraph>
 
-        <TertiaryHeading>What changes when you expose a Service</TertiaryHeading>
+        <TertiaryHeading>
+          What changes when you expose a Service
+        </TertiaryHeading>
 
         <Paragraph>
-          The application Pods do not change. The Deployment does not change. What changes is the <Strong>way traffic is allowed into the Service</Strong>.
+          The application Pods do not change. The Deployment does not change.
+          What changes is the{" "}
+          <Strong>way traffic is allowed into the Service</Strong>.
         </Paragraph>
 
         <TextList>
           <TextListItem>
-            <Strong>ClusterIP</Strong> - internal only, reachable from inside the cluster
+            <Strong>ClusterIP</Strong> - internal only, reachable from inside
+            the cluster
           </TextListItem>
           <TextListItem>
-            <Strong>NodePort</Strong> - opens a port on the cluster node and forwards traffic to the Service
+            <Strong>NodePort</Strong> - opens a port on the cluster node and
+            forwards traffic to the Service
           </TextListItem>
           <TextListItem>
-            <Strong>LoadBalancer</Strong> - asks the platform for an external IP in front of the Service
+            <Strong>LoadBalancer</Strong> - asks the platform for an external IP
+            in front of the Service
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          In a cloud environment, <InlineHighlight>LoadBalancer</InlineHighlight> usually means "create a real external load balancer".
-          In Minikube, we simulate that behaviour locally.
+          In a cloud environment,{" "}
+          <InlineHighlight>LoadBalancer</InlineHighlight> usually means "create
+          a real external load balancer". In Minikube, we simulate that
+          behaviour locally.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sPortForwardVsService} />
 
         <Banner title="Useful distinction" variant="info">
           <Paragraph>
-            <InlineHighlight>port-forward</InlineHighlight> is a client-side tunnel for testing. Service types such as <InlineHighlight>NodePort</InlineHighlight> and{" "}
-            <InlineHighlight>LoadBalancer</InlineHighlight> are part of the cluster's own networking configuration.
+            <InlineHighlight>port-forward</InlineHighlight> is a client-side
+            tunnel for testing. Service types such as{" "}
+            <InlineHighlight>NodePort</InlineHighlight> and{" "}
+            <InlineHighlight>LoadBalancer</InlineHighlight> are part of the
+            cluster's own networking configuration.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Option 1: Expose the app with NodePort</TertiaryHeading>
+        <TertiaryHeading>
+          Option 1: Expose the app with NodePort
+        </TertiaryHeading>
 
         <Paragraph>
-          A NodePort Service makes the application reachable through a port on the cluster node itself. In Minikube, that gives you a concrete URL you can request
-          without keeping a port-forward session open.
+          A NodePort Service makes the application reachable through a port on
+          the cluster node itself. In Minikube, that gives you a concrete URL
+          you can request without keeping a port-forward session open.
         </Paragraph>
 
         <Carousel
@@ -3699,25 +4216,21 @@ const DockerKubernetes = () => {
           ]}
         />
 
-        <Paragraph>
-          Apply it, then inspect the Service:
-        </Paragraph>
+        <Paragraph>Apply it, then inspect the Service:</Paragraph>
 
         <CodeBlockWithCopy code={k8sApplyNodePortService} />
 
         <Paragraph>
-          The important thing to notice is that the Service now has a NodePort allocated. The cluster is exposing a port at the node layer, not just inside the cluster.
+          The important thing to notice is that the Service now has a NodePort
+          allocated. The cluster is exposing a port at the node layer, not just
+          inside the cluster.
         </Paragraph>
 
-        <Paragraph>
-          Ask Minikube for a usable URL:
-        </Paragraph>
+        <Paragraph>Ask Minikube for a usable URL:</Paragraph>
 
         <CodeBlockWithCopy code={minikubeServiceUrl} />
 
-        <Paragraph>
-          At that point, the request path becomes:
-        </Paragraph>
+        <Paragraph>At that point, the request path becomes:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
@@ -3734,15 +4247,20 @@ const DockerKubernetes = () => {
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <TertiaryHeading>Option 2: Expose the app with LoadBalancer</TertiaryHeading>
+        <TertiaryHeading>
+          Option 2: Expose the app with LoadBalancer
+        </TertiaryHeading>
 
         <Paragraph>
-          A LoadBalancer Service is the cluster saying: "place an external IP in front of this Service".
-          In a managed cloud cluster, that usually creates a real load balancer through the cloud provider API.
+          A LoadBalancer Service is the cluster saying: "place an external IP in
+          front of this Service". In a managed cloud cluster, that usually
+          creates a real load balancer through the cloud provider API.
         </Paragraph>
 
         <Paragraph>
-          Minikube cannot provision a cloud load balancer, so it uses <InlineHighlight>minikube tunnel</InlineHighlight> to simulate the same access pattern locally.
+          Minikube cannot provision a cloud load balancer, so it uses{" "}
+          <InlineHighlight>minikube tunnel</InlineHighlight> to simulate the
+          same access pattern locally.
         </Paragraph>
 
         <Carousel
@@ -3759,53 +4277,71 @@ const DockerKubernetes = () => {
         <CodeBlockWithCopy code={k8sApplyLoadBalancerService} />
 
         <Paragraph>
-          If you inspect the Service before running the tunnel, you may see that the external IP is still pending. That is expected in a local environment.
+          If you inspect the Service before running the tunnel, you may see that
+          the external IP is still pending. That is expected in a local
+          environment.
         </Paragraph>
 
         <CodeBlockWithCopy code={minikubeTunnel} />
 
         <Paragraph>
-          Once the tunnel is active, the Service should gain an external IP and behave much more like a cloud LoadBalancer Service.
+          Once the tunnel is active, the Service should gain an external IP and
+          behave much more like a cloud LoadBalancer Service.
         </Paragraph>
 
         <Banner title="What this proves" variant="warning">
           <Paragraph>
-            The application code and Pod are still the same. The only thing that changed is the Service type and the path traffic takes to reach it.
+            The application code and Pod are still the same. The only thing that
+            changed is the Service type and the path traffic takes to reach it.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Which exposure method should you use here?</TertiaryHeading>
+        <TertiaryHeading>
+          Which exposure method should you use here?
+        </TertiaryHeading>
 
         <TextList>
           <TextListItem>
-            use <Strong>port-forward</Strong> when you are testing quickly from your own machine
+            use <Strong>port-forward</Strong> when you are testing quickly from
+            your own machine
           </TextListItem>
           <TextListItem>
-            use <Strong>NodePort</Strong> when you want the cluster node itself to expose the Service
+            use <Strong>NodePort</Strong> when you want the cluster node itself
+            to expose the Service
           </TextListItem>
           <TextListItem>
-            use <Strong>LoadBalancer</Strong> when you want the cluster/platform to provide an external entry point
+            use <Strong>LoadBalancer</Strong> when you want the cluster/platform
+            to provide an external entry point
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          For local learning, NodePort is usually the clearest first step because you can see the change immediately.
-          LoadBalancer becomes more useful when you want to understand how cloud-style service exposure works.
+          For local learning, NodePort is usually the clearest first step
+          because you can see the change immediately. LoadBalancer becomes more
+          useful when you want to understand how cloud-style service exposure
+          works.
         </Paragraph>
 
-        <TertiaryHeading>Clean up the extra Services when you are done</TertiaryHeading>
+        <TertiaryHeading>
+          Clean up the extra Services when you are done
+        </TertiaryHeading>
 
         <Paragraph>
-          We only need these additional Service types for learning. Remove them when you are finished so the namespace stays tidy.
+          We only need these additional Service types for learning. Remove them
+          when you are finished so the namespace stays tidy.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sDeleteExposeServices} />
 
-        <SubSectionHeading>Update the API so each Pod can identify itself</SubSectionHeading>
+        <SubSectionHeading>
+          Update the API so each Pod can identify itself
+        </SubSectionHeading>
 
         <Paragraph>
-          Before scaling the Deployment, we need the application to tell us <Strong>which Pod</Strong> answered the request.
-          Otherwise, we can see more Pods in Kubernetes, but we cannot prove traffic is actually being spread across them.
+          Before scaling the Deployment, we need the application to tell us{" "}
+          <Strong>which Pod</Strong> answered the request. Otherwise, we can see
+          more Pods in Kubernetes, but we cannot prove traffic is actually being
+          spread across them.
         </Paragraph>
 
         <Carousel
@@ -3820,7 +4356,8 @@ const DockerKubernetes = () => {
         />
 
         <Paragraph>
-          After updating the file, rebuild the image and make it available to Minikube again:
+          After updating the file, rebuild the image and make it available to
+          Minikube again:
         </Paragraph>
 
         <CodeBlockWithCopy code={minikubeBuildNodeApiImage} />
@@ -3829,32 +4366,37 @@ const DockerKubernetes = () => {
           Then restart the Deployment so the Pods use the new image:
         </Paragraph>
 
-        <CodeBlockWithCopy code={`kubectl rollout restart deployment/node-api 
-kubectl rollout status deployment/node-api`} />
+        <CodeBlockWithCopy
+          code={`kubectl rollout restart deployment/node-api 
+kubectl rollout status deployment/node-api`}
+        />
 
-        <Paragraph>
-          You can now test the new endpoint:
-        </Paragraph>
+        <Paragraph>You can now test the new endpoint:</Paragraph>
 
         <CodeBlockWithCopy code={`curl http://localhost:8080/identity`} />
 
         <Banner title="Why this matters" variant="info">
           <Paragraph>
-            The <InlineHighlight>/identity</InlineHighlight> route turns scaling and updates into something you can observe directly.
-            Repeated requests should start showing different Pod names once multiple replicas exist.
+            The <InlineHighlight>/identity</InlineHighlight> route turns scaling
+            and updates into something you can observe directly. Repeated
+            requests should start showing different Pod names once multiple
+            replicas exist.
           </Paragraph>
         </Banner>
 
         <SectionHeading>Scale Your App</SectionHeading>
 
         <Paragraph>
-          Scaling is where Kubernetes starts to feel different from running containers manually.
-          You are no longer saying "start another container". You are changing the desired replica count and letting Kubernetes work out the rest.
+          Scaling is where Kubernetes starts to feel different from running
+          containers manually. You are no longer saying "start another
+          container". You are changing the desired replica count and letting
+          Kubernetes work out the rest.
         </Paragraph>
 
         <Paragraph>
-          The important thing to understand is that scaling changes the number of <Strong>Pods</Strong>, not the Service.
-          The Service stays stable while the set of endpoints behind it grows or shrinks.
+          The important thing to understand is that scaling changes the number
+          of <Strong>Pods</Strong>, not the Service. The Service stays stable
+          while the set of endpoints behind it grows or shrinks.
         </Paragraph>
 
         <TertiaryHeading>What changes when you scale</TertiaryHeading>
@@ -3864,10 +4406,12 @@ kubectl rollout status deployment/node-api`} />
             the <Strong>Deployment</Strong> desired replica count changes
           </IndentedTextListItem>
           <IndentedTextListItem>
-            the <Strong>ReplicaSet</Strong> creates or removes Pods to match that count
+            the <Strong>ReplicaSet</Strong> creates or removes Pods to match
+            that count
           </IndentedTextListItem>
           <IndentedTextListItem>
-            the <Strong>Service endpoints</Strong> update as Pods become ready or disappear
+            the <Strong>Service endpoints</Strong> update as Pods become ready
+            or disappear
           </IndentedTextListItem>
           <IndentedTextListItem>
             the Service name and access path stay the same
@@ -3875,19 +4419,22 @@ kubectl rollout status deployment/node-api`} />
         </IndentedTextList>
 
         <Paragraph>
-          That stability is the useful part. Clients keep talking to the same Service while Kubernetes changes the Pod fleet behind it.
+          That stability is the useful part. Clients keep talking to the same
+          Service while Kubernetes changes the Pod fleet behind it.
         </Paragraph>
 
         <TertiaryHeading>Step 1: Watch the current state</TertiaryHeading>
 
         <Paragraph>
-          Before changing anything, open a watch so you can see the Pods update in real time.
+          Before changing anything, open a watch so you can see the Pods update
+          in real time.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sScaleWatch} />
 
         <Paragraph>
-          In another terminal, it is also useful to watch the Service endpoints. That shows which Pod IPs are currently eligible to receive traffic.
+          In another terminal, it is also useful to watch the Service endpoints.
+          That shows which Pod IPs are currently eligible to receive traffic.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sScaleServiceEndpoints} />
@@ -3900,94 +4447,678 @@ kubectl rollout status deployment/node-api`} />
 
         <CodeBlockWithCopy code={k8sScaleUp} />
 
-        <Paragraph>
-          What should happen after this:
-        </Paragraph>
+        <Paragraph>What should happen after this:</Paragraph>
 
         <TextList>
           <TextListItem>
             the Deployment desired state changes from 1 to 3
           </TextListItem>
-          <TextListItem>
-            Kubernetes creates two additional Pods
-          </TextListItem>
-          <TextListItem>
-            those Pods are scheduled onto the node
-          </TextListItem>
+          <TextListItem>Kubernetes creates two additional Pods</TextListItem>
+          <TextListItem>those Pods are scheduled onto the node</TextListItem>
           <TextListItem>
             once they are ready, the Service endpoints list expands
           </TextListItem>
         </TextList>
 
         <Paragraph>
-          The useful thing to observe is that the Service itself does not get "scaled".
-          It simply gains more healthy endpoints to route to.
+          The useful thing to observe is that the Service itself does not get
+          "scaled". It simply gains more healthy endpoints to route to.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sScaleExplain} />
 
         <Banner title="What to look for" variant="info">
           <Paragraph>
-            The Deployment should show the new desired replica count quickly, but the Pods may take a moment to appear and become ready.
-            Readiness is what decides when the Service can start sending traffic to them.
+            The Deployment should show the new desired replica count quickly,
+            but the Pods may take a moment to appear and become ready. Readiness
+            is what decides when the Service can start sending traffic to them.
           </Paragraph>
         </Banner>
 
-        <TertiaryHeading>Step 3: Prove traffic is being distributed</TertiaryHeading>
+        <TertiaryHeading>
+          Step 3: Prove traffic is being distributed
+        </TertiaryHeading>
 
         <Paragraph>
-          This is where the <InlineHighlight>/identity</InlineHighlight> endpoint becomes useful. Repeated requests should now show different Pods answering over time.
+          This is where the <InlineHighlight>/identity</InlineHighlight>{" "}
+          endpoint becomes useful. Repeated requests should now show different
+          Pods answering over time.
         </Paragraph>
 
         <CodeBlockWithCopy code={k8sIdentityLoopCmd} />
 
         <Paragraph>
-          If the responses show different Pod names or hostnames, you've proved that:
+          If the responses show different Pod names or hostnames, you've proved
+          that:
         </Paragraph>
 
         <IndentedTextList>
-          <IndentedTextListItem>
-            multiple Pods are running
-          </IndentedTextListItem>
+          <IndentedTextListItem>multiple Pods are running</IndentedTextListItem>
           <IndentedTextListItem>
             the Service sees them as endpoints
           </IndentedTextListItem>
           <IndentedTextListItem>
-            traffic is being spread across that set rather than pinned to one Pod
+            traffic is being spread across that set rather than pinned to one
+            Pod
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <TertiaryHeading>Why scaling is not just "more containers"</TertiaryHeading>
+        <TertiaryHeading>
+          Why scaling is not just "more containers"
+        </TertiaryHeading>
 
         <Paragraph>
-          With plain Docker, running more copies usually means manually starting more containers and then figuring out how traffic should reach them.
+          With plain Docker, running more copies usually means manually starting
+          more containers and then figuring out how traffic should reach them.
           In Kubernetes, scaling is tied to a controller.
         </Paragraph>
 
         <Paragraph>
-          That means the replica count becomes part of the declared application state, and Kubernetes keeps trying to make reality match it.
-          If one scaled Pod dies, Kubernetes does not say "you used to have three". It says "you asked for three, and I currently only have two".
+          That means the replica count becomes part of the declared application
+          state, and Kubernetes keeps trying to make reality match it. If one
+          scaled Pod dies, Kubernetes does not say "you used to have three". It
+          says "you asked for three, and I currently only have two".
         </Paragraph>
 
         <TertiaryHeading>Step 4: Scale back down</TertiaryHeading>
 
-        <Paragraph>
-          Now reduce the replica count again:
-        </Paragraph>
+        <Paragraph>Now reduce the replica count again:</Paragraph>
 
         <CodeBlockWithCopy code={k8sScaleDown} />
 
         <Paragraph>
-          As the extra Pods terminate, the endpoints list should shrink as well. The Service remains stable, but fewer Pods sit behind it.
+          As the extra Pods terminate, the endpoints list should shrink as well.
+          The Service remains stable, but fewer Pods sit behind it.
         </Paragraph>
 
         <Banner title="The main idea" variant="warning">
           <Paragraph>
-            Scaling changes the size of the backend set, not the identity of the frontend entry point.
-            Clients keep using the same Service while Kubernetes adjusts the number of Pods behind it.
+            Scaling changes the size of the backend set, not the identity of the
+            frontend entry point. Clients keep using the same Service while
+            Kubernetes adjusts the number of Pods behind it.
           </Paragraph>
         </Banner>
 
+        <SectionHeading>Update Your App</SectionHeading>
+
+        <Paragraph>
+          Scaling showed you how Kubernetes manages replicas. Updating shows you
+          how Kubernetes manages change. When you change the image in a
+          Deployment, Kubernetes does not restart all Pods at once. It performs
+          a <Strong>rolling update</Strong>: new Pods start, old Pods drain, and
+          the Service continues routing traffic throughout.
+        </Paragraph>
+
+        <Paragraph>
+          The transition is gradual by design. At any point during the update,
+          the Service may be routing requests to both the old version and the
+          new version simultaneously. This is normal. It is also exactly what
+          the <InlineHighlight>/identity</InlineHighlight> endpoint lets you
+          observe.
+        </Paragraph>
+
+        <TertiaryHeading>
+          What Kubernetes does during a rolling update
+        </TertiaryHeading>
+
+        <TextList>
+          <TextListItem>
+            Kubernetes starts one or more Pods using the new image
+          </TextListItem>
+          <TextListItem>
+            it waits for those Pods to pass their readiness probe before marking
+            them healthy
+          </TextListItem>
+          <TextListItem>
+            once the new Pods are ready, it removes an equivalent number of old
+            Pods
+          </TextListItem>
+          <TextListItem>
+            this cycle continues until all Pods are running the new version
+          </TextListItem>
+        </TextList>
+
+        <Paragraph>
+          The Service endpoint list shifts as Pods transition. Healthy new Pods
+          are added. Terminating old Pods are removed. Traffic keeps flowing
+          throughout.
+        </Paragraph>
+
+        <SubSectionHeading>
+          Step 1: Pin to a specific image version
+        </SubSectionHeading>
+
+        <Paragraph>
+          We have been using <InlineHighlight>node-api:dev</InlineHighlight> as
+          the image tag. To make updates observable, we need a way to
+          distinguish one image from another. Version tags give Kubernetes that
+          distinction.
+        </Paragraph>
+
+        <Paragraph>
+          First, rebuild the current application as version 1.0.0, then update
+          the Deployment to use that tag:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={minikubeBuildV100} />
+
+        <Carousel
+          items={[
+            {
+              title: "k8s/node-api-deployment.yaml (v1.0.0)",
+              description:
+                "Update the Deployment to use node-api:1.0.0 and add a VERSION env var. This makes the running version visible through the /identity endpoint.",
+              code: k8sDeploymentV100,
+            },
+          ]}
+        />
+
+        <CodeBlockWithCopy code={k8sApplyNodeApiDeployment} />
+
+        <Paragraph>
+          Confirm the identity endpoint reports version 1.0.0:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={`curl http://localhost:8080/identity`} />
+
+        <SubSectionHeading>Step 2: Build the new version</SubSectionHeading>
+
+        <Paragraph>
+          Make a small change to <InlineHighlight>server.js</InlineHighlight> -
+          adding a log line, updating a comment, anything visible - then rebuild
+          with a 1.0.1 tag. The important thing is that Kubernetes needs two
+          distinct images to be able to roll from one to the other.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={minikubeBuildV101} />
+
+        <SubSectionHeading>
+          Step 3: Trigger the rolling update
+        </SubSectionHeading>
+
+        <Paragraph>
+          Before changing anything, open a watch on the Pods. This lets you see
+          the transition in real time.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={k8sRolloutWatch} />
+
+        <Paragraph>
+          In another terminal, tell the Deployment to use the new image:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={k8sRolloutSetImage} />
+
+        <Paragraph>What you should see:</Paragraph>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            a new Pod starts with{" "}
+            <InlineHighlight>node-api:1.0.1</InlineHighlight>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            once that Pod is ready, the old Pod is terminated
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            rollout status reports success only after all Pods are running the
+            new image
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <Banner title="Why rollout status matters" variant="info">
+          <Paragraph>
+            <InlineHighlight>kubectl rollout status</InlineHighlight> waits
+            until the Deployment reaches its intended state. If a Pod fails to
+            start or its readiness check does not pass, the rollout stalls and
+            the command tells you. This is the first place to look when an
+            update does not go as expected.
+          </Paragraph>
+        </Banner>
+
+        <SubSectionHeading>Step 4: Inspect rollout history</SubSectionHeading>
+
+        <Paragraph>
+          Kubernetes keeps a record of Deployment revisions. Each update creates
+          a new entry in that history.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={k8sRolloutHistory} />
+
+        <Paragraph>
+          The history does not annotate itself automatically. If you want
+          meaningful revision descriptions, annotate the change yourself after
+          applying it:
+        </Paragraph>
+
+        <CodeBlockWithCopy
+          code={`kubectl annotate deployment/node-api kubernetes.io/change-cause="upgrade to 1.0.1"`}
+        />
+
+        <Paragraph>
+          The older <InlineHighlight>--record</InlineHighlight> flag did this
+          automatically but is deprecated in recent versions of kubectl. Either
+          way, the revision numbers alone are enough to roll back to a specific
+          point.
+        </Paragraph>
+
+        <SubSectionHeading>
+          Step 5: Roll back if something goes wrong
+        </SubSectionHeading>
+
+        <Paragraph>
+          If the new version introduces a problem, you can return to the
+          previous revision:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={k8sRolloutUndo} />
+
+        <Paragraph>
+          Kubernetes performs the same rolling process in reverse. New Pods run
+          the old image. Pods running the broken version are replaced. The
+          Service stays stable throughout.
+        </Paragraph>
+
+        <Banner
+          title="Updates and rollbacks follow the same mechanism"
+          variant="warning"
+        >
+          <Paragraph>
+            You are not restoring anything special. You are telling the
+            Deployment to use a different image, and Kubernetes handles the
+            transition the same way it always does. Rollback is just another
+            update.
+          </Paragraph>
+        </Banner>
+
+        <SectionHeading>Services: What They Actually Do</SectionHeading>
+
+        <Paragraph>
+          We have been creating Services and routing traffic through them. It is
+          worth looking more carefully at what a Service does internally,
+          because the behaviour in edge cases - termination, source IP, name
+          resolution - follows logically from the mechanism rather than being a
+          separate thing to memorise.
+        </Paragraph>
+
+        <SubSectionHeading>DNS inside the cluster</SubSectionHeading>
+
+        <Paragraph>
+          Every Service gets a DNS name that matches its resource name. Other
+          Pods can reach <InlineHighlight>node-api</InlineHighlight> or{" "}
+          <InlineHighlight>redis</InlineHighlight> by name without knowing their
+          IP addresses. The cluster's DNS resolver handles that mapping.
+        </Paragraph>
+
+        <Paragraph>
+          This is why service-to-service networking works in Kubernetes. In our
+          Compose setup, containers reached each other by container name. In
+          Kubernetes, Service names play the same role, but with the reliability
+          of a dedicated DNS layer rather than Docker's built-in name
+          resolution.
+        </Paragraph>
+
+        <Paragraph>
+          You can prove this by running a temporary container with network
+          debugging tools:
+        </Paragraph>
+
+        <CodeBlockWithCopy code={k8sDnsProof} />
+
+        <Paragraph>
+          The <InlineHighlight>nslookup</InlineHighlight> results should resolve
+          to the ClusterIP of each Service. You will also see env vars like{" "}
+          <InlineHighlight>NODE_API_SERVICE_HOST</InlineHighlight> injected
+          automatically. Those env vars are a secondary mechanism - they are
+          only set at container startup time, so DNS is more reliable in
+          practice.
+        </Paragraph>
+
+        <Banner title="DNS vs env vars for service discovery" variant="info">
+          <Paragraph>
+            DNS resolution works at request time. Env vars are injected only
+            once, when the container starts. If a Service is created after a Pod
+            starts, DNS will resolve it immediately, but the env vars will not
+            include it until the Pod restarts. Prefer DNS-based lookups for
+            anything that needs to be reliable.
+          </Paragraph>
+        </Banner>
+
+        <SubSectionHeading>Source IP behaviour</SubSectionHeading>
+
+        <Paragraph>
+          ClusterIP Services NAT the client IP before traffic reaches the Pod.
+          The application inside sees the cluster's internal source address, not
+          the original client. For most internal service-to-service traffic,
+          that does not matter.
+        </Paragraph>
+
+        <Paragraph>
+          For externally-facing Services (NodePort, LoadBalancer), a setting
+          called <InlineHighlight>externalTrafficPolicy</InlineHighlight>{" "}
+          controls this:
+        </Paragraph>
+
+        <TextList>
+          <TextListItem>
+            <Strong>Cluster</Strong> (the default) - traffic is spread evenly
+            across all Pods on any node, but the original source IP is replaced
+            with the node's IP
+          </TextListItem>
+          <TextListItem>
+            <Strong>Local</Strong> - traffic is only sent to Pods on nodes that
+            are already running one, but the original source IP is preserved
+          </TextListItem>
+        </TextList>
+
+        <CodeBlockWithCopy code={k8sSourceIpCheck} />
+
+        <Paragraph>
+          In practice, the default is usually what you want. The Local policy is
+          primarily useful when the application needs to make decisions based on
+          the client's IP address, or when audit requirements expect the
+          original address to be visible.
+        </Paragraph>
+
+        <SubSectionHeading>Termination and endpoint draining</SubSectionHeading>
+
+        <Paragraph>
+          When a Pod is removed - through a rollout, a scale-down, or a direct
+          delete - Kubernetes does not stop the process immediately. The
+          sequence matters:
+        </Paragraph>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            the Pod is marked <Strong>Terminating</Strong>
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Kubernetes removes it from the Service endpoint list
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            in-flight requests already routed to that Pod continue to completion
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            the container receives a <InlineHighlight>SIGTERM</InlineHighlight>{" "}
+            signal and has time to finish cleanly
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            after the grace period, the container is forcefully stopped
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <Paragraph>
+          You can watch this happen during a rollout. The endpoint list will
+          shrink before the Pod fully terminates.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={k8sEndpointWatch} />
+
+        <Banner title="Why this order matters" variant="info">
+          <Paragraph>
+            Removing the Pod from endpoints before stopping it means new traffic
+            stops being sent to the Pod while existing connections finish. This
+            is what makes rolling updates safe for live traffic. The Pod drains
+            before it disappears.
+          </Paragraph>
+        </Banner>
+
+        <SectionHeading>Configuration</SectionHeading>
+
+        <Paragraph>
+          In Docker, we passed configuration through environment variables in
+          the run command or Compose file. In Kubernetes, the same approach
+          works, but there is a dedicated resource type for it: the{" "}
+          <Strong>ConfigMap</Strong>.
+        </Paragraph>
+
+        <Paragraph>
+          A ConfigMap is a map of key-value pairs stored as a Kubernetes object.
+          It exists independently of the workload that uses it, which means you
+          can update configuration without rebuilding an image or changing the
+          Deployment definition directly.
+        </Paragraph>
+
+        <SubSectionHeading>
+          ConfigMap via environment variables
+        </SubSectionHeading>
+
+        <Paragraph>
+          The most direct use case: create a ConfigMap from literal values, then
+          reference its keys in the Deployment's{" "}
+          <InlineHighlight>env</InlineHighlight> section.
+        </Paragraph>
+
+        <CodeBlockWithCopy code={k8sConfigMapEnvCreate} />
+
+        <Paragraph>
+          Then update the Deployment to read from the ConfigMap instead of
+          hardcoding the values:
+        </Paragraph>
+
+        <Carousel
+          items={[
+            {
+              title: "k8s/node-api-deployment.yaml (env from ConfigMap)",
+              description:
+                "Replace hardcoded MESSAGE and VERSION values with ConfigMap references. The Deployment structure stays the same - only the source of the values changes.",
+              code: k8sDeploymentWithConfigMapEnv,
+            },
+          ]}
+        />
+
+        <CodeBlockWithCopy code={k8sConfigMapEnvApply} />
+
+        <Banner
+          title="ConfigMap changes do not propagate automatically to env vars"
+          variant="warning"
+        >
+          <Paragraph>
+            If you update a ConfigMap, existing Pods keep the old values until
+            they restart. Env vars are read only at container startup. That is
+            why a rollout restart is needed after changing a ConfigMap used this
+            way.
+          </Paragraph>
+        </Banner>
+
+        <SubSectionHeading>ConfigMap via mounted files</SubSectionHeading>
+
+        <Paragraph>
+          Env vars work well for individual values. For structured configuration
+          - a JSON file, an application settings object, a block of key-value
+          pairs - you can mount a ConfigMap as a file inside the container
+          instead.
+        </Paragraph>
+
+        <Carousel
+          items={[
+            {
+              title: "k8s/settings.json",
+              description:
+                "A structured configuration file. This gets stored in a ConfigMap and mounted into the container at a path the application can read at runtime.",
+              code: k8sSettingsJson,
+            },
+          ]}
+        />
+
+        <CodeBlockWithCopy code={k8sConfigMapFileCreateCmd} />
+
+        <Paragraph>
+          Then update the Deployment to mount that ConfigMap as a volume:
+        </Paragraph>
+
+        <Carousel
+          items={[
+            {
+              title: "k8s/node-api-deployment.yaml (file mount)",
+              description:
+                "Add a volumeMount under the container spec and a volume at Pod spec level. The ConfigMap key becomes the filename at the mount path.",
+              code: k8sConfigMapFileMountSnippet,
+            },
+          ]}
+        />
+
+        <CodeBlockWithCopy code={k8sConfigMapFileProof} />
+
+        <Banner
+          title="File mounts update automatically, env vars do not"
+          variant="info"
+        >
+          <Paragraph>
+            Unlike env vars, ConfigMap file mounts are updated by Kubernetes on
+            a reconciliation cycle when the ConfigMap changes. The application
+            does not need to restart to see new values, as long as it reads the
+            file on each request rather than caching it at startup.
+          </Paragraph>
+        </Banner>
+
+        <SubSectionHeading>Connecting Redis in Kubernetes</SubSectionHeading>
+
+        <Paragraph>
+          Earlier in the Docker Compose section, we added Redis as a second
+          service and connected node-api to it via the{" "}
+          <InlineHighlight>REDIS_URL</InlineHighlight> env var. The same pattern
+          works in Kubernetes. Redis runs as its own Deployment, and node-api
+          reaches it by Service name.
+        </Paragraph>
+
+        <Carousel
+          items={[
+            {
+              title: "k8s/redis.yaml",
+              description:
+                "A minimal Redis Deployment and ClusterIP Service. The Service name 'redis' becomes the hostname node-api uses to connect - the same pattern as Compose, but managed by Kubernetes.",
+              code: k8sRedisManifest,
+            },
+          ]}
+        />
+
+        <CodeBlockWithCopy code={k8sConfigMapRedisUrl} />
+
+        <Paragraph>
+          With the ConfigMap in place, reference it from the Deployment rather
+          than hardcoding the connection string:
+        </Paragraph>
+
+        <Carousel
+          items={[
+            {
+              title: "k8s/node-api-deployment.yaml (Redis URL from ConfigMap)",
+              description:
+                "The connection string stays out of the Deployment definition. If Redis moves or its URL changes, you update the ConfigMap - not the Deployment.",
+              code: k8sDeploymentWithRedis,
+            },
+          ]}
+        />
+
+        <CodeBlockWithCopy code={k8sApplyRedis} />
+
+        <Banner title="The Compose parallel" variant="info">
+          <Paragraph>
+            In Compose, services reached each other by container name. In
+            Kubernetes, they reach each other by Service name. The value{" "}
+            <InlineHighlight>redis://redis:6379</InlineHighlight> works in both
+            environments for the same reason: the DNS resolver maps the name to
+            the right IP at request time.
+          </Paragraph>
+        </Banner>
+
+        <SectionHeading>Wrap up</SectionHeading>
+
+        <Paragraph>
+          The point of this post was never to memorise every command. It was to
+          build a model of what is actually happening when you run a container,
+          wire services together, or hand a workload to Kubernetes.
+        </Paragraph>
+
+        <TertiaryHeading>On the Docker side</TertiaryHeading>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            an image is a packaged filesystem, not a running thing - a container
+            is the running instance created from it
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            a published port creates a path from your machine to the process;
+            without it, the process is isolated even if it is listening
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            data written inside a container disappears unless you explicitly
+            mount storage that lives outside it
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            Compose describes a repeatable local system - services reach each
+            other by name because they share a project network
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            a production image is not just a different tag - it has
+            deterministic installs, explicit defaults, and a non-root runtime
+            user
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <TertiaryHeading>On the Kubernetes side</TertiaryHeading>
+
+        <IndentedTextList>
+          <IndentedTextListItem>
+            a Deployment manages Pods through a ReplicaSet - you declare desired
+            state, Kubernetes keeps reality matched to it
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            a Service is stable while Pods are not - it provides a fixed entry
+            point to a changing set of endpoints
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            scaling changes the endpoint set behind a Service, not the Service
+            itself
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            a rolling update replaces Pods gradually - traffic keeps flowing
+            because old Pods drain before they stop
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            ConfigMaps separate configuration from workload definitions - env
+            vars require a restart to take effect, file mounts update
+            automatically
+          </IndentedTextListItem>
+          <IndentedTextListItem>
+            service discovery works by DNS name, not by IP - names are stable
+            even when the Pods behind them are not
+          </IndentedTextListItem>
+        </IndentedTextList>
+
+        <TertiaryHeading>What the follow-up covers</TertiaryHeading>
+
+        <Paragraph>
+          There are areas this post did not go into, either because they require
+          a cluster in a more specific state, or because they build on what is
+          here rather than introducing new fundamentals.
+        </Paragraph>
+
+        <TextList>
+          <TextListItem>
+            <Strong>Security</Strong> - Pod Security Standards, seccomp
+            profiles, and what "least privilege" looks like at the container
+            level
+          </TextListItem>
+          <TextListItem>
+            <Strong>StatefulSets</Strong> - what changes when your workload
+            needs stable identity, ordered startup, and persistent storage
+            across Pod restarts
+          </TextListItem>
+          <TextListItem>
+            <Strong>Cluster management</Strong> - namespaces, resource quotas,
+            context switching, and how to structure a real cluster beyond a
+            single demo namespace
+          </TextListItem>
+        </TextList>
+
+        <Paragraph>
+          Those topics are covered in the{" "}
+          <TextLink href="/blog/docker-kubernetes-advanced">
+            follow-up post
+          </TextLink>
+          . The concepts here are the foundation they all build on.
+        </Paragraph>
       </PostContainer>
     </PageWrapper>
   );
