@@ -1,37 +1,39 @@
-import React, { useState } from "react";
+import React from "react";
 import styled, { css } from "styled-components";
 
-// components
-import { StyledNavButton, StyledNavLink } from '../Button/Button';
+import { StyledNavLink } from "../Button/Button";
+import { Journal } from "@styled-icons/bootstrap/Journal";
 
-// icons
-import { Journal } from '@styled-icons/bootstrap/Journal'
-
-const Container = styled.div`
-  background: ${({ theme }) => theme.secondary};
+const Container = styled.article`
+  background: ${({ theme }) => theme.surface || theme.secondary};
   position: relative;
   width: 30%;
   margin: 25px 0;
-  transition: border-color 0.5s ease;
+  transition: border-color 0.25s ease;
   border: 2px solid transparent;
-  ${props => props.hovered && css`
-    border-color:  ${({ theme }) => theme.text};
-  `}
+  display: flex;
+  flex-direction: column;
 
-  ${props => props.disabled && css`
-    opacity: 0.4;
-    border: none;
-  `}
+  ${({ $disabled }) =>
+    $disabled &&
+    css`
+      opacity: 0.6;
+      border: none;
+    `}
 
- @media only screen and (min-width: 500px) and (max-width: 1000px) {
+  &:hover {
+    border-color: ${({ theme }) => theme.text};
+  }
+
+  @media only screen and (min-width: 500px) and (max-width: 1000px) {
     width: 100%;
     margin: 20px 0;
-  } 
+  }
 
   @media only screen and (max-width: 500px) {
     width: 100%;
     margin: 20px 0;
-  } 
+  }
 `;
 
 const Flex = styled.div`
@@ -39,35 +41,39 @@ const Flex = styled.div`
   justify-content: center;
   margin: 20px 0;
   flex-flow: wrap;
-`
+  gap: 0.8rem;
+`;
 
 const TopBarText = styled.div`
   display: flex;
   justify-content: space-between;
-  margin: 10px 20px;
+  margin: 10px 20px 0;
   color: ${({ theme }) => theme.text};
+  gap: 1rem;
 `;
 
 const BottomBarText = styled.div`
-  position: relative;
   width: max-content;
-  bottom: 0;
-  margin: 30px auto;
+  margin: 0 auto 30px;
 `;
 
 const StyledTopBarText = styled.span`
   font-size: 1.5rem;
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
 `;
 
-const StyledTitle = styled.h1`
+const StyledTitle = styled.h2`
   font-size: 2.5rem;
   font-weight: bold;
+  margin: 1.2rem 2rem 0;
 `;
 
-const ReadingTime = styled.h1`
+const ReadingTime = styled.p`
   font-size: 1.5rem;
   font-weight: bold;
   font-style: italic;
+  margin: 1rem 2rem 0;
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
 `;
 
 const ComingSoonBanner = styled.div`
@@ -82,20 +88,6 @@ const ComingSoonBanner = styled.div`
   font-size: 3.5rem;
 `;
 
-// const StyledTags = styled.div`
-//   border: 1px solid ${({ theme }) => theme.text};
-//   color: ${props => (props.textColor > 125) ? '#000' : '#FFF'};
-//   font-size: 1.2rem;
-//   font-weight: bold;
-//   padding: 6px 0px;
-//   margin: 0 10px;
-//   width: 120px;
-
-//   ${props => props.background && css`
-//     background: ${props => props.background}
-//   `}
-// `;
-
 const StyledIcon = styled.div`
   svg {
     max-width: 36px;
@@ -103,19 +95,22 @@ const StyledIcon = styled.div`
   }
 `;
 
-const StyledIntro = styled.div`
+const StyledIntro = styled.p`
   margin: 2rem;
   font-size: 2rem;
+  flex: 1;
 `;
 
-const StyledBorder = styled.div`
-  padding: 6px 0px;
+const StyledBorderLink = styled(StyledNavLink)`
+  padding: 0.6rem 1.4rem;
   border: 2px solid ${({ theme }) => theme.primary};
-  :hover {
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease;
+
+  &:hover {
     background: ${({ theme }) => theme.primary};
-    border: 2px solid ${({ theme }) => theme.text};
-    transition: background .5s ease;
-    transition: border .5s ease;
+    border-color: ${({ theme }) => theme.text};
   }
 `;
 
@@ -125,43 +120,58 @@ const StyledJournal = styled(Journal)`
   fill: ${({ theme }) => theme.text};
 `;
 
-
-const BlogPost = ({ title, readingTime, type, date, tags, intro, navigate, published }) => {
-  const [hovered, setHovered] = useState(false);
+const BlogPost = ({
+  title,
+  readingTime,
+  type,
+  date,
+  tags,
+  intro,
+  navigate,
+  published,
+}) => {
   return (
-
-    <Container disabled={!published} hovered={hovered} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      {!published &&
-        <ComingSoonBanner>Not Published...</ComingSoonBanner>
-      }
+    <Container $disabled={!published} aria-labelledby={`blog-post-${navigate}`}>
+      {!published && <ComingSoonBanner>Not Published</ComingSoonBanner>}
       <TopBarText>
-        <StyledTopBarText>{type}</StyledTopBarText >
-        <StyledTopBarText>{date}</StyledTopBarText >
+        <StyledTopBarText>{type}</StyledTopBarText>
+        <StyledTopBarText>{date}</StyledTopBarText>
       </TopBarText>
-      <StyledTitle>
-        {title}
-      </StyledTitle>
-      <ReadingTime>
-        {readingTime}
-      </ReadingTime>
-      <Flex>
-        {tags?.map((x, i) => x.name === 'Misc' ? <StyledJournal key={i} /> : <StyledIcon key={i}>{x.icon}</StyledIcon>)}
+      <StyledTitle id={`blog-post-${navigate}`}>{title}</StyledTitle>
+      <ReadingTime>{readingTime}</ReadingTime>
+      <Flex aria-label={`Tags for ${title}`}>
+        {tags?.map((tag, index) =>
+          tag.name === "Misc" ? (
+            <StyledJournal
+              key={index}
+              role="img"
+              aria-label={tag.name}
+              title={tag.name}
+            />
+          ) : (
+            <StyledIcon
+              key={index}
+              role="img"
+              aria-label={tag.name}
+              title={tag.name}
+            >
+              {tag.icon}
+            </StyledIcon>
+          ),
+        )}
       </Flex>
-      <StyledIntro>
-        {intro}
-      </StyledIntro>
+      <StyledIntro>{intro}</StyledIntro>
       <BottomBarText>
-        <StyledBorder>
-          <StyledNavButton disabled={!published}>
-            <StyledNavLink
-              exact to={`blog/${navigate}`}>
-              Read more
-            </StyledNavLink>
-          </StyledNavButton>
-        </StyledBorder>
+        {published ? (
+          <StyledBorderLink exact to={`/blog/${navigate}`}>
+            Read more
+          </StyledBorderLink>
+        ) : (
+          <StyledTopBarText as="span">Coming soon</StyledTopBarText>
+        )}
       </BottomBarText>
     </Container>
   );
-}
+};
 
 export default BlogPost;

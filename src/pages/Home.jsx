@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { LanguageContext } from "../context/languageContext";
 
 // components
-import Introduction from "../components/Introduction/Introduction";
+import Introduction from "../components/Introduction/AccessibleIntroduction";
 import AboutMe from "../components/AboutMe/AboutMe";
 import ProfessionalExperience from "../components/ProfessionalExperience/ProfessionalExperience";
 import FeaturedProjects from "../components/FeaturedProjects/FeaturedProjects";

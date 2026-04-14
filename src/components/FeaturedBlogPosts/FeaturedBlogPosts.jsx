@@ -170,7 +170,7 @@ const TypeBadge = styled.span`
 
 const DateText = styled.span`
   font-size: 1.3rem;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
 `;
 
 const PostTitle = styled.h3`
@@ -183,7 +183,7 @@ const PostTitle = styled.h3`
 
 const ReadingTime = styled.span`
   font-size: 1.3rem;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
   font-style: italic;
 `;
 

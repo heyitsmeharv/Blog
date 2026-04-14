@@ -30,9 +30,10 @@ const Row = styled.div`
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 `;
 
-const Button = styled.button`
+const Button = styled.button.attrs({ type: "button" })`
   padding: 0.6rem 1rem;
   border-radius: 999px;
   border: 1px solid ${({ theme }) => theme.text};
@@ -46,7 +47,7 @@ const PrimaryButton = styled(Button)`
   border-color: ${({ theme }) => theme.text};
 `;
 
-const LinkButton = styled.button`
+const LinkButton = styled.button.attrs({ type: "button" })`
   background: none;
   border: none;
   text-decoration: underline;
@@ -54,14 +55,23 @@ const LinkButton = styled.button`
 `;
 
 function CookieBanner({ onAccept, onDecline }) {
+  const titleId = "cookie-banner-title";
+  const descriptionId = "cookie-banner-description";
+
   return React.createElement(
     Container,
-    { role: "dialog", "aria-live": "polite" },
-    React.createElement(Title, null, "Cookies & analytics"),
+    {
+      role: "dialog",
+      "aria-modal": false,
+      "aria-labelledby": titleId,
+      "aria-describedby": descriptionId,
+    },
+    React.createElement(Title, { id: titleId }, "Cookies & analytics"),
     React.createElement(
       Text,
+      { id: descriptionId },
       null,
-      "I use Google Analytics to understand usage. Accept to enable analytics. You can change this anytime."
+      "I use Google Analytics to understand usage. Accept to enable analytics. You can change this anytime.",
     ),
     React.createElement(
       Row,
@@ -69,7 +79,7 @@ function CookieBanner({ onAccept, onDecline }) {
       React.createElement(
         Button,
         { onClick: onDecline, "aria-label": "Decline analytics" },
-        "Decline"
+        "Decline",
       ),
       React.createElement(
         PrimaryButton,
@@ -80,9 +90,9 @@ function CookieBanner({ onAccept, onDecline }) {
           },
           "aria-label": "Accept analytics",
         },
-        "Accept"
-      )
-    )
+        "Accept",
+      ),
+    ),
   );
 }
 
@@ -107,15 +117,20 @@ export default function ConsentGate({ children }) {
       React.Fragment,
       null,
       React.createElement(CookieBanner, {
-        onAccept: () => setConsent("accepted"),
+        onAccept: () => {
+          try {
+            localStorage.setItem("consent", "accepted");
+          } catch {}
+          setConsent("accepted");
+        },
         onDecline: () => {
           try {
             localStorage.setItem("consent", "declined");
-          } catch { }
+          } catch {}
           setConsent("declined");
         },
       }),
-      children
+      children,
     );
   }
 
@@ -137,14 +152,20 @@ export function ManageCookies() {
       onClick: () => {
         if (granted) {
           Analytics.stop();
+          try {
+            localStorage.setItem("consent", "declined");
+          } catch {}
           setGranted(false);
         } else {
           Analytics.start();
+          try {
+            localStorage.setItem("consent", "accepted");
+          } catch {}
           setGranted(true);
         }
       },
       "aria-label": "Manage cookie preferences",
     },
-    granted ? "Disable analytics" : "Enable analytics"
+    granted ? "Disable analytics" : "Enable analytics",
   );
 }

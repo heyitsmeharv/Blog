@@ -6,9 +6,8 @@ import { LinkedinSquare } from "@styled-icons/boxicons-logos/LinkedinSquare";
 
 import SlideInBottom from "../../animations/SlideInBottom";
 import ProfileImg from "../../resources/images/Profile.jpg";
-import { Analytics } from "../../helpers/analytics";
-import { contactMe, curriculumVitaeButtonText } from "../../helpers/text";
-import { ContactMeButton, DownloadCVButton } from "../Button/Button";
+import { contactMe } from "../../helpers/text";
+import { ContactMeButton } from "../Button/Button";
 
 const HeroSection = styled.section`
   width: 100%;
@@ -64,6 +63,7 @@ const pulse = keyframes`
   0%, 100% {
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
   }
+
   50% {
     box-shadow: 0 0 0 16px rgba(16, 185, 129, 0);
   }
@@ -116,18 +116,18 @@ const Name = styled.h1`
 const RoleTitle = styled.h2`
   font-size: 2rem;
   font-weight: 400;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
 `;
 
 const Location = styled.p`
   font-size: 1.5rem;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
 `;
 
 const Tagline = styled.p`
   font-size: 1.5rem;
   line-height: 1.75;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
   max-width: 54ch;
 
   @media only screen and (max-width: 768px) {
@@ -196,13 +196,7 @@ const HeroContactButton = styled(ContactMeButton)`
   padding: 0 2.4rem;
 `;
 
-const HeroCVButton = styled(DownloadCVButton)`
-  margin-top: 0;
-  height: 5rem;
-  border-radius: 4px;
-`;
-
-const Introduction = ({ language, open, setOpen }) => {
+const AccessibleIntroduction = ({ language, open, setOpen }) => {
   return (
     <HeroSection id="home">
       <Inner>
@@ -211,19 +205,13 @@ const Introduction = ({ language, open, setOpen }) => {
           <OpenToWorkBadge>Open to work</OpenToWorkBadge>
           <Name>Adam Harvey</Name>
           <RoleTitle>Software Engineer</RoleTitle>
-          <Location>📍 Oxford, England</Location>
-          {/* <Tagline>
-            7 years of delivering commercialised web applications built in React.js.
-            AWS-certified platform engineer with 3+ years of experience building DevOps
-            and cloud-native solutions using AWS, Terraform, and CI/CD tools. Proven track
-            record in leading development teams, modernising infrastructure, and delivering
-            scalable internal tools across diverse industries.
-          </Tagline> */}
+          <Location>Oxford, England</Location>
           <SocialRow>
             <SocialIconLink
               href="https://github.com/heyitsmeharv"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Visit Adam Harvey's GitHub profile"
               title="GitHub"
             >
               <GithubIcon />
@@ -232,6 +220,7 @@ const Introduction = ({ language, open, setOpen }) => {
               href="https://www.linkedin.com/in/heyitsmeharv/"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Visit Adam Harvey's LinkedIn profile"
               title="LinkedIn"
             >
               <LinkedInIcon />
@@ -241,32 +230,12 @@ const Introduction = ({ language, open, setOpen }) => {
             <HeroContactButton
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
+              aria-expanded={open}
+              aria-controls="contact"
               onClick={() => setOpen(!open)}
             >
               {contactMe(language)}
             </HeroContactButton>
-            {/* <HeroCVButton
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://heyitsmeharv.s3.eu-west-2.amazonaws.com/AH_CV.pdf"
-                style={{ textDecoration: "none", color: "inherit" }}
-                onClick={() =>
-                  Analytics.event("file_download", {
-                    link_url:
-                      "https://heyitsmeharv.s3.eu-west-2.amazonaws.com/AH_CV.pdf",
-                    file_name: "AH_CV.pdf",
-                    file_extension: "pdf",
-                    link_label: "Curriculum Vitae",
-                  })
-                }
-              >
-                {curriculumVitaeButtonText(language)}
-              </a>
-            </HeroCVButton> */}
           </ActionRow>
         </InfoWrapper>
       </Inner>
@@ -274,4 +243,4 @@ const Introduction = ({ language, open, setOpen }) => {
   );
 };
 
-export default Introduction;
+export default AccessibleIntroduction;

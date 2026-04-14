@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
+import React, { useEffect, useState } from "react";
+import styled, { css } from "styled-components";
 import { useLocation } from "react-router-dom";
 
 import { StyledNavLink } from "../Button/Button";
@@ -26,6 +26,20 @@ const NavInner = styled.div`
   }
 `;
 
+const navLinkStyles = css`
+  font-family: "Raleway", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.text};
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: ${({ theme }) => theme.secondary}25;
+  }
+`;
+
 const NavLinks = styled.div`
   display: flex;
   align-items: center;
@@ -40,34 +54,23 @@ const NavControls = styled.div`
   display: flex;
   align-items: center;
   gap: 0.6rem;
+
+  @media only screen and (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const AnchorLink = styled.a`
-  font-family: "Raleway", sans-serif;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.text};
-  text-decoration: none;
+  ${navLinkStyles}
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.4rem;
   padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover {
-    background: ${({ theme }) => theme.secondary}25;
-  }
 `;
 
 const RouterLink = styled(StyledNavLink)`
-  font-size: 1.4rem;
-  font-weight: 600;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  transition: background 0.15s;
-
-  &:hover {
-    background: ${({ theme }) => theme.secondary}25;
-  }
+  ${navLinkStyles}
 
   &.active {
     text-decoration: underline;
@@ -81,18 +84,14 @@ const Divider = styled.span`
   background: ${({ theme }) => theme.secondary};
   opacity: 0.5;
   margin: 0 0.2rem;
-
-  @media only screen and (max-width: 768px) {
-    display: none;
-  }
 `;
 
 const ThemeDot = styled.button.attrs({ type: "button" })`
-  border: 1.5px solid ${(props) => props.$border};
+  border: 2px solid ${({ $border }) => $border};
   border-radius: 50%;
   width: 2.2rem;
   height: 2.2rem;
-  background: ${(props) => props.$colour};
+  background: ${({ $colour }) => $colour};
   cursor: pointer;
   transition: transform 0.15s;
   flex-shrink: 0;
@@ -111,7 +110,9 @@ const LangButton = styled.button.attrs({ type: "button" })`
   min-height: 4.4rem;
   border: 1px solid transparent;
   border-radius: 999px;
-  font-size: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   background: none;
   color: ${({ theme }) => theme.text};
   cursor: pointer;
@@ -133,17 +134,6 @@ const LangButton = styled.button.attrs({ type: "button" })`
     background: ${({ theme }) => theme.secondary}30;
     border-color: ${({ theme }) => theme.secondary};
   }
-
-  &::after {
-    content: attr(data-label);
-    font-size: 1.2rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-  }
-
-  @media only screen and (max-width: 768px) {
-    display: none;
-  }
 `;
 
 const HamburgerBtn = styled.button.attrs({ type: "button" })`
@@ -161,10 +151,6 @@ const HamburgerBtn = styled.button.attrs({ type: "button" })`
   }
 `;
 
-const MobileLangButton = styled(LangButton)`
-  display: inline-flex;
-`;
-
 const HamLine = styled.span`
   display: block;
   width: 22px;
@@ -179,9 +165,11 @@ const HamLine = styled.span`
     transform: ${({ $open }) =>
       $open ? "translateY(7px) rotate(45deg)" : "none"};
   }
+
   &:nth-child(2) {
     opacity: ${({ $open }) => ($open ? 0 : 1)};
   }
+
   &:nth-child(3) {
     transform: ${({ $open }) =>
       $open ? "translateY(-7px) rotate(-45deg)" : "none"};
@@ -206,27 +194,31 @@ const MobileMenu = styled.div`
   }
 `;
 
+const MobileLink = styled(AnchorLink)`
+  width: fit-content;
+`;
+
+const MobileRouterLink = styled(RouterLink)`
+  width: fit-content;
+`;
+
 const MobileLangRow = styled.div`
   display: flex;
   gap: 0.4rem;
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid ${({ theme }) => theme.secondary}30;
-
-  button {
-    display: flex;
-  }
 `;
 
 const THEMES = [
-  { name: "light", label: "Light theme", colour: "#fff", border: "#999" },
-  { name: "dark", label: "Dark theme", colour: "#1b1c22", border: "#555" },
+  { name: "light", label: "Light theme", colour: "#ffffff", border: "#999999" },
+  { name: "dark", label: "Dark theme", colour: "#1b1c22", border: "#555555" },
   { name: "blue", label: "Blue theme", colour: "#0c6e8c", border: "#053546" },
   { name: "red", label: "Red theme", colour: "#6a040f", border: "#240104" },
   { name: "green", label: "Green theme", colour: "#486221", border: "#273506" },
 ];
 
-const Navbar = ({
+const AccessibleNavbar = ({
   currentLanguage,
   currentTheme,
   toggleTheme,
@@ -253,44 +245,6 @@ const Navbar = ({
     </>
   ) : (
     <>
-      <RouterLink exact to="/" onClick={closeMenu}>
-        Home
-      </RouterLink>
-      <RouterLink exact to="/blog" onClick={closeMenu}>
-        Blog
-      </RouterLink>
-      <RouterLink exact to="/projects" onClick={closeMenu}>
-        Projects
-      </RouterLink>
-    </>
-  );
-
-  const mobileLinks = isHome ? (
-    <>
-      <AnchorLink href="#home" onClick={closeMenu}>
-        Home
-      </AnchorLink>
-      <AnchorLink href="#about" onClick={closeMenu}>
-        About
-      </AnchorLink>
-      <AnchorLink href="#experience" onClick={closeMenu}>
-        Experience
-      </AnchorLink>
-      <AnchorLink href="#blog" onClick={closeMenu}>
-        Blog
-      </AnchorLink>
-      <AnchorLink href="#projects" onClick={closeMenu}>
-        Projects
-      </AnchorLink>
-      <AnchorLink href="#skills" onClick={closeMenu}>
-        Skills
-      </AnchorLink>
-      <AnchorLink href="#github" onClick={closeMenu}>
-        GitHub
-      </AnchorLink>
-    </>
-  ) : (
-    <>
       <RouterLink exact to="/">
         Home
       </RouterLink>
@@ -303,6 +257,44 @@ const Navbar = ({
     </>
   );
 
+  const mobileLinks = isHome ? (
+    <>
+      <MobileLink href="#home" onClick={closeMenu}>
+        Home
+      </MobileLink>
+      <MobileLink href="#about" onClick={closeMenu}>
+        About
+      </MobileLink>
+      <MobileLink href="#experience" onClick={closeMenu}>
+        Experience
+      </MobileLink>
+      <MobileLink href="#blog" onClick={closeMenu}>
+        Blog
+      </MobileLink>
+      <MobileLink href="#projects" onClick={closeMenu}>
+        Projects
+      </MobileLink>
+      <MobileLink href="#skills" onClick={closeMenu}>
+        Skills
+      </MobileLink>
+      <MobileLink href="#github" onClick={closeMenu}>
+        GitHub
+      </MobileLink>
+    </>
+  ) : (
+    <>
+      <MobileRouterLink exact to="/" onClick={closeMenu}>
+        Home
+      </MobileRouterLink>
+      <MobileRouterLink exact to="/blog" onClick={closeMenu}>
+        Blog
+      </MobileRouterLink>
+      <MobileRouterLink exact to="/projects" onClick={closeMenu}>
+        Projects
+      </MobileRouterLink>
+    </>
+  );
+
   return (
     <Nav aria-label="Primary navigation">
       <NavInner>
@@ -312,35 +304,45 @@ const Navbar = ({
             onClick={() => toggleLanguage("EN")}
             aria-label="Switch language to English"
             aria-pressed={currentLanguage === "EN"}
-            data-label="EN"
             title="English"
           >
-            🇬🇧
+            EN
           </LangButton>
-          <LangButton onClick={() => toggleLanguage("ES")} title="Español">
-            🇪🇸
+          <LangButton
+            onClick={() => toggleLanguage("ES")}
+            aria-label="Cambiar idioma a español"
+            aria-pressed={currentLanguage === "ES"}
+            title="Español"
+          >
+            ES
           </LangButton>
-          <Divider />
-          {THEMES.map((t) => (
+          <Divider aria-hidden="true" />
+          {THEMES.map((themeOption) => (
             <ThemeDot
-              key={t.name}
-              $colour={t.colour}
-              $border={t.border}
-              onClick={() => toggleTheme(t.name)}
-              title={t.name}
+              key={themeOption.name}
+              $colour={themeOption.colour}
+              $border={themeOption.border}
+              onClick={() => toggleTheme(themeOption.name)}
+              aria-label={`Switch to ${themeOption.label.toLowerCase()}`}
+              aria-pressed={currentTheme === themeOption.name}
+              title={themeOption.label}
             />
           ))}
         </NavControls>
         <HamburgerBtn
-          onClick={() => setIsMenuOpen((o) => !o)}
-          aria-label="Toggle menu"
+          onClick={() => setIsMenuOpen((open) => !open)}
+          aria-label={
+            isMenuOpen ? "Close navigation menu" : "Open navigation menu"
+          }
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-navigation"
         >
           <HamLine $open={isMenuOpen} />
           <HamLine $open={isMenuOpen} />
           <HamLine $open={isMenuOpen} />
         </HamburgerBtn>
       </NavInner>
-      <MobileMenu $open={isMenuOpen}>
+      <MobileMenu id="mobile-navigation" $open={isMenuOpen}>
         {mobileLinks}
         <MobileLangRow>
           <LangButton
@@ -348,18 +350,22 @@ const Navbar = ({
               toggleLanguage("EN");
               closeMenu();
             }}
+            aria-label="Switch language to English"
+            aria-pressed={currentLanguage === "EN"}
             title="English"
           >
-            🇬🇧
+            EN
           </LangButton>
           <LangButton
             onClick={() => {
               toggleLanguage("ES");
               closeMenu();
             }}
+            aria-label="Cambiar idioma a español"
+            aria-pressed={currentLanguage === "ES"}
             title="Español"
           >
-            🇪🇸
+            ES
           </LangButton>
         </MobileLangRow>
       </MobileMenu>
@@ -367,4 +373,4 @@ const Navbar = ({
   );
 };
 
-export default Navbar;
+export default AccessibleNavbar;

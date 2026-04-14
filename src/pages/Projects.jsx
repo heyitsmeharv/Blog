@@ -23,6 +23,12 @@ const Container = styled.div`
   animation: ${SlideInBottom} 0.5s forwards;
 `;
 
+const PageHeading = styled.h1`
+  max-width: 1200px;
+  margin: 0 auto 2.4rem;
+  font-size: clamp(3rem, 4vw, 4rem);
+`;
+
 const FilterBar = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -69,7 +75,7 @@ const ArrowButton = styled.button`
   border: 2px solid ${({ theme }) => theme.buttonColour};
   background: transparent;
   color: ${({ theme }) => theme.text};
-  font-size: 2.4rem;
+  font-size: 0;
   line-height: 1;
   cursor: pointer;
   transition:
@@ -87,6 +93,11 @@ const ArrowButton = styled.button`
   &:disabled {
     opacity: 0.2;
     cursor: default;
+  }
+
+  &::after {
+    content: attr(data-symbol);
+    font-size: 2.4rem;
   }
 `;
 
@@ -143,30 +154,36 @@ export default function Projects() {
 
   return (
     <Container>
-      <FilterBar>
+      <PageHeading>Projects</PageHeading>
+      <FilterBar role="toolbar" aria-label="Filter projects by tag">
         {allTags.map((tag) => (
           <FilterButton
             key={tag}
+            type="button"
             $active={activeFilter === tag}
             $color={tagColors[tag]?.bg}
             $textColor={tagColors[tag]?.text}
             onClick={() => handleFilter(tag)}
+            aria-pressed={activeFilter === tag}
           >
             {tag}
           </FilterButton>
         ))}
       </FilterBar>
-      <CarouselWrapper>
+      <CarouselWrapper aria-live="polite">
         <ArrowButton
+          data-symbol="<"
+          type="button"
           onClick={goPrev}
           disabled={page === 0}
-          aria-label="Previous"
+          aria-label="Previous project page"
         >
           ‹
         </ArrowButton>
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={`${activeFilter}-${page}`}
+            aria-label={`Project page ${page + 1} of ${Math.max(totalPages, 1)}`}
             custom={direction}
             variants={pageVariants}
             initial="enter"
@@ -197,9 +214,11 @@ export default function Projects() {
           </motion.div>
         </AnimatePresence>
         <ArrowButton
+          data-symbol=">"
+          type="button"
           onClick={goNext}
           disabled={page >= totalPages - 1}
-          aria-label="Next"
+          aria-label="Next project page"
         >
           ›
         </ArrowButton>

@@ -73,10 +73,16 @@ import {
 // animations
 import SlideInTop from "../animations/SlideInTop";
 
-const SearchBarWrapper = styled.div`
+const SearchBarWrapper = styled.div.attrs({ role: "search" })`
   display: flex;
   position: relative;
   padding: 1rem 4rem;
+`;
+
+const PageHeading = styled.h1`
+  margin: 0;
+  padding: 3rem 4rem 0;
+  font-size: clamp(3rem, 4vw, 4rem);
 `;
 
 const StyledSearchBar = styled.input`
@@ -98,12 +104,11 @@ const StyledCloseIcon = styled(StyledClose)`
   color: ${({ theme }) => theme.icon};
 `;
 
-const StyledCloseButton = styled.button`
+const StyledCloseButton = styled.button.attrs({ type: "button" })`
   position: absolute;
   right: 40px;
   height: 50px;
   width: 60px;
-  outline: none;
   border: none;
   background: none;
   :hover {
@@ -163,7 +168,7 @@ const Description = styled.p`
   max-width: 600px;
 `;
 
-const Button = styled.button`
+const Button = styled.button.attrs({ type: "button" })`
   padding: 0.8rem 1.5rem;
   font-size: 1.5rem;
   background-color: ${({ theme }) => theme.primary};
@@ -1345,28 +1350,35 @@ export default function Blog() {
 
   return (
     <>
+      <PageHeading>Blog</PageHeading>
       <SearchBarWrapper>
-        <StyledSearchIcon />
+        <StyledSearchIcon aria-hidden="true" />
         <StyledSearchBar
+          aria-label="Search blog posts"
           placeholder="Search"
           type="text"
           onChange={(e) => setSearch(e.target.value)}
           value={search}
         />
-        <StyledCloseButton onClick={() => setSearch("")}>
+        <StyledCloseButton
+          onClick={() => setSearch("")}
+          aria-label="Clear search"
+        >
           {" "}
           <StyledCloseIcon />
         </StyledCloseButton>
       </SearchBarWrapper>
-      <StyledPillButtonWrapper>
+      <StyledPillButtonWrapper role="toolbar" aria-label="Filter blog posts">
         {filterButtons.map((button, key) => {
           return (
             <StyledPillButton
               key={key}
+              type="button"
               $color={button.colour}
               $textColor={button.textColor}
               $active={button.active}
               onClick={() => handlePillButtonClick(button)}
+              aria-pressed={button.active}
             >
               {button.name}
             </StyledPillButton>

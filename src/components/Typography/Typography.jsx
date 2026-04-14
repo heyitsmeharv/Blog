@@ -51,8 +51,8 @@ export const SubSectionHeading = styled.h3`
 export const Paragraph = styled.p`
   color: ${({ theme }) => theme.text};
   font-size: clamp(1.6rem, 1.8vw, 1.9rem);
-  line-height: 3;  
-  margin: 1.5rem 0; 
+  line-height: 3;
+  margin: 1.5rem 0;
 `;
 
 export const InlineHighlight = styled.span`
@@ -75,10 +75,10 @@ export const Italic = styled.p`
 `;
 
 export const TextLink = styled.a`
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.link || theme.text};
   font-weight: bold;
   text-decoration: none;
-  border-bottom: 2px solid ${({ theme }) => theme.secondary};
+  border-bottom: 2px solid ${({ theme }) => theme.link || theme.text};
   padding-bottom: 0.05em;
   text-underline-offset: 0.15em;
   cursor: pointer;

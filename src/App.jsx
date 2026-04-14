@@ -32,7 +32,7 @@ import NotFound from "./pages/NotFound";
 
 // components
 import ConsentGate from "./components/Consent/ConsentGate";
-import Navbar from "./components/Navbar/Navbar";
+import Navbar from "./components/Navbar/AccessibleNavbar";
 
 // blog posts
 import TheStart from "./components/Posts/TheStart.jsx";
@@ -61,14 +61,70 @@ import DockerKubernetes from "./components/Posts/DockerKubernetes";
 import DockerKubernetesAdvanced from "./components/Posts/DockerKubernetesAdvanced";
 import IaCTerraform from "./components/Posts/IaCTerraform";
 import ConventionalCommits from "./components/Posts/ConventionalCommits.jsx";
+import { posts } from "./data/posts";
 
 const slugFromPath = (p) => {
   const m = (p || "").match(/^\/blog\/([^/?#]+)/);
   return m ? m[1] : null;
 };
 
-const TrackingGate = ({ location, children }) => {
+const getDocumentTitle = (pathname) => {
+  if (pathname === "/") {
+    return "Adam Harvey | Portfolio";
+  }
+
+  if (pathname === "/blog") {
+    return "Blog | Adam Harvey";
+  }
+
+  if (pathname === "/projects") {
+    return "Projects | Adam Harvey";
+  }
+
+  const slug = slugFromPath(pathname);
+  const post = posts.find((item) => item.navigate === slug);
+
+  if (post) {
+    return `${post.title} | Adam Harvey`;
+  }
+
+  return "Adam Harvey";
+};
+
+const SkipLink = styled.a`
+  position: absolute;
+  top: -5rem;
+  left: 1.6rem;
+  z-index: 1000;
+  padding: 1rem 1.4rem;
+  background: ${({ theme }) => theme.text};
+  color: ${({ theme }) => theme.primary};
+  text-decoration: none;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border-radius: 0.6rem;
+
+  &:focus {
+    top: 1.2rem;
+  }
+`;
+
+const AppMain = styled.main`
+  min-height: calc(100vh - 6.5rem);
+`;
+
+const TrackingGate = ({ location, mainRef, children }) => {
   const skipFirstPv = useRef(true); // avoid double PV with the initial one fired in Analytics.start()
+
+  useEffect(() => {
+    document.title = getDocumentTitle(location.pathname);
+
+    const id = setTimeout(() => {
+      mainRef?.current?.focus({ preventScroll: true });
+    }, 0);
+
+    return () => clearTimeout(id);
+  }, [location, mainRef]);
 
   useEffect(() => {
     if (!Consent.isGranted()) return; // only after Accept
@@ -96,6 +152,7 @@ const App = () => {
   /* ---------------------------- theme toggle ----------------------------  */
   const [theme, toggleTheme, componentMounted] = useThemeMode();
   let themeMode;
+  const mainRef = useRef(null);
 
   const getTheme = (theme) => {
     switch (theme) {
@@ -116,6 +173,10 @@ const App = () => {
 
   themeMode = getTheme(theme);
 
+  useEffect(() => {
+    document.documentElement.lang = language === "ES" ? "es" : "en";
+  }, [language]);
+
   if (!componentMounted) {
     return <div />;
   }
@@ -127,135 +188,152 @@ const App = () => {
           <GlobalStyles />
           <ConsentGate>
             <Router>
+              <SkipLink href="#main-content">Skip to main content</SkipLink>
               <Route
                 render={({ location }) => {
                   return (
-                    <TrackingGate location={location}>
+                    <TrackingGate location={location} mainRef={mainRef}>
                       <Navbar
+                        currentLanguage={language}
+                        currentTheme={theme}
                         toggleTheme={toggleTheme}
                         toggleLanguage={toggleLanguage}
                       />
-                      <Switch location={location}>
-                        <Route exact path="/" component={Home} />
-                        <Route exact path="/projects" component={Projects} />
-                        <Route exact path="/blog" component={Blog} />
-                        {/* Add blog posts here */}
-                        <Route
-                          exact
-                          path="/blog/the-start"
-                          component={TheStart}
-                        />
-                        <Route
-                          exact
-                          path="/blog/javascript-arrays"
-                          component={JavaScriptArray}
-                        />
-                        <Route
-                          exact
-                          path="/blog/javascript-objects"
-                          component={JavaScriptObjects}
-                        />
-                        <Route
-                          exact
-                          path="/blog/react-text-based-adventure"
-                          component={ReactAdventureGame}
-                        />
-                        <Route
-                          exact
-                          path="/blog/aws-identity-access-management"
-                          component={AWSIdentityAccessManagement}
-                        />
-                        <Route
-                          exact
-                          path="/blog/aws-elastic-compute-cloud"
-                          component={AWSElasticComputeCloud}
-                        />
-                        <Route
-                          exact
-                          path="/blog/aws-databases"
-                          component={AWSDatabases}
-                        />
-                        <Route
-                          exact
-                          path="/blog/aws-route53"
-                          component={AWSRoute53}
-                        />
-                        <Route exact path="/blog/aws-s3" component={AWSS3} />
-                        <Route
-                          exact
-                          path="/blog/aws-cloudfront"
-                          component={AWSCloudFront}
-                        />
-                        <Route exact path="/blog/aws-sqs" component={AWSSQS} />
-                        <Route exact path="/blog/aws-sns" component={AWSSNS} />
-                        <Route
-                          exact
-                          path="/blog/aws-kinesis"
-                          component={AWSKinesis}
-                        />
-                        <Route
-                          exact
-                          path="/blog/aws-containers"
-                          component={AWSContainers}
-                        />
-                        <Route exact path="/blog/aws-vpc" component={AWSVPC} />
-                        <Route
-                          exact
-                          path="/blog/aws-data-analytics"
-                          component={AWSDataAnalytics}
-                        />
-                        <Route
-                          exact
-                          path="/blog/aws-serverless"
-                          component={AWSServerless}
-                        />
-                        <Route
-                          exact
-                          path="/blog/aws-machine-learning"
-                          component={AWSMachineLearning}
-                        />
-                        <Route
-                          exact
-                          path="/blog/aws-monitoring-audit"
-                          component={AWSMonitoringAudit}
-                        />
-                        <Route
-                          exact
-                          path="/blog/aws-security-encryption"
-                          component={AWSSecurityEncryption}
-                        />
-                        <Route
-                          exact
-                          path="/blog/getting-started-with-bash-scripting"
-                          component={BashScripting}
-                        />
-                        <Route
-                          exact
-                          path="/blog/github-ci-cd"
-                          component={GitHubCICD}
-                        />
-                        <Route
-                          exact
-                          path="/blog/intro-to-docker-kubernetes"
-                          component={DockerKubernetes}
-                        />
-                        <Route
-                          exact
-                          path="/blog/docker-kubernetes-advanced"
-                          component={DockerKubernetesAdvanced}
-                        />
-                        <Route
-                          exact
-                          path="/blog/infrastructure-as-code-with-terraform"
-                          component={IaCTerraform}
-                        />
-                        <Route
-                          exact
-                          path="/blog/semantic-versioning-with-conventional-commits"
-                          component={ConventionalCommits}
-                        />
-                        <Route component={NotFound} />
-                      </Switch>
+                      <AppMain id="main-content" ref={mainRef} tabIndex="-1">
+                        <Switch location={location}>
+                          <Route exact path="/" component={Home} />
+                          <Route exact path="/projects" component={Projects} />
+                          <Route exact path="/blog" component={Blog} />
+                          {/* Add blog posts here */}
+                          <Route
+                            exact
+                            path="/blog/the-start"
+                            component={TheStart}
+                          />
+                          <Route
+                            exact
+                            path="/blog/javascript-arrays"
+                            component={JavaScriptArray}
+                          />
+                          <Route
+                            exact
+                            path="/blog/javascript-objects"
+                            component={JavaScriptObjects}
+                          />
+                          <Route
+                            exact
+                            path="/blog/react-text-based-adventure"
+                            component={ReactAdventureGame}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-identity-access-management"
+                            component={AWSIdentityAccessManagement}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-elastic-compute-cloud"
+                            component={AWSElasticComputeCloud}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-databases"
+                            component={AWSDatabases}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-route53"
+                            component={AWSRoute53}
+                          />
+                          <Route exact path="/blog/aws-s3" component={AWSS3} />
+                          <Route
+                            exact
+                            path="/blog/aws-cloudfront"
+                            component={AWSCloudFront}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-sqs"
+                            component={AWSSQS}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-sns"
+                            component={AWSSNS}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-kinesis"
+                            component={AWSKinesis}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-containers"
+                            component={AWSContainers}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-vpc"
+                            component={AWSVPC}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-data-analytics"
+                            component={AWSDataAnalytics}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-serverless"
+                            component={AWSServerless}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-machine-learning"
+                            component={AWSMachineLearning}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-monitoring-audit"
+                            component={AWSMonitoringAudit}
+                          />
+                          <Route
+                            exact
+                            path="/blog/aws-security-encryption"
+                            component={AWSSecurityEncryption}
+                          />
+                          <Route
+                            exact
+                            path="/blog/getting-started-with-bash-scripting"
+                            component={BashScripting}
+                          />
+                          <Route
+                            exact
+                            path="/blog/github-ci-cd"
+                            component={GitHubCICD}
+                          />
+                          <Route
+                            exact
+                            path="/blog/intro-to-docker-kubernetes"
+                            component={DockerKubernetes}
+                          />
+                          <Route
+                            exact
+                            path="/blog/docker-kubernetes-advanced"
+                            component={DockerKubernetesAdvanced}
+                          />
+                          <Route
+                            exact
+                            path="/blog/infrastructure-as-code-with-terraform"
+                            component={IaCTerraform}
+                          />
+                          <Route
+                            exact
+                            path="/blog/semantic-versioning-with-conventional-commits"
+                            component={ConventionalCommits}
+                          />
+                          <Route component={NotFound} />
+                        </Switch>
+                      </AppMain>
                     </TrackingGate>
                   );
                 }}

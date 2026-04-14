@@ -1,16 +1,15 @@
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import styled from "styled-components";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import styled from 'styled-components';
+import Toast from "../Toast/Toast";
 
-import Toast from '../Toast/Toast';
-
-import Confetti from 'canvas-confetti';
+import Confetti from "canvas-confetti";
 
 //icons
-import { CheckSVG } from '../../resources/styles/icons';
-import { ErrorSVG } from '../../resources/styles/icons';
-import { Like } from '@styled-icons/boxicons-solid/Like';
+import { CheckSVG } from "../../resources/styles/icons";
+import { ErrorSVG } from "../../resources/styles/icons";
+import { Like } from "@styled-icons/boxicons-solid/Like";
 
 const Container = styled.div`
   background: ${({ theme }) => theme.secondary};
@@ -33,10 +32,8 @@ const StyledLikeIcon = styled(Like)`
 
 const StyledButton = styled(motion.button)`
   color: ${({ theme }) => theme.text};
-  outline: none;
   background: none;
   border: 2px solid ${({ theme }) => theme.text};
-;
   border-radius: 50%;
   padding: 10px;
 `;
@@ -45,7 +42,7 @@ const StyledText = styled.p`
   font-size: 22px;
   font-weight: bold;
   text-align: center;
-  padding-bottom: 2px
+  padding-bottom: 2px;
 `;
 
 const LikeCounter = () => {
@@ -54,27 +51,29 @@ const LikeCounter = () => {
   const [list, setList] = useState([]);
 
   useEffect(() => {
-    fetch('https://heyitsmeharv-backend.herokuapp.com/likeCount/')
-      .then(response => {
+    fetch("https://heyitsmeharv-backend.herokuapp.com/likeCount/")
+      .then((response) => {
         return response.json();
-      }).then(likeCount => {
+      })
+      .then((likeCount) => {
         setCount(likeCount);
         setLoading(false);
       })
-      .catch(error => {
-        console.log(`Unable to get like count: ${error}`)
-      })
+      .catch((error) => {
+        console.log(`Unable to get like count: ${error}`);
+      });
   }, [loading]);
 
-  const createToast = type => {
-    const id = Math.floor((Math.random() * 100) + 1);
+  const createToast = (type) => {
+    const id = Math.floor(Math.random() * 100 + 1);
     const toast = {
       id,
-      title: type === 'Success' ? 'Success' : 'Error',
-      description: type === 'Success' ? 'Successfully Added Like' : 'Failed To Add Like',
-      backgroundColor: type === 'Success' ? '#5cb85c' : '#d9534f',
-      icon: type === 'Success' ? <CheckSVG /> : <ErrorSVG />
-    }
+      title: type === "Success" ? "Success" : "Error",
+      description:
+        type === "Success" ? "Successfully Added Like" : "Failed To Add Like",
+      backgroundColor: type === "Success" ? "#5cb85c" : "#d9534f",
+      icon: type === "Success" ? <CheckSVG /> : <ErrorSVG />,
+    };
     let array = [];
     array.push(...list, toast);
     setList(array);
@@ -83,39 +82,41 @@ const LikeCounter = () => {
   const handleSubmitLike = () => {
     const likeObj = {
       likeCount: count[count.length - 1].likeCount + 1,
-    }
+    };
 
-    fetch('https://heyitsmeharv-backend.herokuapp.com/likeCount/add', {
+    fetch("https://heyitsmeharv-backend.herokuapp.com/likeCount/add", {
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
       method: "POST",
-      body: JSON.stringify(likeObj)
-    }).then(response => {
-      if (response.ok) {
-        createToast('Success');
-        setLoading(true);
-        Confetti();
-      } else {
-        createToast('Fail');
-      }
+      body: JSON.stringify(likeObj),
     })
-      .catch(error => {
+      .then((response) => {
+        if (response.ok) {
+          createToast("Success");
+          setLoading(true);
+          Confetti();
+        } else {
+          createToast("Fail");
+        }
+      })
+      .catch((error) => {
         console.log(`Unable to submit like: ${error}`);
       });
-  }
+  };
 
   return (
     <Container>
       <Wrapper>
-        <StyledText>
-          {count && count[count.length - 1]?.likeCount}
-        </StyledText>
+        <StyledText>{count && count[count.length - 1]?.likeCount}</StyledText>
         <StyledButton
+          type="button"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={() => handleSubmitLike()}>
+          onClick={() => handleSubmitLike()}
+          aria-label="Like this post"
+        >
           <StyledLikeIcon />
         </StyledButton>
       </Wrapper>

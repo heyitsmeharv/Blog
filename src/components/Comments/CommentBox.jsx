@@ -1,14 +1,14 @@
-import React, { useState, useRef } from 'react';
-import useDynamicHeightField from '../../hooks/useDynamicHeightField';
-import styled, { css } from 'styled-components';
+import React, { useState, useRef } from "react";
+import useDynamicHeightField from "../../hooks/useDynamicHeightField";
+import styled, { css } from "styled-components";
 
-import Toast from '../Toast/Toast';
-import { CommentInput, CommentTextArea } from '../Input/Input';
-import { CommentSendButton, CommentCancelButton } from '../Button/Button';
+import Toast from "../Toast/Toast";
+import { CommentInput, CommentTextArea } from "../Input/Input";
+import { CommentSendButton, CommentCancelButton } from "../Button/Button";
 
 //icons
-import { CheckSVG } from '../../resources/styles/icons';
-import { ErrorSVG } from '../../resources/styles/icons';
+import { CheckSVG } from "../../resources/styles/icons";
+import { ErrorSVG } from "../../resources/styles/icons";
 
 // helpers
 import { Analytics } from "../../helpers/analytics";
@@ -17,7 +17,7 @@ import { nameInput, commentPrompt, cancel, submit } from "../../helpers/text";
 const INITIAL_HEIGHT = 46;
 
 const Container = styled.div`
-  font-family: 'Raleway', sans-serif;
+  font-family: "Raleway", sans-serif;
   display: flex;
   flex-wrap: wrap;
   max-width: 400px;
@@ -28,22 +28,26 @@ const Container = styled.div`
   padding: 14px;
   transition: min - height 0.4s ease;
   max-height: 90px;
-  ${props => props.modified && css`
-    max-height: unset;
-  `}
-  ${props => props.expanded && css`
-    .header {
-      transform: translateY(10px);
-      opacity: 1;
-      visibility: visible;
-    }
-    .actions {
-      opacity: 1;
-    }
-    .comment-field {
-      transform: translateY(40px);
-    }
-  `}
+  ${(props) =>
+    props.modified &&
+    css`
+      max-height: unset;
+    `}
+  ${(props) =>
+    props.expanded &&
+    css`
+      .header {
+        transform: translateY(10px);
+        opacity: 1;
+        visibility: visible;
+      }
+      .actions {
+        opacity: 1;
+      }
+      .comment-field {
+        transform: translateY(40px);
+      }
+    `}
 `;
 
 const Header = styled.div`
@@ -54,10 +58,16 @@ const Header = styled.div`
   width: 90%;
 `;
 
-const Label = styled.label`
-  height: 0;
-  width: 0;
-  visibility: hidden;
+const HiddenLabel = styled.label`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 `;
 
 const Actions = styled.div`
@@ -71,8 +81,8 @@ const Actions = styled.div`
 `;
 
 const CommentBox = ({ setLoading, language }) => {
-  const [name, setName] = useState('');
-  const [comment, setComment] = useState('');
+  const [name, setName] = useState("");
+  const [comment, setComment] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [list, setList] = useState([]);
 
@@ -81,19 +91,22 @@ const CommentBox = ({ setLoading, language }) => {
   const containerRef = useRef(null);
 
   const handleOnReset = () => {
-    setName('');
-    setComment('');
+    setName("");
+    setComment("");
   };
 
-  const createToast = type => {
-    const id = Math.floor((Math.random() * 100) + 1);
+  const createToast = (type) => {
+    const id = Math.floor(Math.random() * 100 + 1);
     const toast = {
       id,
-      title: type === 'Success' ? 'Success' : 'Error',
-      description: type === 'Success' ? 'Successfully Made Comment' : 'Failed To Make Comment',
-      backgroundColor: type === 'Success' ? '#5cb85c' : '#d9534f',
-      icon: type === 'Success' ? <CheckSVG /> : <ErrorSVG />
-    }
+      title: type === "Success" ? "Success" : "Error",
+      description:
+        type === "Success"
+          ? "Successfully Made Comment"
+          : "Failed To Make Comment",
+      backgroundColor: type === "Success" ? "#5cb85c" : "#d9534f",
+      icon: type === "Success" ? <CheckSVG /> : <ErrorSVG />,
+    };
     let array = [];
     array.push(...list, toast);
     setList(array);
@@ -103,54 +116,55 @@ const CommentBox = ({ setLoading, language }) => {
     const commentObj = {
       comment: comment,
       name: name,
-    }
+    };
 
-    fetch('https://heyitsmeharv-backend.herokuapp.com/comments/add', {
+    fetch("https://heyitsmeharv-backend.herokuapp.com/comments/add", {
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
       method: "POST",
-      body: JSON.stringify(commentObj)
-    }).then(response => {
-      if (response.ok) {
-        createToast('Success');
-        setLoading(true);
-        Analytics.event('Comment Success', {
-          category: 'Comment',
-          action: 'Successfully sent a comment',
-          label: 'Submit'
-        });
-      } else {
-        createToast('Fail');
-        Analytics.event('Comment Failure', {
-          category: 'Contact Me',
-          action: 'Failed to send a comment',
-          label: 'Submit'
-        });
-      }
+      body: JSON.stringify(commentObj),
     })
-      .catch(error => {
+      .then((response) => {
+        if (response.ok) {
+          createToast("Success");
+          setLoading(true);
+          Analytics.event("Comment Success", {
+            category: "Comment",
+            action: "Successfully sent a comment",
+            label: "Submit",
+          });
+        } else {
+          createToast("Fail");
+          Analytics.event("Comment Failure", {
+            category: "Contact Me",
+            action: "Failed to send a comment",
+            label: "Submit",
+          });
+        }
+      })
+      .catch((error) => {
         console.log(`Unable to submit comment: ${error}`);
-        Analytics.event('Comment Failure', {
-          category: 'Contact Me',
-          action: 'Failed to send a comment',
-          label: 'Submit'
+        Analytics.event("Comment Failure", {
+          category: "Contact Me",
+          action: "Failed to send a comment",
+          label: "Submit",
         });
       });
     handleOnReset();
-  }
+  };
 
   const onExpand = () => {
     if (!isExpanded) {
       outerHeight.current = containerRef.current.scrollHeight;
       setIsExpanded(true);
     }
-  }
+  };
 
   const onChange = (e) => {
     setComment(e.target.value);
-  }
+  };
 
   const onClose = () => {
     handleOnReset();
@@ -167,18 +181,20 @@ const CommentBox = ({ setLoading, language }) => {
       collapsed={!isExpanded}
       modified={comment && comment.length > 0}
       style={{
-        minHeight: isExpanded ? outerHeight.current : INITIAL_HEIGHT
+        minHeight: isExpanded ? outerHeight.current : INITIAL_HEIGHT,
       }}
     >
       <Header className="header">
+        <HiddenLabel htmlFor="comment-name">{nameInput(language)}</HiddenLabel>
         <CommentInput
+          id="comment-name"
           onChange={(e) => setName(e.target.value)}
           placeholder={nameInput(language)}
           value={name}
           name="name"
         />
       </Header>
-      <Label htmlFor="comment">What are your thoughts?</Label>
+      <HiddenLabel htmlFor="comment-field">What are your thoughts?</HiddenLabel>
       <CommentTextArea
         ref={textRef}
         onClick={onExpand}
@@ -195,6 +211,7 @@ const CommentBox = ({ setLoading, language }) => {
           {cancel(language)}
         </CommentCancelButton>
         <CommentSendButton
+          type="button"
           onClick={() => handleSubmitComment()}
           disabled={comment.length === 0 || name.length === 0}
         >

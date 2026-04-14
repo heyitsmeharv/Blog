@@ -66,7 +66,7 @@ const Timeline = styled.div`
   flex-direction: column;
   gap: 4rem;
   border-left: 2px solid ${({ theme }) => theme.secondary}50;
-  padding-left: 3.25rem;
+  padding-left: 3.5rem;
   margin-left: 0.8rem;
 `;
 
@@ -108,18 +108,18 @@ const CompanyName = styled.h3`
 
 const RoleTitle = styled.p`
   font-size: 1.6rem;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
   font-weight: 600;
 `;
 
 const SubMeta = styled.span`
   font-size: 1.4rem;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
 `;
 
 const Period = styled.span`
   font-size: 1.4rem;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.mutedText || theme.secondary};
   white-space: nowrap;
   padding-top: 0.4rem;
   font-weight: 500;

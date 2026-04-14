@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import styled from "styled-components";
 
 // components
@@ -67,7 +73,6 @@ const Description = styled.div`
 const Stage = styled.div`
   position: relative;
   padding: 1.4rem 6.2rem 1.8rem;
-  outline: none;
 
   @media only screen and (max-width: 700px) {
     padding: 1.2rem 5.4rem 1.6rem;
@@ -196,7 +201,8 @@ const NavBtn = styled.button`
   }
 
   &:focus-visible {
-    outline: none;
+    outline: 3px solid ${({ theme }) => theme.focus || theme.text};
+    outline-offset: 3px;
     box-shadow:
       0 0 0 0.3rem ${({ theme }) => theme.secondary},
       0 10px 26px rgba(0, 0, 0, 0.22);
@@ -280,7 +286,7 @@ const Carousel = ({ items = [], initialIndex = 0 }) => {
   const goHome = useCallback(() => setIndex(0), []);
   const goEnd = useCallback(
     () => setIndex(Math.max(0, safeItems.length - 1)),
-    [safeItems.length]
+    [safeItems.length],
   );
 
   const onKeyDown = (e) => {
@@ -316,19 +322,34 @@ const Carousel = ({ items = [], initialIndex = 0 }) => {
               {index + 1} / {safeItems.length}
             </Count>
           </HeaderRow>
-          {active.description ? <Description>{active.description}</Description> : null}
+          {active.description ? (
+            <Description>{active.description}</Description>
+          ) : null}
         </Intro>
       </Header>
 
-      <Stage tabIndex={0} onKeyDown={onKeyDown} aria-label="Carousel" role="region">
-        <PrevBtn type="button" onClick={goPrev} disabled={!canPrev} aria-label="Previous">
+      <Stage
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+        aria-label="Carousel"
+        role="region"
+      >
+        <PrevBtn
+          type="button"
+          onClick={goPrev}
+          disabled={!canPrev}
+          aria-label="Previous"
+        >
           <span>←</span>
         </PrevBtn>
 
         <Viewport $height={viewportHeight}>
           <Track $index={index}>
             {safeItems.map((item, idx) => (
-              <Slide key={item.id ?? idx} ref={(el) => (slideRefs.current[idx] = el)}>
+              <Slide
+                key={item.id ?? idx}
+                ref={(el) => (slideRefs.current[idx] = el)}
+              >
                 <CodeFrame>
                   {item?.src ? (
                     <ImageFrame>
@@ -347,7 +368,12 @@ const Carousel = ({ items = [], initialIndex = 0 }) => {
           </Track>
         </Viewport>
 
-        <NextBtn type="button" onClick={goNext} disabled={!canNext} aria-label="Next">
+        <NextBtn
+          type="button"
+          onClick={goNext}
+          disabled={!canNext}
+          aria-label="Next"
+        >
           <span>→</span>
         </NextBtn>
       </Stage>

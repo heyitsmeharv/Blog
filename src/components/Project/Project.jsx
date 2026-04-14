@@ -10,7 +10,7 @@ import { ExternalLink } from "@styled-icons/evaicons-solid/ExternalLink";
 import { tagColors } from "../../data/tagColors";
 
 const Card = styled(motion.div)`
-  background: ${({ theme }) => theme.secondary};
+  background: ${({ theme }) => theme.surface || theme.secondary};
   border-radius: 12px;
   overflow: hidden;
   display: flex;
@@ -48,8 +48,7 @@ const Name = styled.h3`
 
 const Description = styled.p`
   font-size: 1.3rem;
-  color: ${({ theme }) => theme.text};
-  opacity: 0.8;
+  color: ${({ theme }) => theme.mutedText || theme.text};
   margin: 0 0 1.4rem;
   line-height: 1.6;
   flex: 1;
@@ -85,7 +84,7 @@ const StyledAnchor = styled.a`
   text-decoration: none;
   font-size: 1.3rem;
   font-weight: 600;
-  opacity: 0.75;
+  opacity: 0.85;
   transition: opacity 0.2s;
 
   &:hover {
@@ -127,12 +126,22 @@ const Project = ({ name, description, image, github, link, tags }) => {
           ))}
         </TagRow>
         <LinkRow>
-          <StyledAnchor href={github} target="_blank" rel="noopener noreferrer">
+          <StyledAnchor
+            href={github}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`View ${name} source code on GitHub`}
+          >
             <StyledGithub />
             GitHub
           </StyledAnchor>
           {link && (
-            <StyledAnchor href={link} target="_blank" rel="noopener noreferrer">
+            <StyledAnchor
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${name} live demo`}
+            >
               <StyledExternalLink />
               Live Demo
             </StyledAnchor>
