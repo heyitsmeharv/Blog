@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.2](https://github.com/heyitsmeharv/my-portfolio-blog/compare/v0.1.1...v0.1.2) (2026-04-14)
+
+### Features
+
+- carousel view for projects ([9f0c384](https://github.com/heyitsmeharv/my-portfolio-blog/commit/9f0c384162db0c45abe05c18c75f7f0add275f67))
+- new projects page ([c4dc633](https://github.com/heyitsmeharv/my-portfolio-blog/commit/c4dc6335398339c510accbb6fcd33312a53dbaef))
+- published docker/kubernetes posts ([b145c39](https://github.com/heyitsmeharv/my-portfolio-blog/commit/b145c397b434cb374fabd1aa07efb1117ae3c78e))
+- revamp home page ([4c6a747](https://github.com/heyitsmeharv/my-portfolio-blog/commit/4c6a747b7e8a3e5fd1131e524ba2ac76f5134e5f))
+
+### Bug Fixes
+
+- amended ffp description ([c49f4aa](https://github.com/heyitsmeharv/my-portfolio-blog/commit/c49f4aa1a5ecab9616b132d20e77ece4e84198d3))
+- featured blog posts icons ([cfa707b](https://github.com/heyitsmeharv/my-portfolio-blog/commit/cfa707be7aba9c002e546d2ff36dcf034ae128be))
+- jsx-dev-runtime ([75a5795](https://github.com/heyitsmeharv/my-portfolio-blog/commit/75a579558b30c2772518bba8d69d73b27b8ddb45))
+- size of terraform svg aligned ([fe86f0b](https://github.com/heyitsmeharv/my-portfolio-blog/commit/fe86f0bce0ec5669f1de1e69a3459b8e234ee034))
+- updated reading times for both docker/kubernetes posts ([924f20c](https://github.com/heyitsmeharv/my-portfolio-blog/commit/924f20c47748a4fe958e85af8da63e4719e85f5a))
+
 ## 0.1.1 (2026-03-07)
 
 ### Features
