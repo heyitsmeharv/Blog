@@ -26,7 +26,7 @@ const Home = () => {
     <Container>
       <ToastContainer />
       <Introduction language={language} open={open} setOpen={setOpen} />
-      <ContactMe language={language} open={open} />
+      <ContactMe language={language} open={open} setOpen={setOpen} />
       <AboutMe language={language} />
       <ProfessionalExperience language={language} />
       <FeaturedBlogPosts language={language} />

@@ -234,15 +234,15 @@ const AccessibleIntroduction = ({ language, open, setOpen }) => {
             </SocialIconLink>
           </SocialRow>
           <ActionRow>
-            <HeroContactButton
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              aria-expanded={open}
-              aria-controls="contact"
-              onClick={() => setOpen(!open)}
-            >
-              {contactMe(language)}
-            </HeroContactButton>
+            {!open && (
+              <HeroContactButton
+                layoutId="contact-morph"
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setOpen(true)}
+              >
+                {contactMe(language)}
+              </HeroContactButton>
+            )}
           </ActionRow>
         </InfoWrapper>
       </Inner>
