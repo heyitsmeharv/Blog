@@ -6,7 +6,6 @@ import { Analytics } from "../helpers/analytics";
 import {
   blogNoResultsDescriptionText,
   blogNoResultsTitleText,
-  blogText,
   clearSearchText,
   clearText,
   filterBlogPostsText,
@@ -1364,7 +1363,6 @@ export default function Blog() {
 
   return (
     <>
-      <PageHeading>{blogText(language)}</PageHeading>
       <SearchBarWrapper>
         <StyledSearchIcon aria-hidden="true" />
         <StyledSearchBar

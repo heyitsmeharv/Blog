@@ -10,7 +10,6 @@ import {
   nextProjectPageText,
   previousProjectPageText,
   projectsPageStatusText,
-  projectsText,
 } from "../helpers/i18nText";
 
 // data
@@ -166,7 +165,6 @@ export default function Projects() {
 
   return (
     <Container>
-      <PageHeading>{projectsText(language)}</PageHeading>
       <FilterBar role="toolbar" aria-label={filterProjectsByTagText(language)}>
         {allTags.map((tag) => (
           <FilterButton
