@@ -17,7 +17,7 @@ const TEXT = {
 I have since branched out into various roles, taking on problem-solving, client-facing, and leadership responsibilities.
 I would describe myself as a fun, friendly, and enthusiastic problem solver with an inquisitive mindset.`,
     experienceText: "Experience",
-    skillsText: "Skills",
+    skillsText: "Tech Stack",
     skillsListText: "Here's a list of technologies I've used:",
     comment: "Comment",
     commentText: "Feel free to leave me a comment below.",
@@ -109,7 +109,7 @@ I would describe myself as a fun, friendly, and enthusiastic problem solver with
 Desde entonces he ampliado mi experiencia a distintos puestos, combinando resoluci\u00f3n de problemas, trabajo con clientes y liderazgo.
 Me describir\u00eda como una persona cercana, curiosa y entusiasta.`,
     experienceText: "Experiencia",
-    skillsText: "Habilidades",
+    skillsText: "Tech Stack",
     skillsListText:
       "Aqu\u00ed tienes una lista de tecnolog\u00edas que he utilizado:",
     comment: "Comentario",
