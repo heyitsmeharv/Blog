@@ -74,12 +74,14 @@ I would describe myself as a fun, friendly, and enthusiastic problem solver with
     contactMessageValidationText:
       "Please complete the required fields before sending.",
     sendingMessageStatusText: "Sending message...",
-    messageSentSuccessfullyText: "Message sent successfully.",
+    messageSentSuccessfullyText:
+      "Message accepted. Delivery can still take a moment.",
     unableToSendMessageText: "Unable to send your message right now.",
     successText: "Success",
     errorText: "Error",
-    sentEmailSuccessText: "Successfully sent email.",
+    sentEmailSuccessText: "Message accepted for delivery.",
     sentEmailFailureText: "Failed to send email.",
+    requestReferenceText: "Reference",
     commentSuccessText: "Comment posted successfully.",
     commentFailureText: "Failed to post comment.",
     likeSuccessText: "Like added successfully.",
@@ -167,12 +169,14 @@ Me describir\u00eda como una persona cercana, curiosa y entusiasta.`,
     contactMessageValidationText:
       "Completa los campos obligatorios antes de enviar el mensaje.",
     sendingMessageStatusText: "Enviando mensaje...",
-    messageSentSuccessfullyText: "Mensaje enviado correctamente.",
+    messageSentSuccessfullyText:
+      "Mensaje aceptado. La entrega puede tardar unos instantes.",
     unableToSendMessageText: "No se ha podido enviar tu mensaje ahora mismo.",
     successText: "\u00c9xito",
     errorText: "Error",
-    sentEmailSuccessText: "Correo enviado correctamente.",
+    sentEmailSuccessText: "Mensaje aceptado para su entrega.",
     sentEmailFailureText: "No se ha podido enviar el correo.",
+    requestReferenceText: "Referencia",
     commentSuccessText: "Comentario publicado correctamente.",
     commentFailureText: "No se ha podido publicar el comentario.",
     likeSuccessText: "Me gusta a\u00f1adido correctamente.",
@@ -325,6 +329,8 @@ export const sentEmailSuccessText = (language) =>
   t(language, "sentEmailSuccessText");
 export const sentEmailFailureText = (language) =>
   t(language, "sentEmailFailureText");
+export const requestReferenceText = (language) =>
+  t(language, "requestReferenceText");
 export const commentSuccessText = (language) =>
   t(language, "commentSuccessText");
 export const commentFailureText = (language) =>

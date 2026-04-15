@@ -25,6 +25,7 @@ import {
   successText,
   sentEmailFailureText,
   sentEmailSuccessText,
+  requestReferenceText,
 } from "../../helpers/i18nText";
 
 /* ── Overlay scrim ─────────────────────────────────── */
@@ -207,6 +208,41 @@ const ContactMe = ({ language, open, setOpen }) => {
     setStatusMessage("");
   };
 
+  const getRequestId = (response, payload) =>
+    response.headers.get("x-amzn-requestid") ||
+    response.headers.get("x-amzn-requestId") ||
+    payload?.requestId ||
+    payload?.request_id ||
+    "";
+
+  const parseResponseBody = async (response) => {
+    const text = await response.text();
+
+    if (!text) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { message: text };
+    }
+  };
+
+  const buildStatusMessage = (baseMessage, requestId, detail) => {
+    const details = [baseMessage];
+
+    if (detail) {
+      details.push(detail);
+    }
+
+    if (requestId) {
+      details.push(`${requestReferenceText(language)}: ${requestId}`);
+    }
+
+    return details.join(" ");
+  };
+
   const createToast = (type) => {
     const toast = {
       id: `${Date.now()}-${Math.random()}`,
@@ -249,34 +285,73 @@ const ContactMe = ({ language, open, setOpen }) => {
           body: JSON.stringify(emailObj),
         },
       );
+      const payload = await parseResponseBody(response);
+      const requestId = getRequestId(response, payload);
+      const responseDetail = payload?.error || payload?.message || "";
 
       if (response.ok) {
         createToast("Success");
         handleOnReset();
-        setStatusMessage(messageSentSuccessfullyText(language));
+        setStatusMessage(
+          buildStatusMessage(
+            messageSentSuccessfullyText(language),
+            requestId,
+            "",
+          ),
+        );
         Analytics.event("contact_me_success", {
           category: "contact_me",
-          action: "Successfully sent an email",
+          action: "Contact request accepted by backend",
+          request_id: requestId,
+          backend_status: response.status,
+          ses_message_id: payload?.messageId || payload?.message_id,
+        });
+        console.info("Contact request accepted", {
+          requestId,
+          payload,
+          status: response.status,
         });
         return;
       }
 
       createToast("Fail");
       setError(true);
-      setStatusMessage(unableToSendMessageText(language));
+      setStatusMessage(
+        buildStatusMessage(
+          unableToSendMessageText(language),
+          requestId,
+          responseDetail,
+        ),
+      );
       Analytics.event("contact_me_failure", {
         category: "contact_me",
-        action: "Failed to send an email",
+        action: "Contact request rejected by backend",
+        request_id: requestId,
+        backend_status: response.status,
+        backend_error: responseDetail,
+      });
+      console.warn("Contact request rejected", {
+        requestId,
+        payload,
+        status: response.status,
       });
     } catch (sendError) {
       createToast("Fail");
       setError(true);
-      setStatusMessage(unableToSendMessageText(language));
+      setStatusMessage(
+        buildStatusMessage(
+          unableToSendMessageText(language),
+          "",
+          sendError instanceof Error ? sendError.message : String(sendError),
+        ),
+      );
       Analytics.event("contact_me_failure", {
         category: "contact_me",
-        action: "Failed to send an email",
+        action: "Failed to reach contact backend",
+        backend_error:
+          sendError instanceof Error ? sendError.message : String(sendError),
       });
-      console.log(`Unable to send email: ${sendError}`);
+      console.error("Unable to send email", sendError);
     } finally {
       setIsSending(false);
     }
