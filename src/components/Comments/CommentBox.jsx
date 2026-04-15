@@ -139,17 +139,15 @@ const CommentBox = ({ setLoading, language }) => {
         if (response.ok) {
           createToast("Success");
           setLoading(true);
-          Analytics.event("Comment Success", {
-            category: "Comment",
+          Analytics.event("comment_success", {
+            category: "comment",
             action: "Successfully sent a comment",
-            label: "Submit",
           });
         } else {
           createToast("Fail");
-          Analytics.event("Comment Failure", {
-            category: "Contact Me",
+          Analytics.event("comment_failure", {
+            category: "comment",
             action: "Failed to send a comment",
-            label: "Submit",
           });
         }
       })

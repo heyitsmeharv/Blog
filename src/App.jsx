@@ -1,9 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import styled from "styled-components";
-
-// helpers
-import { Analytics, Consent } from "./helpers/analytics";
+import { AnalyticsProvider, usePageTracking } from "@quiet-ly/analytics/react";
 
 // context
 import { LanguageContext } from "./context/languageContext";
@@ -28,10 +26,10 @@ import { GlobalStyles } from "./resources/styles/global";
 import Home from "./pages/Home";
 import Projects from "./pages/Projects";
 import Blog from "./pages/Blog";
+import AnalyticsPage from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 // components
-import ConsentGate from "./components/Consent/ConsentGate";
 import Navbar from "./components/Navbar/LocalizedNavbar";
 
 // blog posts
@@ -119,9 +117,8 @@ const AppMain = styled.main`
   min-height: calc(100vh - 6.5rem);
 `;
 
-const TrackingGate = ({ location, mainRef, language, children }) => {
-  const skipFirstPv = useRef(true); // avoid double PV with the initial one fired in Analytics.start()
-
+/** Syncs document title and focus on route change */
+const RouteEffects = ({ location, mainRef, language, children }) => {
   useEffect(() => {
     document.title = getDocumentTitle(location.pathname, language);
 
@@ -132,23 +129,13 @@ const TrackingGate = ({ location, mainRef, language, children }) => {
     return () => clearTimeout(id);
   }, [language, location, mainRef]);
 
-  useEffect(() => {
-    if (!Consent.isGranted()) return; // only after Accept
-    if (skipFirstPv.current) {
-      // first PV already sent by start()
-      skipFirstPv.current = false;
-      return;
-    }
-
-    const path = location.pathname + location.search;
-    const slug = slugFromPath(path);
-    const id = setTimeout(() => {
-      Analytics.pageview({ path, slug });
-    }, 0);
-    return () => clearTimeout(id);
-  }, [location]);
-
   return children;
+};
+
+/** Fires pageview on every SPA route change via quiet-ly */
+const PageTracker = () => {
+  usePageTracking();
+  return null;
 };
 
 const App = () => {
@@ -187,20 +174,26 @@ const App = () => {
     return <div />;
   }
 
+  const analyticsConfig = {
+    endpoint: import.meta.env.VITE_QUIET_LY_ENDPOINT ?? "",
+    appId: import.meta.env.VITE_QUIET_LY_APP_ID ?? "portfolio",
+  };
+
   return (
     <UserContext.Provider>
       <LanguageContext.Provider value={language}>
         <ThemeProvider theme={themeMode}>
           <GlobalStyles />
-          <ConsentGate>
+          <AnalyticsProvider config={analyticsConfig}>
             <Router>
+              <PageTracker />
               <SkipLink href="#main-content">
                 {skipToMainContentText(language)}
               </SkipLink>
               <Route
                 render={({ location }) => {
                   return (
-                    <TrackingGate
+                    <RouteEffects
                       location={location}
                       mainRef={mainRef}
                       language={language}
@@ -216,6 +209,11 @@ const App = () => {
                           <Route exact path="/" component={Home} />
                           <Route exact path="/projects" component={Projects} />
                           <Route exact path="/blog" component={Blog} />
+                          <Route
+                            exact
+                            path="/analytics"
+                            component={AnalyticsPage}
+                          />
                           {/* Add blog posts here */}
                           <Route
                             exact
@@ -346,12 +344,12 @@ const App = () => {
                           <Route component={NotFound} />
                         </Switch>
                       </AppMain>
-                    </TrackingGate>
+                    </RouteEffects>
                   );
                 }}
               />
             </Router>
-          </ConsentGate>
+          </AnalyticsProvider>
         </ThemeProvider>
       </LanguageContext.Provider>
     </UserContext.Provider>

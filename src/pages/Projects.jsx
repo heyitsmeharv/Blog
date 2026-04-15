@@ -135,7 +135,7 @@ export default function Projects() {
   const [direction, setDirection] = useState(1);
 
   useEffect(() => {
-    Analytics.event("projects", { slug: "projects-selection" });
+    Analytics.event("projects_page_viewed", { slug: "projects-selection" });
   }, []);
 
   const allTags = ["All", ...new Set(projects.flatMap((p) => p.tags))];

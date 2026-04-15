@@ -25,3 +25,10 @@ yarn-error.log*
 
 # keys
 .env
+
+# infra
+terraform.tfstate
+.terraform
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+terraform.tfstate.backup

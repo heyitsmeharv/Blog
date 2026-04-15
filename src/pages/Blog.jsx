@@ -108,7 +108,7 @@ const StyledSearchIcon = styled(Search)`
   position: absolute;
   align-self: center;
   color: ${({ theme }) => theme.icon};
-  width: 2.5rem;
+  width: 3.5rem;
   padding: 0 8px;
 `;
 
@@ -1309,7 +1309,7 @@ export default function Blog() {
   ].reverse();
 
   useEffect(() => {
-    Analytics.event("blog", { slug: "post-selection" });
+    Analytics.event("blog_page_viewed", { slug: "post-selection" });
   }, []);
 
   useEffect(() => {

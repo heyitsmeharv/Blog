@@ -254,10 +254,9 @@ const ContactMe = ({ language, open, setOpen }) => {
         createToast("Success");
         handleOnReset();
         setStatusMessage(messageSentSuccessfullyText(language));
-        Analytics.event("Contact Me Success", {
-          category: "Contact Me",
+        Analytics.event("contact_me_success", {
+          category: "contact_me",
           action: "Successfully sent an email",
-          label: "Send Message",
         });
         return;
       }
@@ -265,19 +264,17 @@ const ContactMe = ({ language, open, setOpen }) => {
       createToast("Fail");
       setError(true);
       setStatusMessage(unableToSendMessageText(language));
-      Analytics.event("Contact Me Failure", {
-        category: "Contact Me",
+      Analytics.event("contact_me_failure", {
+        category: "contact_me",
         action: "Failed to send an email",
-        label: "Send Message",
       });
     } catch (sendError) {
       createToast("Fail");
       setError(true);
       setStatusMessage(unableToSendMessageText(language));
-      Analytics.event("Contact Me Failure", {
-        category: "Contact Me",
+      Analytics.event("contact_me_failure", {
+        category: "contact_me",
         action: "Failed to send an email",
-        label: "Send Message",
       });
       console.log(`Unable to send email: ${sendError}`);
     } finally {
