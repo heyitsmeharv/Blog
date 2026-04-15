@@ -72,7 +72,7 @@ const AnimatedPostContainer = styled(BasePostContainer)`
 
 const AWSElasticComputeCloud = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-ec2" });
+    Analytics.pageview({ slug: "aws-ec2" });
   }, []);
 
   return (
@@ -109,7 +109,9 @@ const AWSElasticComputeCloud = () => {
             </TextLink>
           </TextListItem>
           <TextListItem>
-            <TextLink href="#rent">Options for renting virtual machines</TextLink>
+            <TextLink href="#rent">
+              Options for renting virtual machines
+            </TextLink>
           </TextListItem>
           <TextListItem>
             <TextLink href="#ami">Amazon Machine Images (AMI)</TextLink>
@@ -149,10 +151,10 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           In this blog post we'll be going through the Elastic Compute Cloud
-          service, also known as EC2 which can be defined as an infrastructure as
-          a Service (IaaS). In short EC2 is a virtual service in the AWS cloud.
-          Why would you need this? Well, any time you need to compute a task this
-          service will be handy.
+          service, also known as EC2 which can be defined as an infrastructure
+          as a Service (IaaS). In short EC2 is a virtual service in the AWS
+          cloud. Why would you need this? Well, any time you need to compute a
+          task this service will be handy.
         </Paragraph>
 
         <SectionHeading>Configuration</SectionHeading>
@@ -160,9 +162,9 @@ const AWSElasticComputeCloud = () => {
         <Paragraph>
           What does this EC2 instance consist of? Well it's just a server,
           albeit sitting in one of Amazon's many data centers that we can
-          purchase. When we are &quot;purchasing&quot; this service, we're
-          asked to choose how we would like it to be configured. This can vary
-          from the list below:
+          purchase. When we are &quot;purchasing&quot; this service, we're asked
+          to choose how we would like it to be configured. This can vary from
+          the list below:
         </Paragraph>
 
         <TextList>
@@ -199,11 +201,11 @@ const AWSElasticComputeCloud = () => {
         <SectionHeading>EC2 Instance Types</SectionHeading>
 
         <Paragraph>
-          Now let's go through the instance types. I won't be listing
-          all of the possible types you can choose from, but I'll be going
-          through the main categories and what each category is suited for. If
-          you want to see all the possible choices, this ain't it. If you
-          would like to see all of the categories and types then you can go see{" "}
+          Now let's go through the instance types. I won't be listing all of the
+          possible types you can choose from, but I'll be going through the main
+          categories and what each category is suited for. If you want to see
+          all the possible choices, this ain't it. If you would like to see all
+          of the categories and types then you can go see{" "}
           <TextLink
             href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html"
             target="_blank"
@@ -216,23 +218,26 @@ const AWSElasticComputeCloud = () => {
         <SubSectionHeading>Naming Convention</SubSectionHeading>
 
         <Paragraph>
-          Before I go through each category, it might be beneficial first show you
-          amazon's instance naming convention. The picture below denotes how
+          Before I go through each category, it might be beneficial first show
+          you amazon's instance naming convention. The picture below denotes how
           the instance type is called, specifying the <Strong>instance</Strong>,{" "}
           <Strong>generation</Strong>, <Strong>processor</Strong> and{" "}
           <Strong>size</Strong>.
         </Paragraph>
 
-        <PostImage src={InstanceNamingConvention} alt="EC2 instance naming convention" />
+        <PostImage
+          src={InstanceNamingConvention}
+          alt="EC2 instance naming convention"
+        />
 
         <SubSectionHeading>Which Instance Type is Right?</SubSectionHeading>
 
         <Paragraph>
-          This depends on the scenario you're facing. Each instance has
-          it's strengths and weaknesses and generally speaking they all are
-          suited for a particular tasks. As I stated above I'm not going to
-          be going through all of the possible instance types but I'll be
-          covering the basics.
+          This depends on the scenario you're facing. Each instance has it's
+          strengths and weaknesses and generally speaking they all are suited
+          for a particular tasks. As I stated above I'm not going to be going
+          through all of the possible instance types but I'll be covering the
+          basics.
         </Paragraph>
 
         <SubSectionHeading>General Purpose</SubSectionHeading>
@@ -263,8 +268,8 @@ const AWSElasticComputeCloud = () => {
         <SubSectionHeading>Memory Optimized</SubSectionHeading>
 
         <Paragraph>
-          Memory optimized instances are designed to deliver fast performance for
-          workloads that process large data sets in memory.
+          Memory optimized instances are designed to deliver fast performance
+          for workloads that process large data sets in memory.
         </Paragraph>
 
         <Paragraph>Use cases:</Paragraph>
@@ -278,7 +283,8 @@ const AWSElasticComputeCloud = () => {
             In memory databases optimized for business intelligence (BI).
           </TextListItem>
           <TextListItem>
-            Applications performing real-time processing of big unstructured data.
+            Applications performing real-time processing of big unstructured
+            data.
           </TextListItem>
         </TextList>
 
@@ -286,8 +292,8 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           Storage optimized instances are designed for workloads that require
-          high, sequential read and write access to very large data sets on local
-          storage. They are optimized to deliver tens of thousands of
+          high, sequential read and write access to very large data sets on
+          local storage. They are optimized to deliver tens of thousands of
           low-latency, random I/O operations per second (IOPS) to applications.
         </Paragraph>
 
@@ -310,8 +316,8 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           Security groups are used for controlling traffic in and out of an EC2
-          server, it's essentially how we handle the security aspect i.e.
-          what the instance is allowed to talk to. It's worth mentioning that
+          server, it's essentially how we handle the security aspect i.e. what
+          the instance is allowed to talk to. It's worth mentioning that
           security groups only contain <Strong>allow rules</Strong>. These rules
           can reference an IP address or by other security groups.
         </Paragraph>
@@ -319,27 +325,38 @@ const AWSElasticComputeCloud = () => {
         <PostImage src={SecurityGroup} alt="Security group as firewall" />
 
         <Paragraph>
-          As you can see here the security group is acting as a &quot;firewall&quot;
-          making sure that the traffic going in and out is what you expect. They
-          don't just regulate the traffic coming in and out but also port
-          ranges and IP ranges (IPv4, IPv6).
+          As you can see here the security group is acting as a
+          &quot;firewall&quot; making sure that the traffic going in and out is
+          what you expect. They don't just regulate the traffic coming in and
+          out but also port ranges and IP ranges (IPv4, IPv6).
         </Paragraph>
 
-        <PostImage src={SecurityGroup2} alt="Security group ports and IP ranges" />
+        <PostImage
+          src={SecurityGroup2}
+          alt="Security group ports and IP ranges"
+        />
 
         <SubSectionHeading>Good to Know</SubSectionHeading>
 
         <TextList>
-          <TextListItem>Security groups can be attached to multiple instances.</TextListItem>
+          <TextListItem>
+            Security groups can be attached to multiple instances.
+          </TextListItem>
           <TextListItem>Locked down to a region/VPC combination.</TextListItem>
           <TextListItem>Lives outside the EC2.</TextListItem>
           <TextListItem>
             If your application is not accessible due to time out, then it's
             most likely a security group issue.
           </TextListItem>
-          <TextListItem>The source IP address 0.0.0.0/0 refers to everything.</TextListItem>
-          <TextListItem>All inbound traffic is blocked by default.</TextListItem>
-          <TextListItem>All outbound traffic is allowed by default.</TextListItem>
+          <TextListItem>
+            The source IP address 0.0.0.0/0 refers to everything.
+          </TextListItem>
+          <TextListItem>
+            All inbound traffic is blocked by default.
+          </TextListItem>
+          <TextListItem>
+            All outbound traffic is allowed by default.
+          </TextListItem>
         </TextList>
 
         <SubSectionHeading>Referencing Other Security Groups</SubSectionHeading>
@@ -349,7 +366,10 @@ const AWSElasticComputeCloud = () => {
           instances and how attaching different security groups would work.
         </Paragraph>
 
-        <PostImage src={SecurityGroup3} alt="Referencing multiple security groups" />
+        <PostImage
+          src={SecurityGroup3}
+          alt="Referencing multiple security groups"
+        />
 
         <SubSectionHeading>Ports</SubSectionHeading>
 
@@ -387,8 +407,8 @@ const AWSElasticComputeCloud = () => {
           Earlier in the post I mentioned &quot;purchasing&quot;, well when you
           purchase a EC2 server you have different options to choose from. These
           options are suited for particular scenarios which you should consider
-          based on your business/individual needs. Let's explore these
-          options and why you might want to choose them.
+          based on your business/individual needs. Let's explore these options
+          and why you might want to choose them.
         </Paragraph>
 
         <SubSectionHeading>On-Demand Instance</SubSectionHeading>
@@ -402,7 +422,9 @@ const AWSElasticComputeCloud = () => {
 
         <TextList>
           <TextListItem>Pay for what you use.</TextListItem>
-          <TextListItem>Has the highest cost but no upfront payment.</TextListItem>
+          <TextListItem>
+            Has the highest cost but no upfront payment.
+          </TextListItem>
           <TextListItem>No long term commitment.</TextListItem>
           <TextListItem>
             Recommended for short-term and un-interrupted workloads, where you
@@ -459,12 +481,16 @@ const AWSElasticComputeCloud = () => {
             You could lose the server at any point if your max price is less
             than the current spot price.
           </TextListItem>
-          <TextListItem>Useful for workloads that are resilient to failure.</TextListItem>
           <TextListItem>
-            Well-suited for data analysis, batch jobs, background processing, and
-            optional tasks.
+            Useful for workloads that are resilient to failure.
           </TextListItem>
-          <TextListItem>Not suitable for critical jobs or databases.</TextListItem>
+          <TextListItem>
+            Well-suited for data analysis, batch jobs, background processing,
+            and optional tasks.
+          </TextListItem>
+          <TextListItem>
+            Not suitable for critical jobs or databases.
+          </TextListItem>
         </TextList>
 
         <SubSectionHeading>Dedicated Hosts</SubSectionHeading>
@@ -472,11 +498,11 @@ const AWSElasticComputeCloud = () => {
         <Paragraph>
           Dedicated Hosts support different configurations (physical cores,
           sockets, and VCPUs) that allow you to run instances of different
-          families and sizes. When you allocate a Dedicated Host in your account,
-          you can choose a configuration that supports either a single instance
-          type, or multiple instance types within the same instance family. The
-          number of instances that you can run on a host depends on the
-          configuration you choose.
+          families and sizes. When you allocate a Dedicated Host in your
+          account, you can choose a configuration that supports either a single
+          instance type, or multiple instance types within the same instance
+          family. The number of instances that you can run on a host depends on
+          the configuration you choose.
         </Paragraph>
 
         <TextList>
@@ -494,11 +520,11 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           AMI's are a customization of an EC2 instance. Much like user data
-          scripts, AMI's are used to pre-package any software you want on
-          your EC2 instance. This could be from operating systems to monitoring
+          scripts, AMI's are used to pre-package any software you want on your
+          EC2 instance. This could be from operating systems to monitoring
           software etc. This is advantageous as it can result in faster boot
-          times. You can also purchase Public AMI's from the marketplace if
-          you don't want/need to create and maintain your own.
+          times. You can also purchase Public AMI's from the marketplace if you
+          don't want/need to create and maintain your own.
         </Paragraph>
 
         <PostImage src={AMI} alt="AMI example" />
@@ -507,12 +533,11 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           Amazon EC2 and Amazon VPC support both the IPv4 and IPv6 addressing
-          protocols. In this blog post we'll be sticking to IPv4 addresses
-          which look like this - 127.0.0.1 (four numbers separated by three
-          dots). Each number could range from 0 to 255 so this could look like
-          anything from '[0-255].[0-255].[0-255].[0-255]'. IPv4
-          allows for 3.7 billion different addresses in the public space and
-          it's almost running out!
+          protocols. In this blog post we'll be sticking to IPv4 addresses which
+          look like this - 127.0.0.1 (four numbers separated by three dots).
+          Each number could range from 0 to 255 so this could look like anything
+          from '[0-255].[0-255].[0-255].[0-255]'. IPv4 allows for 3.7 billion
+          different addresses in the public space and it's almost running out!
         </Paragraph>
 
         <Paragraph>
@@ -535,10 +560,12 @@ const AWSElasticComputeCloud = () => {
         <SubSectionHeading>Public IP Addresses</SubSectionHeading>
 
         <TextList>
-          <TextListItem>Server can be identified via the internet.</TextListItem>
           <TextListItem>
-            Must be unique across the whole web (servers cannot share a public IP
-            address).
+            Server can be identified via the internet.
+          </TextListItem>
+          <TextListItem>
+            Must be unique across the whole web (servers cannot share a public
+            IP address).
           </TextListItem>
           <TextListItem>
             IP addresses can be geo-located (you can find out where that server
@@ -552,22 +579,24 @@ const AWSElasticComputeCloud = () => {
           <TextListItem>
             Server can only be identified on a private network.
           </TextListItem>
-          <TextListItem>Must be unique across the private network.</TextListItem>
+          <TextListItem>
+            Must be unique across the private network.
+          </TextListItem>
           <TextListItem>
             Only a specified range of IPs can be used as a private IP.
           </TextListItem>
           <TextListItem>
-            Servers in a private network communicate out using a internet gateway
-            (proxy).
+            Servers in a private network communicate out using a internet
+            gateway (proxy).
           </TextListItem>
         </TextList>
 
         <SectionHeading id="placement-group">Placement Groups</SectionHeading>
 
         <Paragraph>
-          We've talked about what an EC2 instance is, how to configure it,
-          what your options are on purchase and how they communicate. Let's
-          talk about placement strategy! When deploying an EC2 instance you can
+          We've talked about what an EC2 instance is, how to configure it, what
+          your options are on purchase and how they communicate. Let's talk
+          about placement strategy! When deploying an EC2 instance you can
           specify a group to put them in. These strategies consist of:
         </Paragraph>
 
@@ -598,8 +627,8 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           Spread groups can span across availability zone (AZ). That means
-          there's a reduced risk of simultaneous failure. Instances are
-          isolated from each other as there on separate hardware.
+          there's a reduced risk of simultaneous failure. Instances are isolated
+          from each other as there on separate hardware.
         </Paragraph>
 
         <TextList>
@@ -615,25 +644,27 @@ const AWSElasticComputeCloud = () => {
         <Paragraph>
           You can have up to seven partitions per availability zone (AZ) which
           can span across multiple AZs in the same region. You can have up to
-          hundreds of instances that can access the same partition information as
-          metadata.
+          hundreds of instances that can access the same partition information
+          as metadata.
         </Paragraph>
 
-        <SectionHeading id="eni">Elastic Network Interfaces (ENI)</SectionHeading>
+        <SectionHeading id="eni">
+          Elastic Network Interfaces (ENI)
+        </SectionHeading>
 
         <Paragraph>
           Let's talk about Elastic Network Interfaces which are a logical
-          component that represents a virtual network card. This is what give EC2
-          instances access to the network. It's worth noting that they are
+          component that represents a virtual network card. This is what give
+          EC2 instances access to the network. It's worth noting that they are
           also used outside of EC2 instances.
         </Paragraph>
 
         <PostImage src={ElasticNetworkInterface} alt="ENI example" />
 
         <Paragraph>
-          You can create ENI's independently and attach them on the fly on
-          EC2 instances, however they are bound to the availability zone (AZ)
-          that the ENI has been created in. The ENI can have the following
+          You can create ENI's independently and attach them on the fly on EC2
+          instances, however they are bound to the availability zone (AZ) that
+          the ENI has been created in. The ENI can have the following
           attributes:
         </Paragraph>
 
@@ -650,13 +681,14 @@ const AWSElasticComputeCloud = () => {
         <SectionHeading id="ebs">Elastic Block Store (EBS)</SectionHeading>
 
         <Paragraph>
-          An EBS volume is a network drive that you can attach to an EC2 instance
-          whilst they run. It allows the instance to persist data, even after
-          their termination. It is essentially a &quot;network USB stick&quot;.
-          EBS volumes can be be removed and attached to EC2 instances, they're
-          not limited to the first instance they're associated with. Much
-          like a ENI the EBS is also bound to an AZ, however we can use the
-          snapshot feature which will allow you to get around this limitation.
+          An EBS volume is a network drive that you can attach to an EC2
+          instance whilst they run. It allows the instance to persist data, even
+          after their termination. It is essentially a &quot;network USB
+          stick&quot;. EBS volumes can be be removed and attached to EC2
+          instances, they're not limited to the first instance they're
+          associated with. Much like a ENI the EBS is also bound to an AZ,
+          however we can use the snapshot feature which will allow you to get
+          around this limitation.
         </Paragraph>
 
         <SubSectionHeading>Snapshots</SubSectionHeading>
@@ -685,9 +717,9 @@ const AWSElasticComputeCloud = () => {
             retention could be from 1 day to 1 year.
           </TextListItem>
           <TextListItem>
-            <Strong>Fast Snapshot Restore</Strong> - Force full initialisation of
-            the snapshot to have no latency on the first use. This is the most
-            costly feature.
+            <Strong>Fast Snapshot Restore</Strong> - Force full initialisation
+            of the snapshot to have no latency on the first use. This is the
+            most costly feature.
           </TextListItem>
         </TextList>
 
@@ -698,13 +730,14 @@ const AWSElasticComputeCloud = () => {
           memory. What does this actually mean? Well when we terminate an
           instance, any Elastic Block Store volumes (EBS) attached at the root
           will be destroyed. When we stop an instance the EBS volume is kept
-          intact for when it starts up again. So you might be asking, what is the
-          point of the hibernation feature? Well, whenever an EC2 instance starts
-          it has a couple of tasks to complete before it's ready, that
-          includes the operating system boot time and any user data scripts which
-          can take time! This is where hibernation comes in as it preserves the
-          in-memory (RAM) state so the boot up time is much faster. The only
-          catch is that the EBS volume <Strong>needs to be encrypted</Strong> and{" "}
+          intact for when it starts up again. So you might be asking, what is
+          the point of the hibernation feature? Well, whenever an EC2 instance
+          starts it has a couple of tasks to complete before it's ready, that
+          includes the operating system boot time and any user data scripts
+          which can take time! This is where hibernation comes in as it
+          preserves the in-memory (RAM) state so the boot up time is much
+          faster. The only catch is that the EBS volume{" "}
+          <Strong>needs to be encrypted</Strong> and{" "}
           <Strong>big enough to store the memory</Strong>.
         </Paragraph>
 
@@ -714,11 +747,11 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           It's worth mentioning that there is an alternative to &quot;network
-          drives&quot; if you're needing better I/O performance. EC2
-          Instance Store is a high-performance hardware disk (physically attached
-          to the hardware), this has better performance but there is a risk of
-          data loss if the hardware fails. If you were to need this you'd
-          want to backup the storage regularly to prevent risk of data loss.
+          drives&quot; if you're needing better I/O performance. EC2 Instance
+          Store is a high-performance hardware disk (physically attached to the
+          hardware), this has better performance but there is a risk of data
+          loss if the hardware fails. If you were to need this you'd want to
+          backup the storage regularly to prevent risk of data loss.
         </Paragraph>
 
         <SubSectionHeading>Volume Types</SubSectionHeading>
@@ -752,8 +785,9 @@ const AWSElasticComputeCloud = () => {
         <Paragraph>
           The multi-attach feature is only for the io1/io2 family. This feature
           allows the same EBS volume to be attached to multiple EC2 instances in
-          the same AZ. It can be attached up to 16 instances at a time. Use cases
-          for this feature would be to achieve higher application availability.
+          the same AZ. It can be attached up to 16 instances at a time. Use
+          cases for this feature would be to achieve higher application
+          availability.
         </Paragraph>
 
         <SubSectionHeading>Encryption</SubSectionHeading>
@@ -786,10 +820,13 @@ const AWSElasticComputeCloud = () => {
           traffic to multiple different servers. Their purpose is essentially to
           control the flow of user traffic to an instance, if you have hundreds
           of users trying to access a server, the load balancer is there to make
-          sure that load is spread across multiple servers to handle the traffic.
+          sure that load is spread across multiple servers to handle the
+          traffic.
         </Paragraph>
 
-        <SubSectionHeading>Why would we want to use a load balancer?</SubSectionHeading>
+        <SubSectionHeading>
+          Why would we want to use a load balancer?
+        </SubSectionHeading>
 
         <Paragraph>
           There are actually a lot of advantages to using a load balancer as it
@@ -802,7 +839,9 @@ const AWSElasticComputeCloud = () => {
           <TextListItem>
             Acts as a single point of access (DNS) to your application.
           </TextListItem>
-          <TextListItem>Carries out health checks to the instances.</TextListItem>
+          <TextListItem>
+            Carries out health checks to the instances.
+          </TextListItem>
           <TextListItem>Provides SSL (HTTPS) to your websites.</TextListItem>
           <TextListItem>Enforces stickiness with cookies.</TextListItem>
           <TextListItem>Separates public and private traffic.</TextListItem>
@@ -812,13 +851,13 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           Health checks are an important feature of load balancing. Before the
-          load balancer can forward traffic through to the EC2 instance, it needs
-          to know if the instance itself is healthy and stable. It can know this
-          by sending regular pings to the server on a desired port and route. If
-          the request sent gets a response (200), it knows that the instance is
-          healthy and ready to receive traffic, otherwise it's marked as
-          unhealthy and traffic will not be forwarded. Health checks are
-          supported for the <Strong>TCP</Strong>, <Strong>HTTP</Strong> and{" "}
+          load balancer can forward traffic through to the EC2 instance, it
+          needs to know if the instance itself is healthy and stable. It can
+          know this by sending regular pings to the server on a desired port and
+          route. If the request sent gets a response (200), it knows that the
+          instance is healthy and ready to receive traffic, otherwise it's
+          marked as unhealthy and traffic will not be forwarded. Health checks
+          are supported for the <Strong>TCP</Strong>, <Strong>HTTP</Strong> and{" "}
           <Strong>HTTPS</Strong> protocols.
         </Paragraph>
 
@@ -828,23 +867,25 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           You can point a load balancer to multiple different target groups. A
-          target group could be an EC2 instance, ECS task, Lambda function and IP
-          addresses (private). It's possible for an network load balancer to
-          sit infront of an application load balancer so you're able to have
-          the fixed IP addresses and the rule handling around HTTP traffic.
+          target group could be an EC2 instance, ECS task, Lambda function and
+          IP addresses (private). It's possible for an network load balancer to
+          sit infront of an application load balancer so you're able to have the
+          fixed IP addresses and the rule handling around HTTP traffic.
         </Paragraph>
 
-        <SubSectionHeading>Load Balancers and Security Groups</SubSectionHeading>
+        <SubSectionHeading>
+          Load Balancers and Security Groups
+        </SubSectionHeading>
 
         <Paragraph>
           Let's map out the flow showing how users would connect to a load
           balancer to then be forwarded onto the instance. There are two things
-          to note, one being that the load balancer will have it's own
-          security group in which it could allow users to connect on ports 80
-          (HTTP) and 443 (HTTPS). Secondly, the EC2 instance will have a separate
-          security group which can reference the one created for the load
-          balancer which means that it will only accept traffic which has
-          originated from the load balancer.
+          to note, one being that the load balancer will have it's own security
+          group in which it could allow users to connect on ports 80 (HTTP) and
+          443 (HTTPS). Secondly, the EC2 instance will have a separate security
+          group which can reference the one created for the load balancer which
+          means that it will only accept traffic which has originated from the
+          load balancer.
         </Paragraph>
 
         <PostImage
@@ -875,9 +916,9 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           Application load balancers (ALB) are suited for micro services &amp;
-          container based applications (Docker and Amazon ECS). ALB's have
-          the capability to route to different target groups based on pathing.
-          This routing can be based on:
+          container based applications (Docker and Amazon ECS). ALB's have the
+          capability to route to different target groups based on pathing. This
+          routing can be based on:
         </Paragraph>
 
         <TextList>
@@ -917,7 +958,8 @@ const AWSElasticComputeCloud = () => {
             The port of the client is inserted in the header X-Forwarded-Port.
           </TextListItem>
           <TextListItem>
-            The protocol of the client is inserted in the header X-Forwarded-Proto.
+            The protocol of the client is inserted in the header
+            X-Forwarded-Proto.
           </TextListItem>
         </TextList>
 
@@ -925,9 +967,9 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           Network load balancers allows TCP and UDP traffic. This load balancer
-          is for high performance and is capable of handling million requests per
-          second. NLB's only have one static IP per AZ but you're able
-          to assign elastic IP.
+          is for high performance and is capable of handling million requests
+          per second. NLB's only have one static IP per AZ but you're able to
+          assign elastic IP.
         </Paragraph>
 
         <PostImage
@@ -940,9 +982,9 @@ const AWSElasticComputeCloud = () => {
         <Paragraph>
           Gateway load balancers are great for when you want to screen your
           traffic for any potentially harmful software. Before the traffic can
-          reach it's destination the gateway load balancer can filter
-          traffic through instances which could act as a firewall or inspection
-          system. The traffic operates on port 6081 with the GENEVE protocol.
+          reach it's destination the gateway load balancer can filter traffic
+          through instances which could act as a firewall or inspection system.
+          The traffic operates on port 6081 with the GENEVE protocol.
         </Paragraph>
 
         <PostImage
@@ -955,11 +997,11 @@ const AWSElasticComputeCloud = () => {
         <Paragraph>
           Sticky sessions exist to make sure that users are always directed to
           the same instance behind the load balancer. Sticky sessions are
-          compatible with Application and Network load balancers. Sticky sessions
-          work by attaching a cookie to the user's session. You can
-          configure the cookie to control the expiry date. It's worth
-          mentioning that enabling sticky sessions could lead to an imbalance to
-          the load across the instances.
+          compatible with Application and Network load balancers. Sticky
+          sessions work by attaching a cookie to the user's session. You can
+          configure the cookie to control the expiry date. It's worth mentioning
+          that enabling sticky sessions could lead to an imbalance to the load
+          across the instances.
         </Paragraph>
 
         <Paragraph>There are two types of cookies to choose from:</Paragraph>
@@ -981,8 +1023,8 @@ const AWSElasticComputeCloud = () => {
                 Cookie name must be specified for each individual target group
               </TextListItem>
               <TextListItem>
-                Don't use any reserved words used by the load balancer
-                'AWSALB', 'AWSALBAPP', 'AWSALBTG'
+                Don't use any reserved words used by the load balancer 'AWSALB',
+                'AWSALBAPP', 'AWSALBTG'
               </TextListItem>
             </TextList>
           </TextListItem>
@@ -1013,12 +1055,13 @@ const AWSElasticComputeCloud = () => {
 
         <Paragraph>
           An SSL certificate allows traffic between users and load balancers to
-          be encrypted in transit. SSL refers to <Strong>Secrure Socket Layer</Strong>{" "}
-          and TLS refers to <Strong>Transport Layer Security</Strong> which is a
-          newer version of SSL. You can purchase a SSL/TLS certificate from any
-          certificate authority such as ACM (Amazon Certificate Manager) or
-          namecheap and GoDaddy. Once you have purchased a certificate you will
-          have to renew after the expiration date.
+          be encrypted in transit. SSL refers to{" "}
+          <Strong>Secrure Socket Layer</Strong> and TLS refers to{" "}
+          <Strong>Transport Layer Security</Strong> which is a newer version of
+          SSL. You can purchase a SSL/TLS certificate from any certificate
+          authority such as ACM (Amazon Certificate Manager) or namecheap and
+          GoDaddy. Once you have purchased a certificate you will have to renew
+          after the expiration date.
         </Paragraph>
 
         <PostImage src={SSLTLS} alt="SSL / TLS example" />
@@ -1051,16 +1094,18 @@ const AWSElasticComputeCloud = () => {
           desired capacity. It maintains this number of instances by performing
           periodic health checks on the instances in the group. The Auto Scaling
           Group continues to maintain a fixed number of instances even if an
-          instance becomes unhealthy. If an instance becomes unhealthy, the group
-          terminates the unhealthy instance and launches another instance to
-          replace it.
+          instance becomes unhealthy. If an instance becomes unhealthy, the
+          group terminates the unhealthy instance and launches another instance
+          to replace it.
         </Paragraph>
 
         <PostImage src={AutoScalingGroup} alt="Auto Scaling Group example" />
 
         <SubSectionHeading>Key features</SubSectionHeading>
 
-        <Paragraph>Here's a list of things you can essentially achieve with ASG's:</Paragraph>
+        <Paragraph>
+          Here's a list of things you can essentially achieve with ASG's:
+        </Paragraph>
 
         <TextList>
           <TextListItem>
@@ -1099,13 +1144,13 @@ const AWSElasticComputeCloud = () => {
         <SubSectionHeading>CloudWatch Alarms &amp; Scaling</SubSectionHeading>
 
         <Paragraph>
-          I've not talked about CloudWatch yet but I think this is a
-          fundamental feature of ASG's that I'd like to talk about.
-          That being you can scale ASG's based on CloudWatch Alarms. An
-          alarm could be as simple as monitoring a metric such as the average
-          CPU. With that example we could create a scaling policy based on the
-          alarm i.e. if the average CPU limit for the overall ASG instances hits
-          above 75%, we can ask the ASG to deploy more instances (scale out).
+          I've not talked about CloudWatch yet but I think this is a fundamental
+          feature of ASG's that I'd like to talk about. That being you can scale
+          ASG's based on CloudWatch Alarms. An alarm could be as simple as
+          monitoring a metric such as the average CPU. With that example we
+          could create a scaling policy based on the alarm i.e. if the average
+          CPU limit for the overall ASG instances hits above 75%, we can ask the
+          ASG to deploy more instances (scale out).
         </Paragraph>
 
         <SectionHeading id="references">References</SectionHeading>

@@ -1309,10 +1309,6 @@ export default function Blog() {
   ].reverse();
 
   useEffect(() => {
-    Analytics.event("blog_page_viewed", { slug: "post-selection" });
-  }, []);
-
-  useEffect(() => {
     if (search !== "") {
       setBlogPosts(
         blogPosts.filter(

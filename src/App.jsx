@@ -145,7 +145,10 @@ const PageTracker = () => {
   useEffect(() => {
     if (location.pathname !== lastPath.current) {
       lastPath.current = location.pathname;
-      Analytics.pageview({ path: location.pathname });
+      // Individual blog posts track themselves with slug enrichment
+      if (!/^\/blog\/.+/.test(location.pathname)) {
+        Analytics.pageview({ path: location.pathname });
+      }
     }
   }, [location.pathname]);
 

@@ -63,7 +63,7 @@ const PostContainer = styled(BasePostContainer)`
 
 const AWSMachineLearning = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-machine-learning" });
+    Analytics.pageview({ slug: "aws-machine-learning" });
   }, []);
 
   const comprehendColumns = ["Capability", "Description"];
@@ -75,7 +75,8 @@ const AWSMachineLearning = () => {
     },
     {
       Capability: "Sentiment Analysis",
-      Description: "Determines if text sentiment is positive, negative, neutral, or mixed.",
+      Description:
+        "Determines if text sentiment is positive, negative, neutral, or mixed.",
     },
     {
       Capability: "Entity Recognition",
@@ -171,7 +172,9 @@ const AWSMachineLearning = () => {
             <TextLink href="#aws-textract">Textract</TextLink>
           </TextListItem>
           <TextListItem>
-            <TextLink href="#machine-learning-summary">Machine Learning Summary</TextLink>
+            <TextLink href="#machine-learning-summary">
+              Machine Learning Summary
+            </TextLink>
           </TextListItem>
         </TextList>
 
@@ -191,27 +194,26 @@ const AWSMachineLearning = () => {
           </TextListItem>
           <TextListItem>
             <Strong>API calls</Strong>: call operations like{" "}
-            <Strong>DetectLabels</Strong>, <Strong>RecognizeCelebrities</Strong>,{" "}
-            <Strong>DetectFaces</Strong>, <Strong>DetectText</Strong>, etc.
+            <Strong>DetectLabels</Strong>, <Strong>RecognizeCelebrities</Strong>
+            , <Strong>DetectFaces</Strong>, <Strong>DetectText</Strong>, etc.
           </TextListItem>
           <TextListItem>
             <Strong>Analysis</Strong>: Rekognition returns JSON with detected
             objects, bounding boxes, confidence scores and more.
           </TextListItem>
           <TextListItem>
-            <Strong>Custom Labels</Strong>: train your own model on domain-specific
-            images to detect custom objects.
+            <Strong>Custom Labels</Strong>: train your own model on
+            domain-specific images to detect custom objects.
           </TextListItem>
         </TextList>
 
         <TertiaryHeading>What Can It Detect?</TertiaryHeading>
         <Paragraph>
-          Rekognition supports detection of{" "}
-          <Strong>objects</Strong>, <Strong>people</Strong>,{" "}
-          <Strong>text</Strong>, <Strong>scenes</Strong>,{" "}
-          <Strong>faces</Strong> in images and videos. It can perform{" "}
-          <Strong>facial analysis</Strong> and face search for user
-          verification and identification use cases.
+          Rekognition supports detection of <Strong>objects</Strong>,{" "}
+          <Strong>people</Strong>, <Strong>text</Strong>,{" "}
+          <Strong>scenes</Strong>, <Strong>faces</Strong> in images and videos.
+          It can perform <Strong>facial analysis</Strong> and face search for
+          user verification and identification use cases.
         </Paragraph>
 
         <TertiaryHeading>Content Moderation</TertiaryHeading>
@@ -228,8 +230,8 @@ const AWSMachineLearning = () => {
         <SectionHeading id="aws-transcribe">Transcribe</SectionHeading>
         <Paragraph>
           <Strong>Amazon Transcribe</Strong> is an automatic speech recognition
-          (ASR) service that converts audio and video into text. It’s useful
-          for captions, call analytics, searchable audio archives and more.
+          (ASR) service that converts audio and video into text. It’s useful for
+          captions, call analytics, searchable audio archives and more.
         </Paragraph>
 
         <TertiaryHeading>How Does It Work?</TertiaryHeading>
@@ -260,8 +262,8 @@ const AWSMachineLearning = () => {
         <SubSectionHeading>Lexicons & SSML</SubSectionHeading>
         <Paragraph>
           Polly supports <Strong>lexicons</Strong> to customise pronunciation
-          for domain-specific terms (e.g. saying &quot;AWS&quot; as
-          &quot;Amazon Web Services&quot;), and{" "}
+          for domain-specific terms (e.g. saying &quot;AWS&quot; as &quot;Amazon
+          Web Services&quot;), and{" "}
           <Strong>SSML (Speech Synthesis Markup Language)</Strong> for fine
           control over pitch, rate, volume, pauses and emphasis.
         </Paragraph>
@@ -278,9 +280,7 @@ const AWSMachineLearning = () => {
 
         <TertiaryHeading>How Does It Work?</TertiaryHeading>
         <TextList>
-          <TextListItem>
-            Provide text via API, CLI or console.
-          </TextListItem>
+          <TextListItem>Provide text via API, CLI or console.</TextListItem>
           <TextListItem>
             Specify source and target languages (or let the service auto-detect
             the source).
@@ -289,7 +289,8 @@ const AWSMachineLearning = () => {
             Translate uses neural MT models to produce the translated output.
           </TextListItem>
           <TextListItem>
-            The service returns translated text while preserving basic formatting.
+            The service returns translated text while preserving basic
+            formatting.
           </TextListItem>
         </TextList>
 
@@ -326,9 +327,7 @@ const AWSMachineLearning = () => {
 
         <SubSectionHeading>How Does It Work?</SubSectionHeading>
         <TextList>
-          <TextListItem>
-            Provide text via console, CLI or SDK.
-          </TextListItem>
+          <TextListItem>Provide text via console, CLI or SDK.</TextListItem>
           <TextListItem>
             Choose tasks like sentiment analysis, entity detection or custom
             classification.
@@ -431,7 +430,8 @@ const AWSMachineLearning = () => {
             <Strong>Comprehend</Strong>: NLP insights from text.
           </TextListItem>
           <TextListItem>
-            <Strong>SageMaker</Strong>: end-to-end ML platform for custom models.
+            <Strong>SageMaker</Strong>: end-to-end ML platform for custom
+            models.
           </TextListItem>
           <TextListItem>
             <Strong>Forecast</Strong>: ML-based time-series forecasting.
@@ -440,7 +440,8 @@ const AWSMachineLearning = () => {
             <Strong>Kendra</Strong>: ML-powered enterprise search.
           </TextListItem>
           <TextListItem>
-            <Strong>Personalize</Strong>: real-time personalised recommendations.
+            <Strong>Personalize</Strong>: real-time personalised
+            recommendations.
           </TextListItem>
           <TextListItem>
             <Strong>Textract</Strong>: document text and structure extraction.

@@ -75,7 +75,7 @@ const AnimatedPostContainer = styled(BasePostContainer)`
 
 const AWSIdentityAccessManagement = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-iam" });
+    Analytics.pageview({ slug: "aws-iam" });
   }, []);
 
   return (
@@ -150,7 +150,10 @@ const AWSIdentityAccessManagement = () => {
         </Paragraph>
 
         <ContentRow>
-          <InlinePostImage src={IAMPolicyInheritance} alt="IAM policy attached to a developer group" />
+          <InlinePostImage
+            src={IAMPolicyInheritance}
+            alt="IAM policy attached to a developer group"
+          />
           <Paragraph>
             A <Strong>policy</Strong> explicitly defines which services and
             actions are accessible. Once the policy has been added to the group,
@@ -160,20 +163,26 @@ const AWSIdentityAccessManagement = () => {
 
         <Paragraph>
           Now let's say we have another group in the organisation called{" "}
-          <Strong>Operations</Strong>. The users in this group
-          would typically have a different set of permissions than the users in{" "}
-          <Strong>Developers</Strong> because this group has a
-          different <Strong>policy</Strong> attached.
+          <Strong>Operations</Strong>. The users in this group would typically
+          have a different set of permissions than the users in{" "}
+          <Strong>Developers</Strong> because this group has a different{" "}
+          <Strong>policy</Strong> attached.
         </Paragraph>
 
-        <PostImage src={IAMPolicyInheritance2} alt="IAM policies attached to different groups" />
+        <PostImage
+          src={IAMPolicyInheritance2}
+          alt="IAM policies attached to different groups"
+        />
 
         <Paragraph>
           It's not mandatory for a user to be a member of a group - you can
           assign inline policies directly to a user to define their access.
         </Paragraph>
 
-        <PostImage src={IAMPolicyInheritance3} alt="Inline policy attached to IAM user" />
+        <PostImage
+          src={IAMPolicyInheritance3}
+          alt="Inline policy attached to IAM user"
+        />
 
         <Paragraph>
           It's also important to note that users can belong to more than one
@@ -181,7 +190,10 @@ const AWSIdentityAccessManagement = () => {
           <Strong>policies</Strong>.
         </Paragraph>
 
-        <PostImage src={IAMPolicyInheritance4} alt="IAM user in multiple groups inheriting policies" />
+        <PostImage
+          src={IAMPolicyInheritance4}
+          alt="IAM user in multiple groups inheriting policies"
+        />
 
         <SectionHeading>IAM Policy Structure</SectionHeading>
 
@@ -190,7 +202,10 @@ const AWSIdentityAccessManagement = () => {
           written in JSON):
         </Paragraph>
 
-        <PostImage src={IAMPolicyExample} alt="Example of an IAM policy structure" />
+        <PostImage
+          src={IAMPolicyExample}
+          alt="Example of an IAM policy structure"
+        />
 
         <Paragraph>Statements typically consist of:</Paragraph>
 
@@ -199,16 +214,16 @@ const AWSIdentityAccessManagement = () => {
             <Strong>Sid:</Strong> optional identifier for the statement.
           </TextListItem>
           <TextListItem>
-            <Strong>Effect:</Strong> whether the statement <Strong>allows</Strong> or{" "}
-            <Strong>denies</Strong> access.
+            <Strong>Effect:</Strong> whether the statement{" "}
+            <Strong>allows</Strong> or <Strong>denies</Strong> access.
           </TextListItem>
           <TextListItem>
             <Strong>Principal:</Strong> the account, user, or role to which the
             policy applies (mainly in resource-based policies).
           </TextListItem>
           <TextListItem>
-            <Strong>Action:</Strong> list of actions this policy allows or denies
-            (for example, <Strong>s3:PutObject</Strong>).
+            <Strong>Action:</Strong> list of actions this policy allows or
+            denies (for example, <Strong>s3:PutObject</Strong>).
           </TextListItem>
           <TextListItem>
             <Strong>Resource:</Strong> list of resources to which the actions
@@ -229,8 +244,7 @@ const AWSIdentityAccessManagement = () => {
             on your behalf also need permissions. To enable that, we create and
             assign <Strong>roles</Strong>.
             <br />
-            <br />
-            A common example is an EC2 instance needing to access an AWS
+            <br />A common example is an EC2 instance needing to access an AWS
             service. For that to happen, the EC2 instance must have a role
             attached which states what it can do and with which services.
           </Paragraph>
@@ -247,11 +261,17 @@ const AWSIdentityAccessManagement = () => {
           scale AWS usage securely and efficiently.
         </Paragraph>
 
-        <PostImage src={OrganisationsExample} alt="AWS Organizations account structure example" />
+        <PostImage
+          src={OrganisationsExample}
+          alt="AWS Organizations account structure example"
+        />
 
         <SectionHeading>Organisational Units (OU) - Examples</SectionHeading>
 
-        <PostImage src={OrganisationalUnitsExample} alt="AWS Organizations OU example" />
+        <PostImage
+          src={OrganisationalUnitsExample}
+          alt="AWS Organizations OU example"
+        />
 
         <SectionHeading>Organisation SCP Hierarchy</SectionHeading>
 
@@ -294,8 +314,8 @@ const AWSIdentityAccessManagement = () => {
             restrictions via SCPs).
           </TextListItem>
           <TextListItem>
-            <Strong>Prod OU and Accounts E &amp; F:</Strong> can do anything;
-            no SCPs applied in this example.
+            <Strong>Prod OU and Accounts E &amp; F:</Strong> can do anything; no
+            SCPs applied in this example.
           </TextListItem>
         </TextList>
 
@@ -308,7 +328,10 @@ const AWSIdentityAccessManagement = () => {
           addresses.
         </Paragraph>
 
-        <PostImage src={IAMConditionRestrictIP} alt="IAM condition restricting IP addresses" />
+        <PostImage
+          src={IAMConditionRestrictIP}
+          alt="IAM condition restricting IP addresses"
+        />
 
         <SubSectionHeading>Restrict via Region</SubSectionHeading>
 
@@ -316,7 +339,10 @@ const AWSIdentityAccessManagement = () => {
           This example shows how to restrict API calls to specific AWS regions.
         </Paragraph>
 
-        <PostImage src={IAMConditionRestrictRegion} alt="IAM condition restricting regions" />
+        <PostImage
+          src={IAMConditionRestrictRegion}
+          alt="IAM condition restricting regions"
+        />
 
         <SubSectionHeading>Restrict based on Tags</SubSectionHeading>
 
@@ -326,7 +352,10 @@ const AWSIdentityAccessManagement = () => {
           tagged with a specific value.
         </Paragraph>
 
-        <PostImage src={IAMConditionRestrictTags} alt="IAM condition using tags" />
+        <PostImage
+          src={IAMConditionRestrictTags}
+          alt="IAM condition using tags"
+        />
 
         <SubSectionHeading>Enforce MFA</SubSectionHeading>
 
@@ -335,7 +364,10 @@ const AWSIdentityAccessManagement = () => {
           from stopping or terminating EC2 instances unless MFA is present.
         </Paragraph>
 
-        <PostImage src={IAMConditionEnforceMFA} alt="IAM condition enforcing MFA" />
+        <PostImage
+          src={IAMConditionEnforceMFA}
+          alt="IAM condition enforcing MFA"
+        />
 
         <SectionHeading>IAM for S3</SectionHeading>
 
@@ -350,25 +382,33 @@ const AWSIdentityAccessManagement = () => {
             <Strong>arn:aws:s3:::test</Strong> (bucket level).
           </TextListItem>
           <TextListItem>
-            <Strong>s3:PutObject</Strong>,{" "}
-            <Strong>s3:GetObject</Strong>,{" "}
+            <Strong>s3:PutObject</Strong>, <Strong>s3:GetObject</Strong>,{" "}
             <Strong>s3:DeleteObject</Strong> apply to{" "}
             <Strong>arn:aws:s3:::test/*</Strong> (object level).
           </TextListItem>
         </TextList>
 
-        <PostImage src={IAMForS3} alt="IAM policy for S3 bucket and object level" />
+        <PostImage
+          src={IAMForS3}
+          alt="IAM policy for S3 bucket and object level"
+        />
 
         <SectionHeading>Principal Org ID</SectionHeading>
 
         <Paragraph>
-          The <Strong>aws:PrincipalOrgID</Strong> condition
-          key can be used in a resource policy to allow access only to accounts
-          that are members of a specific AWS Organization.
+          The <Strong>aws:PrincipalOrgID</Strong> condition key can be used in a
+          resource policy to allow access only to accounts that are members of a
+          specific AWS Organization.
         </Paragraph>
 
-        <PostImage src={IAMPrincipalOrgId} alt="PrincipalOrgID condition example 1" />
-        <PostImage src={IAMPrincipalOrgId2} alt="PrincipalOrgID condition example 2" />
+        <PostImage
+          src={IAMPrincipalOrgId}
+          alt="PrincipalOrgID condition example 1"
+        />
+        <PostImage
+          src={IAMPrincipalOrgId2}
+          alt="PrincipalOrgID condition example 2"
+        />
 
         <SectionHeading>IAM Roles vs Resource-based Policies</SectionHeading>
 
@@ -379,9 +419,9 @@ const AWSIdentityAccessManagement = () => {
 
         <Paragraph>
           Attach a <Strong>resource-based policy</Strong> directly to the
-          resource (for example, an S3 bucket policy).
-          Use an <Strong>IAM role</Strong> as a proxy and{" "}
-          <Strong>assume</Strong> that role from another account.
+          resource (for example, an S3 bucket policy). Use an{" "}
+          <Strong>IAM role</Strong> as a proxy and <Strong>assume</Strong> that
+          role from another account.
         </Paragraph>
 
         <Paragraph>
@@ -417,7 +457,9 @@ const AWSIdentityAccessManagement = () => {
           the limits defined by the boundary.
         </Paragraph>
 
-        <Paragraph>Here is an example of a permission boundary policy:</Paragraph>
+        <Paragraph>
+          Here is an example of a permission boundary policy:
+        </Paragraph>
 
         <PostImage
           src={IAMPermissionBoundaryExample}
@@ -427,8 +469,8 @@ const AWSIdentityAccessManagement = () => {
         <Paragraph>
           In this example, no matter what permissions the role is given, it will
           never be able to do anything outside of S3. If an admin attaches an
-          IAM policy allowing <Strong>ec2:*</Strong>, the
-          permission boundary prevents the role from using EC2.
+          IAM policy allowing <Strong>ec2:*</Strong>, the permission boundary
+          prevents the role from using EC2.
         </Paragraph>
 
         <Paragraph>

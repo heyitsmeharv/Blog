@@ -71,7 +71,7 @@ const PostContainer = styled(BasePostContainer)`
 
 const AWSDataAnalytics = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-data-analytics" });
+    Analytics.pageview({ slug: "aws-data-analytics" });
   }, []);
 
   return (
@@ -113,11 +113,10 @@ const AWSDataAnalytics = () => {
 
         <Paragraph>
           In this post we'll be diving into Amazon's services for{" "}
-          <Strong>Data Analytics</Strong>, including{" "}
-          <Strong>Athena</Strong>, <Strong>Redshift</Strong>,{" "}
-          <Strong>OpenSearch</Strong>, <Strong>EMR</Strong>,{" "}
-          <Strong>QuickSight</Strong>, <Strong>Glue</Strong> and{" "}
-          <Strong>Lake Formation</Strong>.
+          <Strong>Data Analytics</Strong>, including <Strong>Athena</Strong>,{" "}
+          <Strong>Redshift</Strong>, <Strong>OpenSearch</Strong>,{" "}
+          <Strong>EMR</Strong>, <Strong>QuickSight</Strong>,{" "}
+          <Strong>Glue</Strong> and <Strong>Lake Formation</Strong>.
         </Paragraph>
 
         <TextList>
@@ -146,34 +145,33 @@ const AWSDataAnalytics = () => {
 
         <SectionHeading id="aws-athena">Athena</SectionHeading>
         <Paragraph>
-          <Strong>AWS Athena</Strong> is a serverless interactive query
-          service that allows you to analyze data directly in{" "}
-          <Strong>Amazon S3</Strong> using standard SQL. It is designed for
-          simplicity and cost-efficiency, making it a popular choice for data
-          analytics.
+          <Strong>AWS Athena</Strong> is a serverless interactive query service
+          that allows you to analyze data directly in <Strong>Amazon S3</Strong>{" "}
+          using standard SQL. It is designed for simplicity and cost-efficiency,
+          making it a popular choice for data analytics.
         </Paragraph>
         <Paragraph>
           Athena supports multiple formats including{" "}
-          <Strong>CSV, JSON, ORC, Avro</Strong> and{" "}
-          <Strong>Parquet</Strong>, and is commonly used with{" "}
-          <Strong>Amazon QuickSight</Strong> for reporting and dashboards.
+          <Strong>CSV, JSON, ORC, Avro</Strong> and <Strong>Parquet</Strong>,
+          and is commonly used with <Strong>Amazon QuickSight</Strong> for
+          reporting and dashboards.
         </Paragraph>
 
         <SubSectionHeading>Partitioning in AWS Athena</SubSectionHeading>
         <Paragraph>
-          <Strong>Partitioning</Strong> is a method of dividing a dataset
-          into smaller, more manageable pieces based on one or more columns.
-          Each partition is stored as a separate folder in Amazon S3. When
-          queries are executed, Athena scans only the relevant partitions
-          instead of the entire dataset, significantly improving performance
-          and reducing costs.
+          <Strong>Partitioning</Strong> is a method of dividing a dataset into
+          smaller, more manageable pieces based on one or more columns. Each
+          partition is stored as a separate folder in Amazon S3. When queries
+          are executed, Athena scans only the relevant partitions instead of the
+          entire dataset, significantly improving performance and reducing
+          costs.
         </Paragraph>
 
         <SubSectionHeading>How Partitioning Works</SubSectionHeading>
         <TextList>
           <TextListItem>
-            <Strong>Folder-based structure</Strong>: data is often
-            organised in S3 folders based on partition key(s), for example:
+            <Strong>Folder-based structure</Strong>: data is often organised in
+            S3 folders based on partition key(s), for example:
           </TextListItem>
         </TextList>
 
@@ -192,8 +190,8 @@ const AWSDataAnalytics = () => {
 
         <TextList>
           <TextListItem>
-            <Strong>Adding partitions</Strong>: after data is added to
-            S3, partitions must be registered with the table, for example:
+            <Strong>Adding partitions</Strong>: after data is added to S3,
+            partitions must be registered with the table, for example:
           </TextListItem>
         </TextList>
 
@@ -204,15 +202,15 @@ const AWSDataAnalytics = () => {
         <SubSectionHeading>Benefits of Partitioning</SubSectionHeading>
         <TextList>
           <TextListItem>
-            <Strong>Improved query performance</Strong>: queries that
-            filter on partition keys (e.g.{" "}
+            <Strong>Improved query performance</Strong>: queries that filter on
+            partition keys (e.g.{" "}
             <Strong>WHERE year = '2023' AND month = '01'</Strong>) only scan the
             relevant folders.
           </TextListItem>
           <TextListItem>
-            <Strong>Reduced query costs</Strong>: Athena pricing is based
-            on data scanned; partitioning reduces the scanned volume and
-            therefore reduces cost.
+            <Strong>Reduced query costs</Strong>: Athena pricing is based on
+            data scanned; partitioning reduces the scanned volume and therefore
+            reduces cost.
           </TextListItem>
         </TextList>
 
@@ -224,19 +222,21 @@ const AWSDataAnalytics = () => {
 
         <TertiaryHeading>Use Columnar File Formats</TertiaryHeading>
         <Paragraph>
-          File formats like <Strong>Parquet</Strong> and{" "}
-          <Strong>ORC</Strong> store data in a columnar layout. Athena can
-          read only the columns required by the query, and take advantage of
-          built-in compression and predicate pushdown.
+          File formats like <Strong>Parquet</Strong> and <Strong>ORC</Strong>{" "}
+          store data in a columnar layout. Athena can read only the columns
+          required by the query, and take advantage of built-in compression and
+          predicate pushdown.
         </Paragraph>
 
         <CodeBlockWithCopy code={columnarFormat} />
 
-        <TertiaryHeading>Use Glue Data Catalog for Schema Management</TertiaryHeading>
+        <TertiaryHeading>
+          Use Glue Data Catalog for Schema Management
+        </TertiaryHeading>
         <TextList>
           <TextListItem>
-            Leverage <Strong>AWS Glue</Strong> as the central metadata
-            catalog for your Athena tables.
+            Leverage <Strong>AWS Glue</Strong> as the central metadata catalog
+            for your Athena tables.
           </TextListItem>
           <TextListItem>
             Use Glue crawlers or ETL jobs to discover schemas and convert raw
@@ -259,8 +259,7 @@ const AWSDataAnalytics = () => {
         <TertiaryHeading>Use Partition Pruning</TertiaryHeading>
         <TextList>
           <TextListItem>
-            Always filter on partition keys in <Strong>WHERE</Strong>{" "}
-            clauses.
+            Always filter on partition keys in <Strong>WHERE</Strong> clauses.
           </TextListItem>
           <TextListItem>
             Use <Strong>LIMIT</Strong> when exploring data.
@@ -273,21 +272,20 @@ const AWSDataAnalytics = () => {
         <TertiaryHeading>Optimise Data Layout</TertiaryHeading>
         <TextList>
           <TextListItem>
-            Avoid <Strong>very small files</Strong> as they increase
-            overhead during query planning and execution.
+            Avoid <Strong>very small files</Strong> as they increase overhead
+            during query planning and execution.
           </TextListItem>
           <TextListItem>
-            Aim for file sizes in the{" "}
-            <Strong>128 MB - 1 GB</Strong> range.
+            Aim for file sizes in the <Strong>128 MB - 1 GB</Strong> range.
           </TextListItem>
         </TextList>
 
         <SubSectionHeading>Federated Query</SubSectionHeading>
         <Paragraph>
-          <Strong>Federated queries</Strong> in Athena allow you to query
-          data across multiple data sources, not just Amazon S3. You can use
-          Athena as a single interface to analyze data stored in relational
-          databases, NoSQL stores and custom data sources, alongside data in S3.
+          <Strong>Federated queries</Strong> in Athena allow you to query data
+          across multiple data sources, not just Amazon S3. You can use Athena
+          as a single interface to analyze data stored in relational databases,
+          NoSQL stores and custom data sources, alongside data in S3.
         </Paragraph>
 
         <PostImage src={FederatedQueries} alt="Athena federated queries" />
@@ -295,26 +293,25 @@ const AWSDataAnalytics = () => {
         <SubSectionHeading>How Federated Queries Work</SubSectionHeading>
         <TextList>
           <TextListItem>
-            <Strong>Connectors</Strong>: Athena uses data source
-            connectors (running as Lambda functions) to interact with external
-            systems.
+            <Strong>Connectors</Strong>: Athena uses data source connectors
+            (running as Lambda functions) to interact with external systems.
           </TextListItem>
           <TextListItem>
-            <Strong>SQL interface</Strong>: you write SQL queries in
-            Athena as normal; behind the scenes, Athena invokes connectors to
-            fetch and process data from the external sources.
+            <Strong>SQL interface</Strong>: you write SQL queries in Athena as
+            normal; behind the scenes, Athena invokes connectors to fetch and
+            process data from the external sources.
           </TextListItem>
         </TextList>
 
         <SubSectionHeading>Benefits of Federated Queries</SubSectionHeading>
         <TextList>
           <TextListItem>
-            <Strong>Unified analytics</Strong>: analyze data across
-            disparate systems without copying everything into S3 first.
+            <Strong>Unified analytics</Strong>: analyze data across disparate
+            systems without copying everything into S3 first.
           </TextListItem>
           <TextListItem>
-            <Strong>Simplified data access</Strong>: a single SQL
-            interface for multiple data sources.
+            <Strong>Simplified data access</Strong>: a single SQL interface for
+            multiple data sources.
           </TextListItem>
         </TextList>
 
@@ -324,8 +321,8 @@ const AWSDataAnalytics = () => {
             Higher latency compared to querying data stored directly in S3.
           </TextListItem>
           <TextListItem>
-            Not all SQL functions or operations are supported equally across
-            all connectors.
+            Not all SQL functions or operations are supported equally across all
+            connectors.
           </TextListItem>
           <TextListItem>
             Permissions on the underlying data sources must be managed
@@ -335,54 +332,52 @@ const AWSDataAnalytics = () => {
 
         <SectionHeading id="aws-redshift">Redshift</SectionHeading>
         <Paragraph>
-          <Strong>Amazon Redshift</Strong> is a fully managed,
-          petabyte-scale cloud data warehouse. It’s designed to make it simple
-          and cost-effective to analyze large volumes of data using standard
-          SQL and existing BI tools.
+          <Strong>Amazon Redshift</Strong> is a fully managed, petabyte-scale
+          cloud data warehouse. It’s designed to make it simple and
+          cost-effective to analyze large volumes of data using standard SQL and
+          existing BI tools.
         </Paragraph>
         <TextList>
           <TextListItem>
             Uses <Strong>columnar storage</Strong>,{" "}
-            <Strong>data compression</Strong> and{" "}
-            <Strong>zone maps</Strong> to minimise I/O.
+            <Strong>data compression</Strong> and <Strong>zone maps</Strong> to
+            minimise I/O.
           </TextListItem>
           <TextListItem>
             Leverages a <Strong>Massively Parallel Processing (MPP)</Strong>{" "}
             architecture to split workloads across multiple nodes.
           </TextListItem>
           <TextListItem>
-            Supports optimisations like <Strong>materialized views</Strong>{" "}
-            and <Strong>result caching</Strong> for faster performance.
+            Supports optimisations like <Strong>materialized views</Strong> and{" "}
+            <Strong>result caching</Strong> for faster performance.
           </TextListItem>
         </TextList>
 
         <SubSectionHeading>Scalability</SubSectionHeading>
         <TextList>
           <TextListItem>
-            <Strong>Provisioned</Strong>: scale clusters vertically (change
-            node types) or horizontally (add/remove nodes).
+            <Strong>Provisioned</Strong>: scale clusters vertically (change node
+            types) or horizontally (add/remove nodes).
           </TextListItem>
           <TextListItem>
-            <Strong>Serverless</Strong>: resources are provisioned
-            automatically based on workload; great for unpredictable or spiky
-            usage.
+            <Strong>Serverless</Strong>: resources are provisioned automatically
+            based on workload; great for unpredictable or spiky usage.
           </TextListItem>
         </TextList>
 
         <SubSectionHeading>Redshift Cluster Architecture</SubSectionHeading>
         <Paragraph>
-          A Redshift cluster consists of a{" "}
-          <Strong>leader node</Strong> and one or more{" "}
-          <Strong>compute nodes</Strong>. The leader node coordinates query
-          execution and manages metadata, while compute nodes perform the heavy
-          lifting and return intermediate results to the leader.
+          A Redshift cluster consists of a <Strong>leader node</Strong> and one
+          or more <Strong>compute nodes</Strong>. The leader node coordinates
+          query execution and manages metadata, while compute nodes perform the
+          heavy lifting and return intermediate results to the leader.
         </Paragraph>
         <PostImage src={RedshiftCluster} alt="Redshift cluster architecture" />
 
         <SubSectionHeading>Snapshots and Disaster Recovery</SubSectionHeading>
         <Paragraph>
-          <Strong>Snapshots</Strong> are backups of your Redshift cluster
-          stored in S3. They can be:
+          <Strong>Snapshots</Strong> are backups of your Redshift cluster stored
+          in S3. They can be:
         </Paragraph>
         <TextList>
           <TextListItem>
@@ -390,8 +385,8 @@ const AWSDataAnalytics = () => {
             according to a retention period (default 1 day, up to 35 days).
           </TextListItem>
           <TextListItem>
-            <Strong>Manual snapshots</Strong>: created explicitly and
-            retained until deleted.
+            <Strong>Manual snapshots</Strong>: created explicitly and retained
+            until deleted.
           </TextListItem>
         </TextList>
         <Paragraph>
@@ -412,12 +407,15 @@ const AWSDataAnalytics = () => {
 
         <SectionHeading id="aws-opensearch">OpenSearch</SectionHeading>
         <Paragraph>
-          <Strong>AWS OpenSearch Service</Strong> (formerly Amazon
-          Elasticsearch Service) is a fully managed service for deploying and
-          operating OpenSearch clusters. It’s ideal for search, log analytics
-          and observability use cases.
+          <Strong>AWS OpenSearch Service</Strong> (formerly Amazon Elasticsearch
+          Service) is a fully managed service for deploying and operating
+          OpenSearch clusters. It’s ideal for search, log analytics and
+          observability use cases.
         </Paragraph>
-        <Paragraph>Here are some common patterns combining OpenSearch with other AWS services:</Paragraph>
+        <Paragraph>
+          Here are some common patterns combining OpenSearch with other AWS
+          services:
+        </Paragraph>
 
         <SubSectionHeading>DynamoDB + OpenSearch Pattern</SubSectionHeading>
         <Paragraph>
@@ -443,7 +441,9 @@ const AWSDataAnalytics = () => {
           alt="OpenSearch and DynamoDB design pattern"
         />
 
-        <SubSectionHeading>CloudWatch Logs + OpenSearch Pattern</SubSectionHeading>
+        <SubSectionHeading>
+          CloudWatch Logs + OpenSearch Pattern
+        </SubSectionHeading>
         <Paragraph>
           A common pattern for log analytics is to ship CloudWatch Logs to
           OpenSearch:
@@ -465,17 +465,15 @@ const AWSDataAnalytics = () => {
         />
 
         <SubSectionHeading>Kinesis + OpenSearch Pattern</SubSectionHeading>
-        <Paragraph>
-          To send streaming data into OpenSearch, you can:
-        </Paragraph>
+        <Paragraph>To send streaming data into OpenSearch, you can:</Paragraph>
         <TextList>
           <TextListItem>
             Use <Strong>Kinesis Data Firehose</Strong> for near real-time
             delivery, with optional Lambda transformations, or
           </TextListItem>
           <TextListItem>
-            Use <Strong>Kinesis Data Streams</Strong> with a Lambda
-            consumer that writes directly to OpenSearch.
+            Use <Strong>Kinesis Data Streams</Strong> with a Lambda consumer
+            that writes directly to OpenSearch.
           </TextListItem>
         </TextList>
         <PostImage
@@ -485,18 +483,18 @@ const AWSDataAnalytics = () => {
 
         <SectionHeading id="aws-emr">EMR (Elastic MapReduce)</SectionHeading>
         <Paragraph>
-          <Strong>Amazon EMR</Strong> is a managed big data platform used
-          to process large amounts of data using distributed frameworks like{" "}
-          <Strong>Apache Hadoop</Strong>, <Strong>Apache Spark</Strong>,
-          and more. It runs clusters of EC2 instances and simplifies
-          provisioning, scaling and tuning.
+          <Strong>Amazon EMR</Strong> is a managed big data platform used to
+          process large amounts of data using distributed frameworks like{" "}
+          <Strong>Apache Hadoop</Strong>, <Strong>Apache Spark</Strong>, and
+          more. It runs clusters of EC2 instances and simplifies provisioning,
+          scaling and tuning.
         </Paragraph>
 
         <SubSectionHeading>Node Types in EMR</SubSectionHeading>
         <TextList>
           <TextListItem>
-            <Strong>Master node</Strong>: manages the cluster, coordinates
-            tasks and monitors health.
+            <Strong>Master node</Strong>: manages the cluster, coordinates tasks
+            and monitors health.
           </TextListItem>
           <TextListItem>
             <Strong>Core nodes</Strong>: run tasks and store data in{" "}
@@ -508,7 +506,9 @@ const AWSDataAnalytics = () => {
           </TextListItem>
         </TextList>
 
-        <SubSectionHeading>Purchasing Options & Best Practices</SubSectionHeading>
+        <SubSectionHeading>
+          Purchasing Options & Best Practices
+        </SubSectionHeading>
         <IndentedTextList>
           <IndentedTextListItem>
             <Strong>Master node</Strong>: use On-Demand or Reserved Instances
@@ -520,8 +520,8 @@ const AWSDataAnalytics = () => {
             fault-tolerant design).
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <Strong>Task nodes</Strong>: Spot Instances are ideal to reduce
-            cost for transient compute.
+            <Strong>Task nodes</Strong>: Spot Instances are ideal to reduce cost
+            for transient compute.
           </IndentedTextListItem>
         </IndentedTextList>
 
@@ -543,10 +543,10 @@ const AWSDataAnalytics = () => {
         <SubSectionHeading>Dashboards & Analysis</SubSectionHeading>
         <Paragraph>
           QuickSight uses <Strong>users</Strong> (standard) and{" "}
-          <Strong>groups</Strong> (enterprise) for access control. Data is
-          often imported into the in-memory <Strong>SPICE</Strong> engine for
-          very fast visual exploration. Dashboards are read-only views that you
-          can share with users and groups.
+          <Strong>groups</Strong> (enterprise) for access control. Data is often
+          imported into the in-memory <Strong>SPICE</Strong> engine for very
+          fast visual exploration. Dashboards are read-only views that you can
+          share with users and groups.
         </Paragraph>
         <PostImage
           src={QuickSightDashboard}
@@ -555,13 +555,14 @@ const AWSDataAnalytics = () => {
 
         <SectionHeading id="aws-glue">Glue</SectionHeading>
         <Paragraph>
-          <Strong>AWS Glue</Strong> is a serverless data integration
-          service used to discover, prepare, move and integrate data from
-          multiple sources for analytics, ML and application development. It
-          provides:
+          <Strong>AWS Glue</Strong> is a serverless data integration service
+          used to discover, prepare, move and integrate data from multiple
+          sources for analytics, ML and application development. It provides:
         </Paragraph>
         <TextList>
-          <TextListItem>Central metadata via the Glue Data Catalog</TextListItem>
+          <TextListItem>
+            Central metadata via the Glue Data Catalog
+          </TextListItem>
           <TextListItem>Visual and code-based ETL jobs</TextListItem>
           <TextListItem>Job scheduling and workflow orchestration</TextListItem>
         </TextList>
@@ -570,9 +571,9 @@ const AWSDataAnalytics = () => {
         <SectionHeading id="aws-lake-formation">Lake Formation</SectionHeading>
         <Paragraph>
           <Strong>AWS Lake Formation</Strong> is a managed service that
-          simplifies building and securing <Strong>data lakes</Strong> on AWS.
-          A data lake is a centralized repository for structured and
-          unstructured data at any scale.
+          simplifies building and securing <Strong>data lakes</Strong> on AWS. A
+          data lake is a centralized repository for structured and unstructured
+          data at any scale.
         </Paragraph>
         <Paragraph>
           Lake Formation helps automate data ingestion, cataloging, security

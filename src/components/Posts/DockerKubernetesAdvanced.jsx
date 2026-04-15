@@ -248,9 +248,7 @@ const PostContainer = styled(BasePostContainer)`
 
 const DockerKubernetesAdvanced = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", {
-      slug: "docker-kubernetes-security-stateful-cluster",
-    });
+    Analytics.pageview({ slug: "docker-kubernetes-security-stateful-cluster" });
   }, []);
 
   return (

@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react';
-import styled from 'styled-components';
+import React, { useEffect } from "react";
+import styled from "styled-components";
 
 // helpers
-import { Analytics } from '../../helpers/analytics';
+import { Analytics } from "../../helpers/analytics";
 
 // animations
-import SlideInBottom from '../../animations/SlideInBottom';
+import SlideInBottom from "../../animations/SlideInBottom";
 
 // components
-import BackButton from '../Button/BackButton';
-import { CodeBlockWithCopy } from '../Code/Code';
+import BackButton from "../Button/BackButton";
+import { CodeBlockWithCopy } from "../Code/Code";
 
 // layout
 import {
@@ -19,7 +19,7 @@ import {
   HeaderRow,
   IconWrapper,
   HeaderIcon,
-} from '../BlogLayout/BlogLayout';
+} from "../BlogLayout/BlogLayout";
 
 // typography
 import {
@@ -39,7 +39,7 @@ import {
 } from "../Typography/Typography";
 
 // icons
-import { GitHubSVG } from '../../resources/styles/icons';
+import { GitHubSVG } from "../../resources/styles/icons";
 
 const AnimatedPostContainer = styled(BasePostContainer)`
   animation: ${SlideInBottom} 0.5s forwards;
@@ -661,10 +661,9 @@ const pitfalls = `- If you deploy from develop, GitHub can reject the deployment
 - If your UI shows "unknown", check your workflow exports the same VITE_* keys your frontend reads.
 - If your repo is private, the GitHub API section may fail without auth. Badges still work reliably.`;
 
-
 const GitHubCICD = () => {
   useEffect(() => {
-    Analytics.event('blog_opened', { slug: 'github-actions-ci-cd-course-structure' });
+    Analytics.pageview({ slug: "github-actions-ci-cd-course-structure" });
   }, []);
 
   return (
@@ -684,69 +683,86 @@ const GitHubCICD = () => {
         </HeaderRow>
 
         <Paragraph>
-          GitHub Actions has quietly become one of the most powerful tools in a modern
-          developer's toolkit. It's where your tests run, your Docker images build,
-          your infrastructure deploys, and your app quietly rolls out to production while
-          you're making coffee.
+          GitHub Actions has quietly become one of the most powerful tools in a
+          modern developer's toolkit. It's where your tests run, your Docker
+          images build, your infrastructure deploys, and your app quietly rolls
+          out to production while you're making coffee.
         </Paragraph>
 
         <Paragraph>
-          In this post, I'm going to lay out a learning path for GitHub Actions. By the
-          end, you'll understand <Strong>how</Strong> workflows work, <Strong>when</Strong>{' '}
-          to use them, and <Strong>how</Strong> to go from a simple 'hello world' to
-          a full CI/CD pipeline that builds, tests, and deploys a thing!
+          In this post, I'm going to lay out a learning path for GitHub Actions.
+          By the end, you'll understand <Strong>how</Strong> workflows work,{" "}
+          <Strong>when</Strong> to use them, and <Strong>how</Strong> to go from
+          a simple 'hello world' to a full CI/CD pipeline that builds, tests,
+          and deploys a thing!
         </Paragraph>
 
-        <Paragraph><Italic>*It's important to note that you'll need to have some familiarity with GitHub and 
-          an existing repository to find this post useful.*</Italic>
+        <Paragraph>
+          <Italic>
+            *It's important to note that you'll need to have some familiarity
+            with GitHub and an existing repository to find this post useful.*
+          </Italic>
         </Paragraph>
 
         <SectionHeading>Why CI/CD and Why GitHub Actions?</SectionHeading>
 
         <Paragraph>
-          Before writing YAML, it's worth answering a simple question:{' '}
+          Before writing YAML, it's worth answering a simple question:{" "}
           <Strong>why bother?</Strong> CI/CD exists so you can:
         </Paragraph>
 
         <TextList>
-          <TextListItem>Run tests on every change, not just on your machine.</TextListItem>
+          <TextListItem>
+            Run tests on every change, not just on your machine.
+          </TextListItem>
           <TextListItem>Catch bugs before they hit production.</TextListItem>
-          <TextListItem>Build and ship your app on every merge without manual steps.</TextListItem>
-          <TextListItem>Standardise how your team delivers software.</TextListItem>
+          <TextListItem>
+            Build and ship your app on every merge without manual steps.
+          </TextListItem>
+          <TextListItem>
+            Standardise how your team delivers software.
+          </TextListItem>
         </TextList>
 
         <Paragraph>
           GitHub Actions lives <Strong>next to your code</Strong>. That means:
-          workflows are versioned, reviewed, and changed with pull requests just like everything
-          else. No separate CI server to maintain, no extra UI to learn - it's all in your repo.
+          workflows are versioned, reviewed, and changed with pull requests just
+          like everything else. No separate CI server to maintain, no extra UI
+          to learn - it's all in your repo.
         </Paragraph>
 
-        <SectionHeading>Your First Workflow: Hello GitHub Actions</SectionHeading>
+        <SectionHeading>
+          Your First Workflow: Hello GitHub Actions
+        </SectionHeading>
 
         <Paragraph>
           Let's start small. Every course has that first 'hello world' section.
-          For GitHub Actions, it's a workflow that prints a message on every push to{' '}
-          <InlineHighlight>main</InlineHighlight>.
+          For GitHub Actions, it's a workflow that prints a message on every
+          push to <InlineHighlight>main</InlineHighlight>.
         </Paragraph>
 
         <Paragraph>
-          Create a file called{' '}
-          <InlineHighlight>.github/workflows/hello-actions.yml</InlineHighlight>:
+          Create a file called{" "}
+          <InlineHighlight>.github/workflows/hello-actions.yml</InlineHighlight>
+          :
         </Paragraph>
 
         <CodeBlockWithCopy code={helloWorkflow} />
 
         <Paragraph>
-          Push this to GitHub, open the <Strong>Actions</Strong> tab, and you'll see your
-          workflow run. Under the hood you've already used three core ideas:
+          Push this to GitHub, open the <Strong>Actions</Strong> tab, and you'll
+          see your workflow run. Under the hood you've already used three core
+          ideas:
         </Paragraph>
 
         <TextList>
           <TextListItem>
-            <Strong>Triggers</Strong> (the <InlineHighlight>on</InlineHighlight> block)
+            <Strong>Triggers</Strong> (the <InlineHighlight>on</InlineHighlight>{" "}
+            block)
           </TextListItem>
           <TextListItem>
-            <Strong>Jobs</Strong> (in this case, <InlineHighlight>say-hello</InlineHighlight>)
+            <Strong>Jobs</Strong> (in this case,{" "}
+            <InlineHighlight>say-hello</InlineHighlight>)
           </TextListItem>
           <TextListItem>
             <Strong>Steps</Strong> (each task inside a job)
@@ -756,12 +772,14 @@ const GitHubCICD = () => {
         <SectionHeading>Anatomy of a Workflow File</SectionHeading>
 
         <Paragraph>
-          A workflow file is just YAML, but it follows a specific shape. The key sections are:
+          A workflow file is just YAML, but it follows a specific shape. The key
+          sections are:
         </Paragraph>
 
         <TextList>
           <TextListItem>
-            <InlineHighlight>name</InlineHighlight> - how it appears in the Actions UI.
+            <InlineHighlight>name</InlineHighlight> - how it appears in the
+            Actions UI.
           </TextListItem>
           <TextListItem>
             <InlineHighlight>on</InlineHighlight> - when it runs.
@@ -772,38 +790,40 @@ const GitHubCICD = () => {
         </TextList>
 
         <Paragraph>
-          Think of <Strong>jobs</Strong> as independent machines in the cloud. Each one gets its
-          own runner (like a fresh VM) and executes steps in order. Steps can be raw shell
-          commands (<InlineHighlight>run</InlineHighlight>) or prebuilt actions (
+          Think of <Strong>jobs</Strong> as independent machines in the cloud.
+          Each one gets its own runner (like a fresh VM) and executes steps in
+          order. Steps can be raw shell commands (
+          <InlineHighlight>run</InlineHighlight>) or prebuilt actions (
           <InlineHighlight>uses</InlineHighlight>).
         </Paragraph>
 
-        <SectionHeading>Triggers: When Should Your Pipelines Run?</SectionHeading>
+        <SectionHeading>
+          Triggers: When Should Your Pipelines Run?
+        </SectionHeading>
 
         <Paragraph>
-          Triggers determine <Strong>when</Strong> workflows run. This is where GitHub Actions
-          starts to feel really powerful - you can wire workflows into your exact development
-          flow.
+          Triggers determine <Strong>when</Strong> workflows run. This is where
+          GitHub Actions starts to feel really powerful - you can wire workflows
+          into your exact development flow.
         </Paragraph>
 
-        <Paragraph>
-          Some of the most common triggers you'll use:
-        </Paragraph>
+        <Paragraph>Some of the most common triggers you'll use:</Paragraph>
 
         <TextList>
           <TextListItem>
-            <InlineHighlight>push</InlineHighlight> - on every push (optionally filtered by
-            branches or paths).
+            <InlineHighlight>push</InlineHighlight> - on every push (optionally
+            filtered by branches or paths).
           </TextListItem>
           <TextListItem>
             <InlineHighlight>pull_request</InlineHighlight> - on PR open/update.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>workflow_dispatch</InlineHighlight> - manual 'Run workflow'
-            button with optional inputs.
+            <InlineHighlight>workflow_dispatch</InlineHighlight> - manual 'Run
+            workflow' button with optional inputs.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>schedule</InlineHighlight> - cron-based, like nightly jobs.
+            <InlineHighlight>schedule</InlineHighlight> - cron-based, like
+            nightly jobs.
           </TextListItem>
         </TextList>
 
@@ -812,41 +832,41 @@ const GitHubCICD = () => {
         <CodeBlockWithCopy code={workflowTriggers} />
 
         <Paragraph>
-          This lets you do things like 'only run tests when the app code changes' or
-          'allow manual deployments with an environment dropdown'.
+          This lets you do things like 'only run tests when the app code
+          changes' or 'allow manual deployments with an environment dropdown'.
         </Paragraph>
 
         <SectionHeading>Building a Real CI Pipeline</SectionHeading>
 
         <Paragraph>
-          Now we turn this into something useful: a <Strong>CI pipeline</Strong> that
-          runs on both pushes and pull requests.
+          Now we turn this into something useful: a <Strong>CI pipeline</Strong>{" "}
+          that runs on both pushes and pull requests.
         </Paragraph>
 
         <Paragraph>
-          A typical CI workflow might clone your repo, set up a Node version, install
-          dependencies, and run tests. Here's a solid starting point:
+          A typical CI workflow might clone your repo, set up a Node version,
+          install dependencies, and run tests. Here's a solid starting point:
         </Paragraph>
 
         <CodeBlockWithCopy code={basicNodeCiWorkflow} />
 
-        <Paragraph>
-          A few things to notice:
-        </Paragraph>
+        <Paragraph>A few things to notice:</Paragraph>
 
         <TextList>
           <TextListItem>
             <Strong>Matrix builds</Strong> run the same job on Node 18 and 20.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>actions/checkout</InlineHighlight> pulls your code into the runner.
+            <InlineHighlight>actions/checkout</InlineHighlight> pulls your code
+            into the runner.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>actions/setup-node</InlineHighlight> handles Node versioning and
-            caching.
+            <InlineHighlight>actions/setup-node</InlineHighlight> handles Node
+            versioning and caching.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>npm ci</InlineHighlight> gives you reproducible installs.
+            <InlineHighlight>npm ci</InlineHighlight> gives you reproducible
+            installs.
           </TextListItem>
         </TextList>
 
@@ -858,9 +878,10 @@ const GitHubCICD = () => {
         <SectionHeading>Environments, Variables & Secrets</SectionHeading>
 
         <Paragraph>
-          Most apps need configuration: API URLs, feature flags, database connections, and so on.
-          In GitHub Actions, you manage this with a combination of{' '}
-          <Strong>env vars</Strong>, <Strong>secrets</Strong>, and <Strong>environments</Strong>.
+          Most apps need configuration: API URLs, feature flags, database
+          connections, and so on. In GitHub Actions, you manage this with a
+          combination of <Strong>env vars</Strong>, <Strong>secrets</Strong>,
+          and <Strong>environments</Strong>.
         </Paragraph>
 
         <Paragraph>
@@ -870,89 +891,98 @@ const GitHubCICD = () => {
         <CodeBlockWithCopy code={envSecretsExample} />
 
         <Paragraph>
-          The golden rule: <Strong>never hard-code secrets</Strong> in workflows or source code.
-          Store them in <Strong>Settings → Secrets and variables → Actions</Strong>{' '}
-          and reference them via <InlineHighlight>secrets.MY_SECRET</InlineHighlight>.
+          The golden rule: <Strong>never hard-code secrets</Strong> in workflows
+          or source code. Store them in{" "}
+          <Strong>Settings → Secrets and variables → Actions</Strong> and
+          reference them via{" "}
+          <InlineHighlight>secrets.MY_SECRET</InlineHighlight>.
         </Paragraph>
 
         <Paragraph>
-          For production-ready pipelines, you can also use <Strong>GitHub Environments</Strong>{" "}
-          (like <InlineHighlight>staging</InlineHighlight> and{' '}
-          <InlineHighlight>production</InlineHighlight>) to add extra protection and approvals.
+          For production-ready pipelines, you can also use{" "}
+          <Strong>GitHub Environments</Strong> (like{" "}
+          <InlineHighlight>staging</InlineHighlight> and{" "}
+          <InlineHighlight>production</InlineHighlight>) to add extra protection
+          and approvals.
         </Paragraph>
 
         <SectionHeading>Making Workflows Fast with Caching</SectionHeading>
 
         <Paragraph>
           The simplest (and most reliable) option for Node projects is to let{" "}
-          <InlineHighlight>actions/setup-node</InlineHighlight> handle caching for you. This caches npm's
-          package download cache rather than <InlineHighlight>node_modules</InlineHighlight>, which tends to
-          be more stable across runs and avoids weird platform-specific issues.
+          <InlineHighlight>actions/setup-node</InlineHighlight> handle caching
+          for you. This caches npm's package download cache rather than{" "}
+          <InlineHighlight>node_modules</InlineHighlight>, which tends to be
+          more stable across runs and avoids weird platform-specific issues.
         </Paragraph>
 
-        <Paragraph>
-          Here's the recommended setup:
-        </Paragraph>
+        <Paragraph>Here's the recommended setup:</Paragraph>
 
         <CodeBlockWithCopy code={cachingExample} />
 
         <SectionHeading>Secure Deployments with OIDC & AWS</SectionHeading>
 
         <Paragraph>
-          Historically, CI pipelines deployed to AWS using long-lived{' '}
+          Historically, CI pipelines deployed to AWS using long-lived{" "}
           <InlineHighlight>AWS_ACCESS_KEY_ID</InlineHighlight> /
-          <InlineHighlight>AWS_SECRET_ACCESS_KEY</InlineHighlight> secrets. Modern pipelines use{' '}
-          <Strong>OIDC</Strong> instead - no static keys, short-lived credentials.
+          <InlineHighlight>AWS_SECRET_ACCESS_KEY</InlineHighlight> secrets.
+          Modern pipelines use <Strong>OIDC</Strong> instead - no static keys,
+          short-lived credentials.
         </Paragraph>
 
-        <Paragraph>
-          With GitHub Actions, this is as simple as:
-        </Paragraph>
+        <Paragraph>With GitHub Actions, this is as simple as:</Paragraph>
 
         <CodeBlockWithCopy code={oidcConfigureAws} />
 
         <Paragraph>
-          Behind the scenes, GitHub issues an OIDC token, AWS verifies it and issues temporary
-          credentials for the role you specify. This is both <Strong>more secure</Strong> and
+          Behind the scenes, GitHub issues an OIDC token, AWS verifies it and
+          issues temporary credentials for the role you specify. This is both{" "}
+          <Strong>more secure</Strong> and
           <Strong>easier to manage</Strong> than rotating static keys.
         </Paragraph>
 
         <SectionHeading>Reusable Workflows</SectionHeading>
 
         <Paragraph>
-          As your project grows, you'll notice the same workflow patterns repeated across
-          repos: install Node, run tests, lint, maybe build a Docker image. Reusable workflows
-          let you keep these in <Strong>one place</Strong> and call them from multiple repos.
+          As your project grows, you'll notice the same workflow patterns
+          repeated across repos: install Node, run tests, lint, maybe build a
+          Docker image. Reusable workflows let you keep these in{" "}
+          <Strong>one place</Strong> and call them from multiple repos.
         </Paragraph>
 
         <Paragraph>
-          First, you define a reusable workflow in{' '}
-          <InlineHighlight>.github/workflows/shared-node-ci.yml</InlineHighlight>:
+          First, you define a reusable workflow in{" "}
+          <InlineHighlight>
+            .github/workflows/shared-node-ci.yml
+          </InlineHighlight>
+          :
         </Paragraph>
 
         <CodeBlockWithCopy code={reusableWorkflowDefinition} />
 
-        <Paragraph>
-          Then you call it from another workflow like this:
-        </Paragraph>
+        <Paragraph>Then you call it from another workflow like this:</Paragraph>
 
         <CodeBlockWithCopy code={reusableWorkflowCaller} />
 
         <Paragraph>
-          This is the GitHub Actions equivalent of extracting a helper function into a shared
-          module. It's a huge win for teams maintaining lots of services.
+          This is the GitHub Actions equivalent of extracting a helper function
+          into a shared module. It's a huge win for teams maintaining lots of
+          services.
         </Paragraph>
 
-        <SectionHeading>Deploy a Live GitHub Actions Dashboard to GitHub Pages</SectionHeading>
+        <SectionHeading>
+          Deploy a Live GitHub Actions Dashboard to GitHub Pages
+        </SectionHeading>
 
         <Paragraph>
-          We've covered the building blocks: Now we'll turn that knowledge into a real template repo
-          that ships a website to a real URL - without leaving GitHub.
+          We've covered the building blocks: Now we'll turn that knowledge into
+          a real template repo that ships a website to a real URL - without
+          leaving GitHub.
         </Paragraph>
 
         <Paragraph>
-          Here is a link to the template repo if you'd rather look at the source:
-          {" "}
+          Here is a link to the template repo if you'd rather look at the
+          source:{" "}
           <TextLink
             href="https://github.com/heyitsmeharv/template-github-actions-cicd"
             target="_blank"
@@ -964,7 +994,8 @@ const GitHubCICD = () => {
 
         <SubSectionHeading>What we're building</SubSectionHeading>
         <Paragraph>
-          The goal is a tiny site that acts like a <Strong>live pipeline dashboard</Strong>. It will show:
+          The goal is a tiny site that acts like a{" "}
+          <Strong>live pipeline dashboard</Strong>. It will show:
         </Paragraph>
         <TextList>
           <TextListItem>
@@ -974,12 +1005,14 @@ const GitHubCICD = () => {
             Links back to the workflow run that deployed the site.
           </TextListItem>
           <TextListItem>
-            Live status indicators using workflow badges (and optionally live run details via the GitHub API).
+            Live status indicators using workflow badges (and optionally live
+            run details via the GitHub API).
           </TextListItem>
         </TextList>
         <Paragraph>
-          This is a great "end of post" template because it demonstrates real CI/CD behaviour - tests + build + deploy -
-          using GitHub Actions only. No AWS, no Terraform, no external services. Just workflows.
+          This is a great "end of post" template because it demonstrates real
+          CI/CD behaviour - tests + build + deploy - using GitHub Actions only.
+          No AWS, no Terraform, no external services. Just workflows.
         </Paragraph>
 
         <SubSectionHeading>Template structure</SubSectionHeading>
@@ -990,80 +1023,110 @@ const GitHubCICD = () => {
         </Paragraph>
         <CodeBlockWithCopy code={repoStructure} />
 
-        <SubSectionHeading>Enable GitHub Pages for Actions deployments</SubSectionHeading>
+        <SubSectionHeading>
+          Enable GitHub Pages for Actions deployments
+        </SubSectionHeading>
         <Paragraph>
-          GitHub Pages needs one repo setting changed. If you skip this, your deploy workflow will run, but the site won't publish.
+          GitHub Pages needs one repo setting changed. If you skip this, your
+          deploy workflow will run, but the site won't publish.
         </Paragraph>
         <CodeBlockWithCopy code={pagesSettings} />
         <Paragraph>
-          Once you've deployed, your site will appear at your Pages URL. For a project repo, it typically looks like{" "}
-          <InlineHighlight>https://&lt;username&gt;.github.io/&lt;repo&gt;/</InlineHighlight>.
+          Once you've deployed, your site will appear at your Pages URL. For a
+          project repo, it typically looks like{" "}
+          <InlineHighlight>
+            https://&lt;username&gt;.github.io/&lt;repo&gt;/
+          </InlineHighlight>
+          .
         </Paragraph>
 
-        <SubSectionHeading>Reusable workflows: keep CI consistent across repos</SubSectionHeading>
+        <SubSectionHeading>
+          Reusable workflows: keep CI consistent across repos
+        </SubSectionHeading>
         <Paragraph>
-          Most pipelines repeat the same steps: checkout, setup Node, install deps, run tests, build. Reusable workflows let you define
-          that once and call it from anywhere - your "template repo" becomes something you can reuse for future posts (Terraform, Docker, ECS, etc.).
+          Most pipelines repeat the same steps: checkout, setup Node, install
+          deps, run tests, build. Reusable workflows let you define that once
+          and call it from anywhere - your "template repo" becomes something you
+          can reuse for future posts (Terraform, Docker, ECS, etc.).
         </Paragraph>
         <CodeBlockWithCopy code={sharedNodeCI} />
 
-        <SubSectionHeading>CI entrypoint: PR gate + branch confidence</SubSectionHeading>
+        <SubSectionHeading>
+          CI entrypoint: PR gate + branch confidence
+        </SubSectionHeading>
         <Paragraph>
-          The CI workflow is intentionally boring. That's the point. It's a predictable, repeatable gate that runs on pull requests and pushes.
+          The CI workflow is intentionally boring. That's the point. It's a
+          predictable, repeatable gate that runs on pull requests and pushes.
         </Paragraph>
         <CodeBlockWithCopy code={ciWorkflow} />
         <Paragraph>
-          When this is in place, you stop relying on “it works on my machine”. Your PRs prove they're healthy.
+          When this is in place, you stop relying on “it works on my machine”.
+          Your PRs prove they're healthy.
         </Paragraph>
 
-        <SubSectionHeading>Deploy to Pages: build → artifact → deploy</SubSectionHeading>
+        <SubSectionHeading>
+          Deploy to Pages: build → artifact → deploy
+        </SubSectionHeading>
         <Paragraph>
-          This is the part that makes it feel real. The Pages workflow runs on <InlineHighlight>push to main</InlineHighlight>,
-          builds your site, uploads the build output as an artifact, and then deploys that artifact to GitHub Pages.
+          This is the part that makes it feel real. The Pages workflow runs on{" "}
+          <InlineHighlight>push to main</InlineHighlight>, builds your site,
+          uploads the build output as an artifact, and then deploys that
+          artifact to GitHub Pages.
         </Paragraph>
         <Paragraph>
-          Notice how we also inject metadata into the build via environment variables. This is the trick that makes the dashboard useful:
-          the deployed site can tell you exactly what version is live.
+          Notice how we also inject metadata into the build via environment
+          variables. This is the trick that makes the dashboard useful: the
+          deployed site can tell you exactly what version is live.
         </Paragraph>
         <CodeBlockWithCopy code={pagesWorkflow} />
 
-        <SubSectionHeading>Do it properly: separate metadata logic from rendering</SubSectionHeading>
+        <SubSectionHeading>
+          Do it properly: separate metadata logic from rendering
+        </SubSectionHeading>
         <Paragraph>
-          The fastest way to end up with a fragile demo is to stuff everything into one file. Instead, we'll do this cleanly:
+          The fastest way to end up with a fragile demo is to stuff everything
+          into one file. Instead, we'll do this cleanly:
         </Paragraph>
         <TextList>
           <TextListItem>
-            <InlineHighlight>meta.js</InlineHighlight> contains pure functions (easy to test).
+            <InlineHighlight>meta.js</InlineHighlight> contains pure functions
+            (easy to test).
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>main.js</InlineHighlight> renders the UI using those helpers.
+            <InlineHighlight>main.js</InlineHighlight> renders the UI using
+            those helpers.
           </TextListItem>
           <TextListItem>
-            <InlineHighlight>meta.test.js</InlineHighlight> tests the metadata module, not the DOM.
+            <InlineHighlight>meta.test.js</InlineHighlight> tests the metadata
+            module, not the DOM.
           </TextListItem>
         </TextList>
 
         <SubSectionHeading>site/src/meta.js</SubSectionHeading>
         <Paragraph>
-          <Strong>One job:</Strong> take Vite env vars and return a safe, consistent metadata object for the UI.
+          <Strong>One job:</Strong> take Vite env vars and return a safe,
+          consistent metadata object for the UI.
         </Paragraph>
         <CodeBlockWithCopy code={metaModule} />
 
         <SubSectionHeading>site/test/meta.test.js</SubSectionHeading>
         <Paragraph>
-          A few quick tests prove that we handle missing values cleanly and generate the right badge URLs.
+          A few quick tests prove that we handle missing values cleanly and
+          generate the right badge URLs.
         </Paragraph>
         <CodeBlockWithCopy code={metaTest} />
 
         <SubSectionHeading>site/src/main.js</SubSectionHeading>
         <Paragraph>
-          Now the dashboard can focus on rendering. It shows static deployment metadata, live workflow badges, and optionally the latest run results.
+          Now the dashboard can focus on rendering. It shows static deployment
+          metadata, live workflow badges, and optionally the latest run results.
         </Paragraph>
         <CodeBlockWithCopy code={dashboardMain} />
 
         <SubSectionHeading>Common pitfalls</SubSectionHeading>
         <Paragraph>
-          These are the issues most people hit when building this template for the first time.
+          These are the issues most people hit when building this template for
+          the first time.
         </Paragraph>
         <CodeBlockWithCopy code={pitfalls} />
       </AnimatedPostContainer>

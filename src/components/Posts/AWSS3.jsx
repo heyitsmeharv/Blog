@@ -79,7 +79,7 @@ const PostContainer = BasePostContainer;
 
 const AWS3 = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-s3" });
+    Analytics.pageview({ slug: "aws-s3" });
   }, []);
 
   const columns = ["", "User", "Resource"];
@@ -91,8 +91,7 @@ const AWS3 = () => {
     },
     {
       "": "Scope and Usage",
-      User:
-        "Define what actions an identity can perform across various resources and services.",
+      User: "Define what actions an identity can perform across various resources and services.",
       Resource:
         "Define who can perform actions on a specific resource, often enabling cross-account access.",
     },
@@ -104,15 +103,13 @@ const AWS3 = () => {
     },
     {
       "": "Policy Management",
-      User:
-        "Managed in IAM and can be reused across different identities.",
+      User: "Managed in IAM and can be reused across different identities.",
       Resource:
         "Managed directly on the resource, providing granular control by the resource owner.",
     },
     {
       "": "Combining Policies",
-      User:
-        "Can be combined with resource-based policies to fine-tune access control.",
+      User: "Can be combined with resource-based policies to fine-tune access control.",
       Resource:
         "Can be combined with user-based policies to specify permissions more explicitly.",
     },
@@ -295,7 +292,9 @@ const AWS3 = () => {
           <TextListItem>Static website.</TextListItem>
         </TextList>
 
-        <SectionHeading id="buckets-objects">Buckets and Objects</SectionHeading>
+        <SectionHeading id="buckets-objects">
+          Buckets and Objects
+        </SectionHeading>
 
         <SubSectionHeading>Buckets</SubSectionHeading>
 
@@ -643,9 +642,9 @@ const AWS3 = () => {
             year.
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <Strong>Features</Strong>: Low latency and high throughput,
-            suitable for a wide range of use cases including big data analytics,
-            mobile and gaming applications, and content distribution.
+            <Strong>Features</Strong>: Low latency and high throughput, suitable
+            for a wide range of use cases including big data analytics, mobile
+            and gaming applications, and content distribution.
           </IndentedTextListItem>
           <IndentedTextListItem>
             <Strong>Retrieval Fee</Strong>: None.
@@ -666,8 +665,7 @@ const AWS3 = () => {
             <Strong>Durability</Strong>: 99.999999999% (11 nines) durability.
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <Strong>Availability</Strong>: 99.9% availability over a given
-            year.
+            <Strong>Availability</Strong>: 99.9% availability over a given year.
           </IndentedTextListItem>
           <IndentedTextListItem>
             <Strong>Features</Strong>: Automatically moves objects between two
@@ -694,8 +692,7 @@ const AWS3 = () => {
             <Strong>Durability</Strong>: 99.999999999% (11 nines) durability.
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <Strong>Availability</Strong>: 99.9% availability over a given
-            year.
+            <Strong>Availability</Strong>: 99.9% availability over a given year.
           </IndentedTextListItem>
           <IndentedTextListItem>
             <Strong>Features</Strong>: Lower storage cost compared to S3
@@ -721,8 +718,7 @@ const AWS3 = () => {
             <Strong>Durability</Strong>: 99.999999999% (11 nines) durability.
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <Strong>Availability</Strong>: 99.5% availability over a given
-            year.
+            <Strong>Availability</Strong>: 99.5% availability over a given year.
           </IndentedTextListItem>
           <IndentedTextListItem>
             <Strong>Features</Strong>: Lower cost option compared to
@@ -748,8 +744,7 @@ const AWS3 = () => {
             <Strong>Durability</Strong>: 99.999999999% (11 nines) durability.
           </IndentedTextListItem>
           <IndentedTextListItem>
-            <Strong>Availability</Strong>: 99.9% availability over a given
-            year.
+            <Strong>Availability</Strong>: 99.9% availability over a given year.
           </IndentedTextListItem>
           <IndentedTextListItem>
             <Strong>Features</Strong>: Low-cost storage with milliseconds access
@@ -821,9 +816,8 @@ const AWS3 = () => {
           </IndentedTextListItem>
           <IndentedTextListItem>
             <Strong>Features</Strong>: Lowest storage cost among all S3 classes.
-            Retrieval options include (<Strong>
-              Minimum storage duration of 180 days.
-            </Strong>
+            Retrieval options include (
+            <Strong>Minimum storage duration of 180 days.</Strong>
             ):
           </IndentedTextListItem>
         </IndentedTextList>
@@ -842,7 +836,9 @@ const AWS3 = () => {
 
         <SubSectionHeading>Choosing the Right Storage Class</SubSectionHeading>
 
-        <Paragraph>When choosing an S3 storage class, consider the following factors:</Paragraph>
+        <Paragraph>
+          When choosing an S3 storage class, consider the following factors:
+        </Paragraph>
 
         <TextList>
           <TextListItem>
@@ -963,7 +959,9 @@ const AWS3 = () => {
         </Paragraph>
 
         <TextList>
-          <TextListItem>s3:ObjectCreated:*: Triggered when an object is created.</TextListItem>
+          <TextListItem>
+            s3:ObjectCreated:*: Triggered when an object is created.
+          </TextListItem>
           <TextListItem>
             s3:ObjectCreated:Put: Triggered specifically for PUT operations.
           </TextListItem>
@@ -1072,7 +1070,9 @@ const AWS3 = () => {
           time-sensitive applications.
         </Paragraph>
 
-        <SubSectionHeading>Request Rate and Performance Guidelines</SubSectionHeading>
+        <SubSectionHeading>
+          Request Rate and Performance Guidelines
+        </SubSectionHeading>
 
         <TertiaryHeading>Request Rate Limits</TertiaryHeading>
 
@@ -1098,10 +1098,7 @@ const AWS3 = () => {
           must use for files that are bigger than 5GB.
         </Paragraph>
 
-        <PostImage
-          src={S3MultiPartUpload}
-          alt="S3 multipart upload diagram"
-        />
+        <PostImage src={S3MultiPartUpload} alt="S3 multipart upload diagram" />
 
         <TertiaryHeading>Transfer Acceleration</TertiaryHeading>
 
@@ -1162,10 +1159,10 @@ const AWS3 = () => {
 
         <Paragraph>
           Amazon S3 automatically scales to handle the load, so there are no
-          hard limits on the number of objects you can store or the total
-          amount of storage you can consume. This scalability supports
-          concurrent access and operations on your data, allowing multiple users
-          and applications to interact with the storage simultaneously.
+          hard limits on the number of objects you can store or the total amount
+          of storage you can consume. This scalability supports concurrent
+          access and operations on your data, allowing multiple users and
+          applications to interact with the storage simultaneously.
         </Paragraph>
 
         <SubSectionHeading>Network Considerations</SubSectionHeading>
@@ -1197,7 +1194,9 @@ const AWS3 = () => {
           </TextListItem>
         </TextList>
 
-        <SectionHeading id="s3-select">S3 Select & Glacier Select</SectionHeading>
+        <SectionHeading id="s3-select">
+          S3 Select & Glacier Select
+        </SectionHeading>
 
         <Paragraph>
           S3 Select is a feature of Amazon S3 that allows you to retrieve a
@@ -1233,10 +1232,10 @@ const AWS3 = () => {
         <SectionHeading id="batch-operations">Batch Operations</SectionHeading>
 
         <Paragraph>
-          Amazon S3 Batch Operations allows you to manage and perform large-scale
-          batch operations on the objects stored in your S3 buckets. It
-          simplifies the process of performing repetitive or bulk actions across
-          many objects, helping you automate and scale these tasks.
+          Amazon S3 Batch Operations allows you to manage and perform
+          large-scale batch operations on the objects stored in your S3 buckets.
+          It simplifies the process of performing repetitive or bulk actions
+          across many objects, helping you automate and scale these tasks.
         </Paragraph>
 
         <TertiaryHeading>Common Operations:</TertiaryHeading>
@@ -1348,7 +1347,9 @@ const AWS3 = () => {
 
         <SectionHeading id="s3-encryption">S3 Encryption</SectionHeading>
 
-        <Paragraph>You can encrypt objects in S3 buckets using one of 4 methods:</Paragraph>
+        <Paragraph>
+          You can encrypt objects in S3 buckets using one of 4 methods:
+        </Paragraph>
 
         <TextList>
           <TextListItem>
@@ -1418,9 +1419,7 @@ const AWS3 = () => {
             Service)
           </TextListItem>
           <TextListItem>Object is encrypted server-side</TextListItem>
-          <TextListItem>
-            User control + audit key using CloudTrail
-          </TextListItem>
+          <TextListItem>User control + audit key using CloudTrail</TextListItem>
           <TextListItem>
             Must set header "x-amz-server-side-encryption":"aws:kms"
           </TextListItem>
@@ -1493,7 +1492,9 @@ const AWS3 = () => {
 
         <TertiaryHeading>CORS HTTP Headers</TertiaryHeading>
 
-        <Paragraph>Here are some of the key HTTP headers used in CORS:</Paragraph>
+        <Paragraph>
+          Here are some of the key HTTP headers used in CORS:
+        </Paragraph>
 
         <TextList>
           <TextListItem>
@@ -1562,7 +1563,9 @@ const AWS3 = () => {
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <TertiaryHeading>Simple Requests vs. Preflight Requests</TertiaryHeading>
+        <TertiaryHeading>
+          Simple Requests vs. Preflight Requests
+        </TertiaryHeading>
 
         <TextList>
           <TextListItem>
@@ -1795,10 +1798,7 @@ const AWS3 = () => {
           in combination with an S3 lifecycle policy.
         </Paragraph>
 
-        <PostImage
-          src={SnowballGlacier}
-          alt="Snowball to Glacier lifecycle"
-        />
+        <PostImage src={SnowballGlacier} alt="Snowball to Glacier lifecycle" />
 
         <SectionHeading id="aws-fsx">FSx</SectionHeading>
 
@@ -1855,7 +1855,9 @@ const AWS3 = () => {
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <SubSectionHeading>FSx File System Deployment Options</SubSectionHeading>
+        <SubSectionHeading>
+          FSx File System Deployment Options
+        </SubSectionHeading>
 
         <TextList>
           <TextListItem>
@@ -1873,10 +1875,7 @@ const AWS3 = () => {
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <PostImage
-          src={FSxScratchFileSystem}
-          alt="FSx scratch file system"
-        />
+        <PostImage src={FSxScratchFileSystem} alt="FSx scratch file system" />
 
         <TextList>
           <TextListItem>
@@ -1910,7 +1909,9 @@ const AWS3 = () => {
           <IndentedTextListItem>
             Fully managed NetApp ONTAP file system.
           </IndentedTextListItem>
-          <IndentedTextListItem>Supports SMB, NFS, and iSCSI.</IndentedTextListItem>
+          <IndentedTextListItem>
+            Supports SMB, NFS, and iSCSI.
+          </IndentedTextListItem>
           <IndentedTextListItem>
             Offers NetApp features like snapshots, replication, and
             deduplication.
@@ -2029,7 +2030,9 @@ const AWS3 = () => {
 
         <PostImage src={TapeGateway} alt="Tape Gateway diagram" />
 
-        <SubSectionHeading>Storage Gateway - Hardware appliance</SubSectionHeading>
+        <SubSectionHeading>
+          Storage Gateway - Hardware appliance
+        </SubSectionHeading>
 
         <Paragraph>
           Using Storage Gateway means you need on-premise virtualisation,
@@ -2166,7 +2169,8 @@ const AWS3 = () => {
               target="_blank"
               rel="noreferrer"
             >
-              Assessing your storage activity and usage with Amazon S3 Storage Lens
+              Assessing your storage activity and usage with Amazon S3 Storage
+              Lens
             </TextLink>
           </TextListItem>
           <TextListItem>

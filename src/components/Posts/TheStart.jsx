@@ -25,7 +25,7 @@ const AnimatedPostContainer = styled(BasePostContainer)`
 
 const TheStart = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "the-start" });
+    Analytics.pageview({ slug: "the-start" });
   }, []);
 
   return (
@@ -36,12 +36,12 @@ const TheStart = () => {
       <AnimatedPostContainer>
         <PageTitle>The Start</PageTitle>
         <Paragraph>
-          For a long time I've wanted to write a blog about technologies
-          I'm interested in. The purpose of this blog is just to document
-          my personal journey learning cool tech, if only to cement my own
-          understanding and potentially help people with similar interests.
-          I'm hoping that now I have created a space for myself to blog,
-          I'll be more inclined to write.
+          For a long time I've wanted to write a blog about technologies I'm
+          interested in. The purpose of this blog is just to document my
+          personal journey learning cool tech, if only to cement my own
+          understanding and potentially help people with similar interests. I'm
+          hoping that now I have created a space for myself to blog, I'll be
+          more inclined to write.
         </Paragraph>
       </AnimatedPostContainer>
     </PageWrapper>

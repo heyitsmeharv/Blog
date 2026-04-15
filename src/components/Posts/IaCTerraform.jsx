@@ -20,7 +20,7 @@ import {
   HeaderRow,
   IconWrapper,
   HeaderIcon,
-} from '../BlogLayout/BlogLayout';
+} from "../BlogLayout/BlogLayout";
 
 // typography
 import {
@@ -39,7 +39,7 @@ import {
 } from "../Typography/Typography";
 
 // icons
-import { TerraformSVG } from '../../resources/styles/icons';
+import { TerraformSVG } from "../../resources/styles/icons";
 
 const AnimatedPostContainer = styled(BasePostContainer)`
   animation: ${SlideInBottom} 0.5s forwards;
@@ -117,7 +117,6 @@ variable "aws_region" {
   default     = "eu-west-2"
 }`;
 
-
 const envTfvars = `/*
 env.tfvars (environment root)
 - Values specific to this deployable root.
@@ -127,8 +126,6 @@ env.tfvars (environment root)
 project     = "template-terraform-boilerplate"
 environment = "<aws-account>"
 aws_region  = "eu-west-2"`;
-
-
 
 const envProvidersTf = `/*
 providers.tf (environment root)
@@ -158,7 +155,6 @@ provider "aws" {
   }
 }`;
 
-
 const envOutputsTf = `/*
 outputs.tf (environment root)
 - Outputs are the values you want to quickly grab after apply.
@@ -169,7 +165,6 @@ output "uploads_bucket_name" {
   description = "Name of the uploads S3 bucket."
   value       = module.example_bucket.bucket_name
 }`;
-
 
 const envBackendTf = `/*
 backend.tf (environment root)
@@ -237,7 +232,6 @@ cd "$ROOT_DIR"
 
 terraform fmt -recursive
 echo "fmt complete"`;
-
 
 const scriptValidate = `#!/usr/bin/env bash
 set -euo pipefail
@@ -784,7 +778,6 @@ region = eu-west-2
 role_arn = arn:aws:iam::222222222222:role/TerraformExecutionRole
 source_profile = default`;
 
-
 const awsCredentialsExample = `# ~/.aws/credentials
 #
 # This file stores credential material for profiles.
@@ -891,7 +884,6 @@ State key convention (recommended)
 Example:
 - template-terraform-boilerplate/<aws-account>/terraform.tfstate
 */`;
-
 
 const githubTerraformWorkflow = `name: Terraform
 
@@ -1114,7 +1106,7 @@ Template note: single-account bootstrap + naming
 
 const IaCTerraform = () => {
   useEffect(() => {
-    Analytics.event('blog_opened', { slug: 'infrastructure-as-code-with-terraform' });
+    Analytics.pageview({ slug: "infrastructure-as-code-with-terraform" });
   }, []);
 
   return (
@@ -1134,17 +1126,21 @@ const IaCTerraform = () => {
         </HeaderRow>
 
         <Paragraph>
-          In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply).
-          We'll cover how to structure a project sensibly, and how to take the same setup from local development into CI and
-          multiple environments.
+          In this post, we're going to build a Terraform template repo and work
+          through the core workflow (init, plan, apply). We'll cover how to
+          structure a project sensibly, and how to take the same setup from
+          local development into CI and multiple environments.
         </Paragraph>
 
         <Paragraph>
-          We'll start by organising the repo in a way that's easy to understand, then introduce Terraform concepts as they become relevant.
+          We'll start by organising the repo in a way that's easy to understand,
+          then introduce Terraform concepts as they become relevant.
         </Paragraph>
 
         <Paragraph>
-          Here is a link to the boilerplate that works locally and sets you up nicely for CI and multiple environments - <TextLink
+          Here is a link to the boilerplate that works locally and sets you up
+          nicely for CI and multiple environments -{" "}
+          <TextLink
             href="https://github.com/heyitsmeharv/template-terraform-boilerplate"
             target="_blank"
             rel="noreferrer"
@@ -1156,30 +1152,30 @@ const IaCTerraform = () => {
         <SectionHeading>What is Terraform?</SectionHeading>
 
         <Paragraph>
-          Terraform is an <Strong>Infrastructure as Code</Strong> tool. It's how teams create repeatable environments,
-          manage changes safely, and keep infrastructure consistent across accounts and regions.
+          Terraform is an <Strong>Infrastructure as Code</Strong> tool. It's how
+          teams create repeatable environments, manage changes safely, and keep
+          infrastructure consistent across accounts and regions.
         </Paragraph>
 
         <SectionHeading>Install Terraform (and verify)</SectionHeading>
 
         <Paragraph>
-          Terraform is distributed as a single CLI tool. The easiest way to install it is usually through your system package manager, but you can also
-          download the binary directly if you prefer.
+          Terraform is distributed as a single CLI tool. The easiest way to
+          install it is usually through your system package manager, but you can
+          also download the binary directly if you prefer.
         </Paragraph>
 
         <Paragraph>
-          If you want the most up-to-date steps for your OS, these are the official docs I'd follow:
-          {" "}
+          If you want the most up-to-date steps for your OS, these are the
+          official docs I'd follow:{" "}
           <TextLink
             href="https://developer.hashicorp.com/terraform/install"
             target="_blank"
             rel="noreferrer"
           >
             Terraform install page
-          </TextLink>
-          {" "}
-          and
-          {" "}
+          </TextLink>{" "}
+          and{" "}
           <TextLink
             href="https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli"
             target="_blank"
@@ -1192,7 +1188,8 @@ const IaCTerraform = () => {
 
         <SubSectionHeading>Verify the CLI is working</SubSectionHeading>
         <Paragraph>
-          Once Terraform is installed, run the commands below. If they work, you're ready to move on.
+          Once Terraform is installed, run the commands below. If they work,
+          you're ready to move on.
         </Paragraph>
 
         <CodeBlockWithCopy code={verifyTf} />
@@ -1200,13 +1197,18 @@ const IaCTerraform = () => {
         <SectionHeading>Repository Structure</SectionHeading>
 
         <Paragraph>
-          Before we write any Terraform, we're going to agree on a structure that stays easy to navigate as the project grows. Everything Terraform-related
-          lives under <InlineHighlight>infra/</InlineHighlight>, so the rest of the repo (app code, docs, tooling) can evolve independently.
+          Before we write any Terraform, we're going to agree on a structure
+          that stays easy to navigate as the project grows. Everything
+          Terraform-related lives under{" "}
+          <InlineHighlight>infra/</InlineHighlight>, so the rest of the repo
+          (app code, docs, tooling) can evolve independently.
         </Paragraph>
 
         <Paragraph>
-          This layout separates two concerns: <Strong>environment roots</Strong> (where we actually run Terraform) and <Strong>modules</Strong> (reusable
-          building blocks). That separation is what keeps your repo from turning into one huge folder.
+          This layout separates two concerns: <Strong>environment roots</Strong>{" "}
+          (where we actually run Terraform) and <Strong>modules</Strong>{" "}
+          (reusable building blocks). That separation is what keeps your repo
+          from turning into one huge folder.
         </Paragraph>
 
         <SubSectionHeading>High-level layout</SubSectionHeading>
@@ -1214,54 +1216,67 @@ const IaCTerraform = () => {
 
         <SubSectionHeading>.github/workflows/</SubSectionHeading>
         <Paragraph>
-          This is where your CI workflow lives. Later on, we'll add a workflow that runs <InlineHighlight>terraform fmt</InlineHighlight>,{" "}
-          <InlineHighlight>validate</InlineHighlight> and <InlineHighlight>plan</InlineHighlight> on pull requests, and only runs{" "}
-          <InlineHighlight>apply</InlineHighlight> on merges to main. Keeping workflows next to the code makes your infrastructure changes reviewable and
-          repeatable. I have a separate blog post going through GitHub's CI/CD which you can find here if you want a rundown on how that works{" "}
-          <TextLink href="/blog/github-ci-cd">GitHub CI/CD</TextLink>.
+          This is where your CI workflow lives. Later on, we'll add a workflow
+          that runs <InlineHighlight>terraform fmt</InlineHighlight>,{" "}
+          <InlineHighlight>validate</InlineHighlight> and{" "}
+          <InlineHighlight>plan</InlineHighlight> on pull requests, and only
+          runs <InlineHighlight>apply</InlineHighlight> on merges to main.
+          Keeping workflows next to the code makes your infrastructure changes
+          reviewable and repeatable. I have a separate blog post going through
+          GitHub's CI/CD which you can find here if you want a rundown on how
+          that works <TextLink href="/blog/github-ci-cd">GitHub CI/CD</TextLink>
+          .
         </Paragraph>
 
         <SubSectionHeading>infra/env/</SubSectionHeading>
         <Paragraph>
-          Each folder under <InlineHighlight>infra/env/</InlineHighlight> is the deployable Terraform root. This is the folder you{" "}
-          <Strong>cd into</Strong> when you run Terraform commands for that environment.
+          Each folder under <InlineHighlight>infra/env/</InlineHighlight> is the
+          deployable Terraform root. This is the folder you{" "}
+          <Strong>cd into</Strong> when you run Terraform commands for that
+          environment.
         </Paragraph>
 
         <Paragraph>
-          Typically you create a folder for each AWS account you deploy into. Let's run through each file
-          you would find in the environment folder:
+          Typically you create a folder for each AWS account you deploy into.
+          Let's run through each file you would find in the environment folder:
         </Paragraph>
 
         <Carousel
           items={[
             {
               title: "main.tf",
-              description: "Environment entry point where you wire modules together and keep the overall intent readable.",
+              description:
+                "Environment entry point where you wire modules together and keep the overall intent readable.",
               code: envMainTf,
             },
             {
               title: "variables.tf",
-              description: "Typed inputs for the environment so configuration stays explicit and mistakes are caught early.",
+              description:
+                "Typed inputs for the environment so configuration stays explicit and mistakes are caught early.",
               code: envVariablesTf,
             },
             {
               title: "env.tfvars",
-              description: "Environment-specific values so the Terraform code can stay the same across environments.",
+              description:
+                "Environment-specific values so the Terraform code can stay the same across environments.",
               code: envTfvars,
             },
             {
               title: "providers.tf",
-              description: "Provider configuration for this environment (region/account context), inherited by modules.",
+              description:
+                "Provider configuration for this environment (region/account context), inherited by modules.",
               code: envProvidersTf,
             },
             {
               title: "outputs.tf",
-              description: "The important values you want after apply (names, IDs, URLs) without digging through state.",
+              description:
+                "The important values you want after apply (names, IDs, URLs) without digging through state.",
               code: envOutputsTf,
             },
             {
               title: "backend.tf",
-              description: "Minimal backend block. Real state settings are injected via infra/backend.hcl at init time.",
+              description:
+                "Minimal backend block. Real state settings are injected via infra/backend.hcl at init time.",
               code: envBackendTf,
             },
           ]}
@@ -1269,118 +1284,151 @@ const IaCTerraform = () => {
 
         <SubSectionHeading>infra/modules/</SubSectionHeading>
         <Paragraph>
-          Modules are reusable pieces of infrastructure you can wire together from an environment root. If an environment folder starts to feel like a
-          long list of resources, it's usually better to break that up into multiple modules.
+          Modules are reusable pieces of infrastructure you can wire together
+          from an environment root. If an environment folder starts to feel like
+          a long list of resources, it's usually better to break that up into
+          multiple modules.
         </Paragraph>
 
         <Paragraph>
-          Notice how we pass attributes from the main.tf in the environment folder to be used as variables inside our module.
+          Notice how we pass attributes from the main.tf in the environment
+          folder to be used as variables inside our module.
         </Paragraph>
 
         <Carousel
           items={[
             {
               title: "main.tf",
-              description: "The resources this module creates (keep modules small and single-purpose).",
+              description:
+                "The resources this module creates (keep modules small and single-purpose).",
               code: moduleMainTf,
             },
             {
               title: "variables.tf",
-              description: "Inputs the module needs so it stays reusable across environments.",
+              description:
+                "Inputs the module needs so it stays reusable across environments.",
               code: moduleVariablesTf,
             },
             {
               title: "outputs.tf",
-              description: "What the module returns so other parts of the system can connect to it cleanly.",
+              description:
+                "What the module returns so other parts of the system can connect to it cleanly.",
               code: moduleOutputsTf,
-            }
+            },
           ]}
         />
 
         <SubSectionHeading>infra/scripts/</SubSectionHeading>
 
         <Paragraph>
-          These scripts are optional, but they make local development feel the same as CI. GitHub Actions will run the workflow end-to-end, but when you're
-          working locally it's still useful to have a consistent way to format, validate, plan, and apply - especially once you introduce multiple environments.
+          These scripts are optional, but they make local development feel the
+          same as CI. GitHub Actions will run the workflow end-to-end, but when
+          you're working locally it's still useful to have a consistent way to
+          format, validate, plan, and apply - especially once you introduce
+          multiple environments.
         </Paragraph>
 
         <Paragraph>
-          The main idea is that whether you're working locally or in CI, you're running the same steps in the same order:{" "}
-          <InlineHighlight>fmt</InlineHighlight> → <InlineHighlight>validate</InlineHighlight> → <InlineHighlight>plan</InlineHighlight> →{" "}
+          The main idea is that whether you're working locally or in CI, you're
+          running the same steps in the same order:{" "}
+          <InlineHighlight>fmt</InlineHighlight> →{" "}
+          <InlineHighlight>validate</InlineHighlight> →{" "}
+          <InlineHighlight>plan</InlineHighlight> →{" "}
           <InlineHighlight>apply</InlineHighlight>.
         </Paragraph>
 
         <Paragraph>
-          I will go through the scripts usage more thoroughly in it's own section <Strong>(Local Development)</Strong> as to not to distract from
-          the purpose of this topic.
+          I will go through the scripts usage more thoroughly in it's own
+          section <Strong>(Local Development)</Strong> as to not to distract
+          from the purpose of this topic.
         </Paragraph>
 
         <SubSectionHeading>repo-level files</SubSectionHeading>
         <Paragraph>
-          <Strong>.gitignore</Strong> should exclude .terraform state files, and plan files so you never commit
-          sensitive or noisy artifacts.
+          <Strong>.gitignore</Strong> should exclude .terraform state files, and
+          plan files so you never commit sensitive or noisy artifacts.
         </Paragraph>
         <Paragraph>
-          <Strong>README.md</Strong> becomes your "how to run this repo" entry point: what it deploys, how environments work, and the basic commands.
+          <Strong>README.md</Strong> becomes your "how to run this repo" entry
+          point: what it deploys, how environments work, and the basic commands.
         </Paragraph>
         <Paragraph>
-          <Strong>package.json</Strong> is optional, but if you're already using Node tooling for your projects it can be a nice place to standardise
-          scripts (for example: running Terraform scripts, formatting, linting, and CI helpers) in one familiar interface.
+          <Strong>package.json</Strong> is optional, but if you're already using
+          Node tooling for your projects it can be a nice place to standardise
+          scripts (for example: running Terraform scripts, formatting, linting,
+          and CI helpers) in one familiar interface.
         </Paragraph>
 
         <SectionHeading>Local Development</SectionHeading>
         <Paragraph>
-          We touched on the topics of scripts above in the Repository Structure about how they could be used to help run your terraform locally. What is
-          also handy is the ability to maintain a local setup when working in multiple environments.
+          We touched on the topics of scripts above in the Repository Structure
+          about how they could be used to help run your terraform locally. What
+          is also handy is the ability to maintain a local setup when working in
+          multiple environments.
         </Paragraph>
 
         <Paragraph>
-          Locally, we'll use{" "} <Strong>AWS profiles per environment</Strong> so switching between AWS accounts is explicit and low-risk.
+          Locally, we'll use <Strong>AWS profiles per environment</Strong> so
+          switching between AWS accounts is explicit and low-risk.
         </Paragraph>
 
         <SubSectionHeading>AWS profiles per environment</SubSectionHeading>
 
         <Paragraph>
           The approach is simple: create one AWS CLI profile per environment in{" "}
-          <InlineHighlight>~/.aws/config</InlineHighlight>, and store your base credentials in{" "}
-          <InlineHighlight>~/.aws/credentials</InlineHighlight>.
-          Terraform and the AWS CLI both understand these files. The AWS docs cover the file locations and formats in detail:
-          {" "}
-          <TextLink href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html" target="_blank" rel="noreferrer">
+          <InlineHighlight>~/.aws/config</InlineHighlight>, and store your base
+          credentials in <InlineHighlight>~/.aws/credentials</InlineHighlight>.
+          Terraform and the AWS CLI both understand these files. The AWS docs
+          cover the file locations and formats in detail:{" "}
+          <TextLink
+            href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html"
+            target="_blank"
+            rel="noreferrer"
+          >
             AWS CLI config & credentials files
-          </TextLink>
-          {" "}
-          and
-          {" "}
-          <TextLink href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html" target="_blank" rel="noreferrer">
+          </TextLink>{" "}
+          and{" "}
+          <TextLink
+            href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html"
+            target="_blank"
+            rel="noreferrer"
+          >
             Configuring the AWS CLI
           </TextLink>
           .
         </Paragraph>
 
         <Paragraph>
-          In a team setup, you'll typically assume a Terraform role per environment/account. AWS roles are split into two parts: a{" "}
-          <InlineHighlight>trust policy</InlineHighlight> (who can assume the role) and a{" "}
-          <InlineHighlight>permissions policy</InlineHighlight> (what the role can do).
+          In a team setup, you'll typically assume a Terraform role per
+          environment/account. AWS roles are split into two parts: a{" "}
+          <InlineHighlight>trust policy</InlineHighlight> (who can assume the
+          role) and a <InlineHighlight>permissions policy</InlineHighlight>{" "}
+          (what the role can do).
         </Paragraph>
 
         <Paragraph>
-          If you need a refresher, the best starting point:
-          {" "}
-          <TextLink href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html" target="_blank" rel="noreferrer">
+          If you need a refresher, the best starting point:{" "}
+          <TextLink
+            href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html"
+            target="_blank"
+            rel="noreferrer"
+          >
             IAM roles overview
-          </TextLink>
-          {" "}
-          and
-          {" "}
-          <TextLink href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-custom.html" target="_blank" rel="noreferrer">
+          </TextLink>{" "}
+          and{" "}
+          <TextLink
+            href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-custom.html"
+            target="_blank"
+            rel="noreferrer"
+          >
             Create a role with a custom trust policy
           </TextLink>
-          .
-          {" "}
-          Alternatively you can look at my
-          {" "}
-          <TextLink href="https://www.heyitsmeharv.com/blog/aws-identity-access-management" target="_blank" rel="noreferrer">
+          . Alternatively you can look at my{" "}
+          <TextLink
+            href="https://www.heyitsmeharv.com/blog/aws-identity-access-management"
+            target="_blank"
+            rel="noreferrer"
+          >
             AWS Identity and Access Management (IAM) blog post
           </TextLink>
           .
@@ -1395,7 +1443,8 @@ const IaCTerraform = () => {
             },
             {
               title: "~/.aws/credentials",
-              description: "This file stores credentials for profiles. This file should never be shared or else you risk losing your account!",
+              description:
+                "This file stores credentials for profiles. This file should never be shared or else you risk losing your account!",
               code: awsCredentialsExample,
             },
             {
@@ -1404,82 +1453,99 @@ const IaCTerraform = () => {
               The actual principal will depend on your setup (an IAM user, an SSO role, or a role in another account). The key idea is: trust policy controls 
               who can assume, permissions policy controls what they can do.`,
               code: terraformRoleTrustPolicyExample,
-            }
+            },
           ]}
         />
 
         <SubSectionHeading>Scripts</SubSectionHeading>
         <Paragraph>
-          These scripts assume you're using named AWS profiles. The main one you'll use is{" "}
-          <InlineHighlight>use-env.sh</InlineHighlight>, which sets <InlineHighlight>AWS_PROFILE</InlineHighlight> for your shell session.
-          From there, Terraform commands run in the correct account/role context.
+          These scripts assume you're using named AWS profiles. The main one
+          you'll use is <InlineHighlight>use-env.sh</InlineHighlight>, which
+          sets <InlineHighlight>AWS_PROFILE</InlineHighlight> for your shell
+          session. From there, Terraform commands run in the correct
+          account/role context.
         </Paragraph>
 
         <Carousel
           items={[
             {
               title: "prereqs.sh",
-              description: "Sanity-checks your local Git Bash setup by verifying required tools are available on PATH (terraform, aws, jq, tflint, node, npm). Fails fast with a clear fix hint so you don't waste time debugging 'command not found' issues later.",
+              description:
+                "Sanity-checks your local Git Bash setup by verifying required tools are available on PATH (terraform, aws, jq, tflint, node, npm). Fails fast with a clear fix hint so you don't waste time debugging 'command not found' issues later.",
               code: scriptPreReqs,
             },
             {
               title: "use-env.sh",
-              description: "Switches AWS context locally by setting AWS_PROFILE to match a environment name.",
+              description:
+                "Switches AWS context locally by setting AWS_PROFILE to match a environment name.",
               code: scriptUseEnv,
             },
             {
               title: "whoami.sh",
-              description: "Prints your active AWS identity (account/role) so you don't plan/apply in the wrong place.",
+              description:
+                "Prints your active AWS identity (account/role) so you don't plan/apply in the wrong place.",
               code: scriptWhoAmI,
             },
             {
               title: "bootstrap-state.sh",
-              description: "Bootstraps the AWS prerequisites Terraform needs before the first init: creates the remote state S3 bucket (versioning + encryption + public access block) and the DynamoDB lock table, then sets up GitHub Actions OIDC (provider + role) and writes backend.hcl so your environment can run terraform init immediately against remote state.",
+              description:
+                "Bootstraps the AWS prerequisites Terraform needs before the first init: creates the remote state S3 bucket (versioning + encryption + public access block) and the DynamoDB lock table, then sets up GitHub Actions OIDC (provider + role) and writes backend.hcl so your environment can run terraform init immediately against remote state.",
               code: scriptBootstrapState,
             },
             {
               title: "write-backend-hcl.sh",
-              description: "Generates an env-bound backend.hcl inside infra/env/<environment>/ using your current AWS identity. It derives the account ID via sts, builds deterministic S3 + DynamoDB backend names, and writes the exact config Terraform needs for remote state (bucket, key, region, lock table, encryption) without committing any backend values to Git.",
+              description:
+                "Generates an env-bound backend.hcl inside infra/env/<environment>/ using your current AWS identity. It derives the account ID via sts, builds deterministic S3 + DynamoDB backend names, and writes the exact config Terraform needs for remote state (bucket, key, region, lock table, encryption) without committing any backend values to Git.",
               code: scriptWriteBackendHCL,
             },
             {
               title: "fmt.sh",
-              description: "Formats Terraform code under infra so the code stay clean.",
+              description:
+                "Formats Terraform code under infra so the code stay clean.",
               code: scriptFmt,
             },
             {
               title: "validate.sh",
-              description: "The local quality gate (fmt check + validate + tflint) before you generate a plan.",
+              description:
+                "The local quality gate (fmt check + validate + tflint) before you generate a plan.",
               code: scriptValidate,
             },
             {
               title: "plan.sh",
-              description: "Creates a saved plan file using env.tfvars so changes can be reviewed.",
+              description:
+                "Creates a saved plan file using env.tfvars so changes can be reviewed.",
               code: scriptPlan,
             },
             {
               title: "apply.sh",
-              description: "Applies the saved plan file so you deploy exactly what you planned.",
+              description:
+                "Applies the saved plan file so you deploy exactly what you planned.",
               code: scriptApply,
             },
           ]}
         />
 
         <Paragraph>
-          Once we introduce GitHub Actions, the workflow will run these same steps automatically. The scripts are just there to keep your local workflow
-          consistent and safe, especially when you're switching environments.
+          Once we introduce GitHub Actions, the workflow will run these same
+          steps automatically. The scripts are just there to keep your local
+          workflow consistent and safe, especially when you're switching
+          environments.
         </Paragraph>
 
         <SubSectionHeading>Backend conventions</SubSectionHeading>
 
         <Paragraph>
-          You'll see backend config kept in a dedicated <InlineHighlight>backend.tf</InlineHighlight> at the environment root. I like this because it makes state
-          behaviour explicit per environment, and keeps it separate from provider configuration.
+          You'll see backend config kept in a dedicated{" "}
+          <InlineHighlight>backend.tf</InlineHighlight> at the environment root.
+          I like this because it makes state behaviour explicit per environment,
+          and keeps it separate from provider configuration.
         </Paragraph>
 
         <Paragraph>
-          The key detail is the <InlineHighlight>key</InlineHighlight>. That's the path inside the bucket where the state file lives. Use a predictable convention
-          so it's always obvious which environment you're looking at.
+          The key detail is the <InlineHighlight>key</InlineHighlight>. That's
+          the path inside the bucket where the state file lives. Use a
+          predictable convention so it's always obvious which environment you're
+          looking at.
         </Paragraph>
 
         <CodeBlockWithCopy code={stateKeyConvention} />
@@ -1487,8 +1553,11 @@ const IaCTerraform = () => {
         <SubSectionHeading>Backend example</SubSectionHeading>
 
         <Paragraph>
-          This is the standard AWS pattern: S3 stores the state file, and DynamoDB provides a lock so concurrent applies don't collide.
-          In this template, the real backend values live in <InlineHighlight>infra/backend.hcl</InlineHighlight> (generated by the CLI).
+          This is the standard AWS pattern: S3 stores the state file, and
+          DynamoDB provides a lock so concurrent applies don't collide. In this
+          template, the real backend values live in{" "}
+          <InlineHighlight>infra/backend.hcl</InlineHighlight> (generated by the
+          CLI).
         </Paragraph>
         <CodeBlockWithCopy code={backendExample} />
 
@@ -1496,38 +1565,54 @@ const IaCTerraform = () => {
 
         <TextList>
           <TextListItem>
-            <Strong>Shared source of truth</Strong> - your laptop and CI both read/write the same state, so you don't end up with competing copies.
+            <Strong>Shared source of truth</Strong> - your laptop and CI both
+            read/write the same state, so you don't end up with competing
+            copies.
           </TextListItem>
           <TextListItem>
-            <Strong>Locking</Strong> - prevents two applies happening at once, which is one of the fastest ways to corrupt state.
+            <Strong>Locking</Strong> - prevents two applies happening at once,
+            which is one of the fastest ways to corrupt state.
           </TextListItem>
           <TextListItem>
-            <Strong>Environment isolation</Strong> - each environment gets its own separate state file, even if they share the same module code.
+            <Strong>Environment isolation</Strong> - each environment gets its
+            own separate state file, even if they share the same module code.
           </TextListItem>
         </TextList>
 
-        <SubSectionHeading>What changes locally when you enable a backend</SubSectionHeading>
+        <SubSectionHeading>
+          What changes locally when you enable a backend
+        </SubSectionHeading>
         <Paragraph>
-          Once <InlineHighlight>backend.tf</InlineHighlight> is present, <InlineHighlight>terraform init</InlineHighlight> will initialise the backend and move your
-          state into it. From that point on, <InlineHighlight>plan</InlineHighlight> and <InlineHighlight>apply</InlineHighlight> operate against remote state -
-          which is exactly what you want for CI.
+          Once <InlineHighlight>backend.tf</InlineHighlight> is present,{" "}
+          <InlineHighlight>terraform init</InlineHighlight> will initialise the
+          backend and move your state into it. From that point on,{" "}
+          <InlineHighlight>plan</InlineHighlight> and{" "}
+          <InlineHighlight>apply</InlineHighlight> operate against remote state
+          - which is exactly what you want for CI.
         </Paragraph>
 
         <Paragraph>
-          Now we've finished looking at local development, we can now look into integrating the same flow into GitHub Actions,
-          but putting processes in place so that pull requests generate plans automatically, and main branch merges are the only thing that can apply the terraform.
+          Now we've finished looking at local development, we can now look into
+          integrating the same flow into GitHub Actions, but putting processes
+          in place so that pull requests generate plans automatically, and main
+          branch merges are the only thing that can apply the terraform.
         </Paragraph>
 
         <SectionHeading>Bootstrap AWS prerequisites</SectionHeading>
 
         <Paragraph>
-          Remote state is non-negotiable once you introduce CI or multiple environments. The catch is that Terraform can't cleanly
-          create its own backend on the very first run - because it needs state storage before it can manage anything.
+          Remote state is non-negotiable once you introduce CI or multiple
+          environments. The catch is that Terraform can't cleanly create its own
+          backend on the very first run - because it needs state storage before
+          it can manage anything.
         </Paragraph>
 
         <Paragraph>
-          So this template includes a small bootstrap tool under <InlineHighlight>bootstrap/</InlineHighlight>. It creates the AWS prerequisites
-          (S3 + DynamoDB + TerraformExecutionRole) and generates a backend config file so <InlineHighlight>terraform init</InlineHighlight> works immediately.
+          So this template includes a small bootstrap tool under{" "}
+          <InlineHighlight>bootstrap/</InlineHighlight>. It creates the AWS
+          prerequisites (S3 + DynamoDB + TerraformExecutionRole) and generates a
+          backend config file so{" "}
+          <InlineHighlight>terraform init</InlineHighlight> works immediately.
         </Paragraph>
 
         <CodeBlockWithCopy code={bootstrapOverview} />
@@ -1535,31 +1620,40 @@ const IaCTerraform = () => {
         <SubSectionHeading>What gets created</SubSectionHeading>
         <TextList>
           <TextListItem>
-            <Strong>S3 state bucket</Strong> - versioning enabled, encryption on, and public access blocked.
+            <Strong>S3 state bucket</Strong> - versioning enabled, encryption
+            on, and public access blocked.
           </TextListItem>
           <TextListItem>
-            <Strong>DynamoDB lock table</Strong> - prevents concurrent applies from corrupting state.
+            <Strong>DynamoDB lock table</Strong> - prevents concurrent applies
+            from corrupting state.
           </TextListItem>
           <TextListItem>
-            <Strong>TerraformExecutionRole</Strong> - a consistent role you can assume locally (AWS profiles) and later from CI (OIDC).
+            <Strong>TerraformExecutionRole</Strong> - a consistent role you can
+            assume locally (AWS profiles) and later from CI (OIDC).
           </TextListItem>
         </TextList>
 
         <SubSectionHeading>Generated backend config</SubSectionHeading>
         <Paragraph>
-          The bootstrap command generates <InlineHighlight>infra/backend.hcl</InlineHighlight> (gitignored). We then pass it into
-          <InlineHighlight>terraform init</InlineHighlight> so each environment can use remote state without committing account-specific backend values.
+          The bootstrap command generates{" "}
+          <InlineHighlight>infra/backend.hcl</InlineHighlight> (gitignored). We
+          then pass it into
+          <InlineHighlight>terraform init</InlineHighlight> so each environment
+          can use remote state without committing account-specific backend
+          values.
         </Paragraph>
         <Carousel
           items={[
             {
               title: "infra/backend.hcl (generated)",
-              description: "Real backend values (bucket/table/role) generated per environment.",
+              description:
+                "Real backend values (bucket/table/role) generated per environment.",
               code: backendHclExample,
             },
             {
               title: "backend.tf (environment root)",
-              description: "Minimal backend block. Values are injected at init time using backend.hcl.",
+              description:
+                "Minimal backend block. Values are injected at init time using backend.hcl.",
               code: backendTfRecommended,
             },
           ]}
@@ -1567,88 +1661,126 @@ const IaCTerraform = () => {
 
         <SubSectionHeading>Run the bootstrap end-to-end</SubSectionHeading>
         <Paragraph>
-          These commands assume you are running in Git Bash and have an AWS CLI profile that matches your environment folder name
-          (for example: <InlineHighlight>sandbox</InlineHighlight>).
+          These commands assume you are running in Git Bash and have an AWS CLI
+          profile that matches your environment folder name (for example:{" "}
+          <InlineHighlight>sandbox</InlineHighlight>).
         </Paragraph>
         <CodeBlockWithCopy code={bootstrapCommands} />
 
         <Paragraph>
-          One important template detail: the bootstrap step is intentionally <Strong>single-account</Strong>. It creates resources in
-          whichever AWS account your credentials point at. If you want to bootstrap a second account, switch AWS context and run it again.
+          One important template detail: the bootstrap step is intentionally{" "}
+          <Strong>single-account</Strong>. It creates resources in whichever AWS
+          account your credentials point at. If you want to bootstrap a second
+          account, switch AWS context and run it again.
         </Paragraph>
 
         <CodeBlockWithCopy code={namingAndSingleAccountNote} />
 
-        <SectionHeading>GitHub Actions: plan on PR, apply on main</SectionHeading>
+        <SectionHeading>
+          GitHub Actions: plan on PR, apply on main
+        </SectionHeading>
 
         <Paragraph>
-          Once your repo structure is in place and you've got an execution role per environment, GitHub Actions becomes the glue that makes Terraform feel
-          safe and repeatable. The goal is simple:
+          Once your repo structure is in place and you've got an execution role
+          per environment, GitHub Actions becomes the glue that makes Terraform
+          feel safe and repeatable. The goal is simple:
         </Paragraph>
 
         <TextList>
           <TextListItem>
-            <Strong>Pull requests</Strong> generate plans automatically for each environment, so changes are reviewed like code.
+            <Strong>Pull requests</Strong> generate plans automatically for each
+            environment, so changes are reviewed like code.
           </TextListItem>
           <TextListItem>
-            <Strong>Applies</Strong> are triggered manually with <InlineHighlight>workflow_dispatch</InlineHighlight>, so deployments are always intentional.
+            <Strong>Applies</Strong> are triggered manually with{" "}
+            <InlineHighlight>workflow_dispatch</InlineHighlight>, so deployments
+            are always intentional.
           </TextListItem>
           <TextListItem>
-            <Strong>Sensitive environments</Strong> should be protected with required reviewers via GitHub Environments.
+            <Strong>Sensitive environments</Strong> should be protected with
+            required reviewers via GitHub Environments.
           </TextListItem>
         </TextList>
 
         <SubSectionHeading>Authenticating to AWS (OIDC)</SubSectionHeading>
 
         <Paragraph>
-          For CI, the cleanest pattern is to use GitHub's OIDC integration to assume an AWS role with short-lived credentials. That means you don't need to store
-          long-lived AWS access keys in GitHub secrets. GitHub and AWS both document this approach, and the{" "}
-          <InlineHighlight>aws-actions/configure-aws-credentials</InlineHighlight> action supports it directly.
+          For CI, the cleanest pattern is to use GitHub's OIDC integration to
+          assume an AWS role with short-lived credentials. That means you don't
+          need to store long-lived AWS access keys in GitHub secrets. GitHub and
+          AWS both document this approach, and the{" "}
+          <InlineHighlight>
+            aws-actions/configure-aws-credentials
+          </InlineHighlight>{" "}
+          action supports it directly.
         </Paragraph>
 
         <Paragraph>
-          The only requirement on the workflow side is granting <InlineHighlight>id-token: write</InlineHighlight> so the job can request an OIDC token.
+          The only requirement on the workflow side is granting{" "}
+          <InlineHighlight>id-token: write</InlineHighlight> so the job can
+          request an OIDC token.
         </Paragraph>
 
-        <SubSectionHeading>Environment protection for sensitive environments</SubSectionHeading>
+        <SubSectionHeading>
+          Environment protection for sensitive environments
+        </SubSectionHeading>
 
         <Paragraph>
-          GitHub Environments let you put guardrails around deployments. If an environment is sensitive, you can require reviewers so any apply job targeting that
-          environment pauses until someone approves. This gives you a clean manual approval step without custom logic.
+          GitHub Environments let you put guardrails around deployments. If an
+          environment is sensitive, you can require reviewers so any apply job
+          targeting that environment pauses until someone approves. This gives
+          you a clean manual approval step without custom logic.
         </Paragraph>
 
         <SubSectionHeading>The workflow</SubSectionHeading>
 
         <Paragraph>
           The workflow below follows the same shape as our local scripts:
-          <InlineHighlight> validate </InlineHighlight> → <InlineHighlight> plan </InlineHighlight> → <InlineHighlight> apply </InlineHighlight>.
-          On pull requests, it runs <Strong>validate + plan</Strong> for each environment in the matrix and uploads the plan output as an artifact.
-          Applies are triggered manually via <InlineHighlight>workflow_dispatch</InlineHighlight> and run under a GitHub Environment named after the environment.
+          <InlineHighlight> validate </InlineHighlight> →{" "}
+          <InlineHighlight> plan </InlineHighlight> →{" "}
+          <InlineHighlight> apply </InlineHighlight>. On pull requests, it runs{" "}
+          <Strong>validate + plan</Strong> for each environment in the matrix
+          and uploads the plan output as an artifact. Applies are triggered
+          manually via <InlineHighlight>workflow_dispatch</InlineHighlight> and
+          run under a GitHub Environment named after the environment.
         </Paragraph>
 
         <CodeBlockWithCopy code={githubTerraformWorkflow} />
 
         <Paragraph>
-          Under the hood, we rely on <InlineHighlight>hashicorp/setup-terraform</InlineHighlight> to install Terraform on the runner, and we use OIDC auth to assume
-          the correct Terraform execution role for each environment.
+          Under the hood, we rely on{" "}
+          <InlineHighlight>hashicorp/setup-terraform</InlineHighlight> to
+          install Terraform on the runner, and we use OIDC auth to assume the
+          correct Terraform execution role for each environment.
         </Paragraph>
 
-        <SectionHeading>GitHub repo setup (Environments, approvals, secrets)</SectionHeading>
+        <SectionHeading>
+          GitHub repo setup (Environments, approvals, secrets)
+        </SectionHeading>
 
         <Paragraph>
-          The workflow is only half the story. To make Terraform safe in CI, you need a small amount of GitHub repo configuration:
-          GitHub Environments (for approvals + scoping secrets) and a place to store the AWS role ARN that GitHub will assume via OIDC.
+          The workflow is only half the story. To make Terraform safe in CI, you
+          need a small amount of GitHub repo configuration: GitHub Environments
+          (for approvals + scoping secrets) and a place to store the AWS role
+          ARN that GitHub will assume via OIDC.
         </Paragraph>
 
         <Paragraph>
-          In this template, we treat each folder under <InlineHighlight>infra/env/</InlineHighlight> as a deployable environment. In CI, that same environment name is used as a
-          GitHub Environment. This keeps everything consistent and makes it harder to apply to the wrong place accidentally.
+          In this template, we treat each folder under{" "}
+          <InlineHighlight>infra/env/</InlineHighlight> as a deployable
+          environment. In CI, that same environment name is used as a GitHub
+          Environment. This keeps everything consistent and makes it harder to
+          apply to the wrong place accidentally.
         </Paragraph>
 
-        <SubSectionHeading>1) Create GitHub Environments to match your aws accounts</SubSectionHeading>
+        <SubSectionHeading>
+          1) Create GitHub Environments to match your aws accounts
+        </SubSectionHeading>
 
         <Paragraph>
-          Create one GitHub Environment per environment. The environment name should match the folder name under <InlineHighlight>infra/env/</InlineHighlight> exactly.
+          Create one GitHub Environment per environment. The environment name
+          should match the folder name under{" "}
+          <InlineHighlight>infra/env/</InlineHighlight> exactly.
         </Paragraph>
 
         <IndentedTextList>
@@ -1662,38 +1794,49 @@ const IaCTerraform = () => {
             Click <Strong>New environment</Strong>
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Create an environment named exactly the same as your environment folder (for example: <InlineHighlight>account-a</InlineHighlight>)
+            Create an environment named exactly the same as your environment
+            folder (for example: <InlineHighlight>account-a</InlineHighlight>)
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Repeat for each environment folder under <InlineHighlight>infra/env/</InlineHighlight>
+            Repeat for each environment folder under{" "}
+            <InlineHighlight>infra/env/</InlineHighlight>
           </IndentedTextListItem>
         </IndentedTextList>
 
         <Paragraph>
-          If your workflow uses<InlineHighlight>{'environment: ${{ inputs.environment }}'}</InlineHighlight>, then when you trigger an apply for a environment,
-          GitHub automatically scopes secrets and approvals to the matching Environment.
+          If your workflow uses
+          <InlineHighlight>
+            {"environment: ${{ inputs.environment }}"}
+          </InlineHighlight>
+          , then when you trigger an apply for a environment, GitHub
+          automatically scopes secrets and approvals to the matching
+          Environment.
         </Paragraph>
 
-        <SubSectionHeading>2) Add manual approvals for sensitive environments</SubSectionHeading>
+        <SubSectionHeading>
+          2) Add manual approvals for sensitive environments
+        </SubSectionHeading>
 
         <Paragraph>
-          GitHub Environments let you add guardrails around deployments. If a environment is sensitive, you can require reviewers so applies pause until someone approves.
-          GitHub calls these <Strong>deployment protection rules</Strong>.
+          GitHub Environments let you add guardrails around deployments. If a
+          environment is sensitive, you can require reviewers so applies pause
+          until someone approves. GitHub calls these{" "}
+          <Strong>deployment protection rules</Strong>.
         </Paragraph>
 
-        <Paragraph>
-          In your repo:
-        </Paragraph>
+        <Paragraph>In your repo:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
             Go to <Strong>Settings</Strong> → <Strong>Environments</Strong>
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Click the environment for your sensitive environment (for example: <InlineHighlight>account-b</InlineHighlight>)
+            Click the environment for your sensitive environment (for example:{" "}
+            <InlineHighlight>account-b</InlineHighlight>)
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Under <Strong>Deployment protection rules</Strong>, enable <Strong>Required reviewers</Strong>
+            Under <Strong>Deployment protection rules</Strong>, enable{" "}
+            <Strong>Required reviewers</Strong>
           </IndentedTextListItem>
           <IndentedTextListItem>
             Add yourself (or a team) as a required reviewer
@@ -1701,32 +1844,40 @@ const IaCTerraform = () => {
         </IndentedTextList>
 
         <Paragraph>
-          Now, any job that targets that Environment will pause and wait for approval before it can run.
+          Now, any job that targets that Environment will pause and wait for
+          approval before it can run.
         </Paragraph>
 
-        <SubSectionHeading>3) Add the AWS role ARN as an Environment secret</SubSectionHeading>
-
-        <Paragraph>
-          The workflow needs an IAM role ARN to assume via OIDC. The cleanest pattern is to store this as an{" "}
-          <Strong>Environment secret</Strong> so each environment can assume its own role without you hardcoding values in the workflow.
-        </Paragraph>
+        <SubSectionHeading>
+          3) Add the AWS role ARN as an Environment secret
+        </SubSectionHeading>
 
         <Paragraph>
-          For each GitHub Environment you created:
+          The workflow needs an IAM role ARN to assume via OIDC. The cleanest
+          pattern is to store this as an <Strong>Environment secret</Strong> so
+          each environment can assume its own role without you hardcoding values
+          in the workflow.
         </Paragraph>
+
+        <Paragraph>For each GitHub Environment you created:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
             Go to <Strong>Settings</Strong> → <Strong>Environments</Strong>
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Click the environment that matches your environment folder (for example: <InlineHighlight>account-a</InlineHighlight>)
+            Click the environment that matches your environment folder (for
+            example: <InlineHighlight>account-a</InlineHighlight>)
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Under <Strong>Environment secrets</Strong>, click <Strong>Add secret</Strong>
+            Under <Strong>Environment secrets</Strong>, click{" "}
+            <Strong>Add secret</Strong>
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Add <InlineHighlight>AWS_ROLE_ARN</InlineHighlight> = <InlineHighlight>arn:aws:iam::...:role/&lt;terraform-execution-role&gt;</InlineHighlight>
+            Add <InlineHighlight>AWS_ROLE_ARN</InlineHighlight> ={" "}
+            <InlineHighlight>
+              arn:aws:iam::...:role/&lt;terraform-execution-role&gt;
+            </InlineHighlight>
           </IndentedTextListItem>
           <IndentedTextListItem>
             Repeat for each target environment with that target's role ARN
@@ -1734,41 +1885,58 @@ const IaCTerraform = () => {
         </IndentedTextList>
 
         <Paragraph>
-          Because the secret name is the same everywhere (<InlineHighlight>AWS_ROLE_ARN</InlineHighlight>), the workflow stays simple and GitHub automatically supplies
-          the correct value based on the target environment.
+          Because the secret name is the same everywhere (
+          <InlineHighlight>AWS_ROLE_ARN</InlineHighlight>), the workflow stays
+          simple and GitHub automatically supplies the correct value based on
+          the target environment.
         </Paragraph>
 
-        <SubSectionHeading>4) What it looks like when an apply is waiting for approval</SubSectionHeading>
+        <SubSectionHeading>
+          4) What it looks like when an apply is waiting for approval
+        </SubSectionHeading>
 
         <Paragraph>
-          When you trigger an apply for a protected target, the workflow run will pause at "Deployment protection rules" and wait. A reviewer can then approve and start
-          the waiting job directly from the workflow run page.
+          When you trigger an apply for a protected target, the workflow run
+          will pause at "Deployment protection rules" and wait. A reviewer can
+          then approve and start the waiting job directly from the workflow run
+          page.
         </Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
             Go to the <Strong>Actions</Strong> tab
           </IndentedTextListItem>
+          <IndentedTextListItem>Open the running workflow</IndentedTextListItem>
           <IndentedTextListItem>
-            Open the running workflow
-          </IndentedTextListItem>
-          <IndentedTextListItem>
-            In <Strong>Deployment protection rules</Strong>, click <Strong>Review deployments</Strong> / <Strong>Start all waiting jobs</Strong> (wording varies)
+            In <Strong>Deployment protection rules</Strong>, click{" "}
+            <Strong>Review deployments</Strong> /{" "}
+            <Strong>Start all waiting jobs</Strong> (wording varies)
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <SubSectionHeading>5) Why Workflow permissions must allow OIDC (id-token: write)</SubSectionHeading>
+        <SubSectionHeading>
+          5) Why Workflow permissions must allow OIDC (id-token: write)
+        </SubSectionHeading>
 
         <Paragraph>
-          GitHub Actions can only assume your AWS OIDC role if it's allowed to request an OIDC token. That token is what AWS trusts
-          to exchange for short-lived credentials. If your repo/workflow permissions don't allow{" "}
-          <InlineHighlight>id-token: write</InlineHighlight>, GitHub can't mint the token, which means{" "}
-          <InlineHighlight>aws-actions/configure-aws-credentials</InlineHighlight> has nothing to send to AWS — and the role assumption
-          fails with "Credentials could not be loaded".
+          GitHub Actions can only assume your AWS OIDC role if it's allowed to
+          request an OIDC token. That token is what AWS trusts to exchange for
+          short-lived credentials. If your repo/workflow permissions don't allow{" "}
+          <InlineHighlight>id-token: write</InlineHighlight>, GitHub can't mint
+          the token, which means{" "}
+          <InlineHighlight>
+            aws-actions/configure-aws-credentials
+          </InlineHighlight>{" "}
+          has nothing to send to AWS — and the role assumption fails with
+          "Credentials could not be loaded".
         </Paragraph>
 
         <Paragraph>
-          In other words: <Strong>id-token: write is the permission that unlocks "allow this workflow run to authenticate to AWS via OIDC."</Strong>
+          In other words:{" "}
+          <Strong>
+            id-token: write is the permission that unlocks "allow this workflow
+            run to authenticate to AWS via OIDC."
+          </Strong>
         </Paragraph>
 
         <IndentedTextList>
@@ -1776,23 +1944,24 @@ const IaCTerraform = () => {
             Without it, GitHub cannot issue an OIDC token for the job
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Without the token, AWS will not allow <InlineHighlight>AssumeRoleWithWebIdentity</InlineHighlight>
+            Without the token, AWS will not allow{" "}
+            <InlineHighlight>AssumeRoleWithWebIdentity</InlineHighlight>
           </IndentedTextListItem>
           <IndentedTextListItem>
-            The workflow then falls back to "no credentials available" and fails early
+            The workflow then falls back to "no credentials available" and fails
+            early
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <Paragraph>
-          Here is how you can make the changes in GitHub:
-        </Paragraph>
+        <Paragraph>Here is how you can make the changes in GitHub:</Paragraph>
 
         <IndentedTextList>
           <IndentedTextListItem>
             Go to <Strong>Settings</Strong> in your GitHub repository
           </IndentedTextListItem>
           <IndentedTextListItem>
-            In the left sidebar, open <Strong>Actions</Strong> → <Strong>General</Strong>
+            In the left sidebar, open <Strong>Actions</Strong> →{" "}
+            <Strong>General</Strong>
           </IndentedTextListItem>
           <IndentedTextListItem>
             Scroll to <Strong>Workflow permissions</Strong>
@@ -1801,8 +1970,12 @@ const IaCTerraform = () => {
             Select <Strong>Read and write permissions</Strong>
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Ensure <Strong>Allow GitHub Actions to create and approve pull requests</Strong> is enabled if you want PR comments/updates
-            (optional, but commonly useful for Terraform plan outputs)
+            Ensure{" "}
+            <Strong>
+              Allow GitHub Actions to create and approve pull requests
+            </Strong>{" "}
+            is enabled if you want PR comments/updates (optional, but commonly
+            useful for Terraform plan outputs)
           </IndentedTextListItem>
           <IndentedTextListItem>
             Click <Strong>Save</Strong>
@@ -1812,8 +1985,10 @@ const IaCTerraform = () => {
         <SubSectionHeading>6) Sanity check: OIDC permissions</SubSectionHeading>
 
         <Paragraph>
-          For OIDC to work, your workflow must have <InlineHighlight>permissions: id-token: write</InlineHighlight>. Without it, GitHub can't use the OIDC token
-          and the AWS credentials step won't be able to assume the role.
+          For OIDC to work, your workflow must have{" "}
+          <InlineHighlight>permissions: id-token: write</InlineHighlight>.
+          Without it, GitHub can't use the OIDC token and the AWS credentials
+          step won't be able to assume the role.
         </Paragraph>
 
         <Paragraph>
@@ -1825,16 +2000,17 @@ const IaCTerraform = () => {
             <Strong>The job has id-token: write</Strong> in workflow permissions
           </TextListItem>
           <TextListItem>
-            <Strong>The IAM role trust policy</Strong> allows your GitHub repo/org to assume the role via OIDC
+            <Strong>The IAM role trust policy</Strong> allows your GitHub
+            repo/org to assume the role via OIDC
           </TextListItem>
           <TextListItem>
-            <Strong>The environment secret exists</Strong> (AWS_ROLE_ARN) for the target you're trying to run
+            <Strong>The environment secret exists</Strong> (AWS_ROLE_ARN) for
+            the target you're trying to run
           </TextListItem>
         </TextList>
-
       </AnimatedPostContainer>
-    </PageWrapper >
+    </PageWrapper>
   );
-}
+};
 
 export default IaCTerraform;

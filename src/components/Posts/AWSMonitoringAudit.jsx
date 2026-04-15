@@ -77,7 +77,7 @@ const PostContainer = styled(BasePostContainer)`
 
 const AWSMonitoringAudit = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-monitoring-auditing" });
+    Analytics.pageview({ slug: "aws-monitoring-auditing" });
   }, []);
 
   const cloudWatchFeaturesColumns = ["Feature", "Description"];
@@ -170,12 +170,15 @@ const AWSMonitoringAudit = () => {
           <Strong>Amazon CloudWatch</Strong> is AWS's core monitoring and
           observability service. It collects metrics, aggregates logs, powers
           alarms and dashboards, and provides higher-level analytics such as
-          anomaly detection and insights. It's the main place to monitor
-          both your infrastructure and applications.
+          anomaly detection and insights. It's the main place to monitor both
+          your infrastructure and applications.
         </Paragraph>
 
         <SubSectionHeading>CloudWatch Features</SubSectionHeading>
-        <Table columns={cloudWatchFeaturesColumns} data={cloudWatchFeaturesData} />
+        <Table
+          columns={cloudWatchFeaturesColumns}
+          data={cloudWatchFeaturesData}
+        />
 
         <SubSectionHeading>CloudWatch Metrics</SubSectionHeading>
         <Paragraph>
@@ -245,10 +248,7 @@ const AWSMonitoringAudit = () => {
           real-time processing.
         </Paragraph>
         <Paragraph>Example: finding errors in logs with Insights:</Paragraph>
-        <CodeBlockWithCopy
-          code={cloudwatchlogsInsights}
-          language="sql"
-        />
+        <CodeBlockWithCopy code={cloudwatchlogsInsights} language="sql" />
 
         <TertiaryHeading>CloudWatch Logs Subscriptions</TertiaryHeading>
         <Paragraph>
@@ -323,14 +323,14 @@ const AWSMonitoringAudit = () => {
 
         <TertiaryHeading>Unified Agent - Example Metrics</TertiaryHeading>
         <TextList>
-          <TextListItem>CPU (active, idle, system, user, steal, etc.)</TextListItem>
+          <TextListItem>
+            CPU (active, idle, system, user, steal, etc.)
+          </TextListItem>
           <TextListItem>
             Disk metrics (free, used, total) and disk I/O (reads, writes, bytes,
             IOPS)
           </TextListItem>
-          <TextListItem>
-            RAM (free, used, total, cached, inactive)
-          </TextListItem>
+          <TextListItem>RAM (free, used, total, cached, inactive)</TextListItem>
           <TextListItem>
             Netstat (number of TCP/UDP connections, packets, bytes)
           </TextListItem>
@@ -363,15 +363,15 @@ const AWSMonitoringAudit = () => {
         </Paragraph>
 
         <TertiaryHeading>Alarm Targets</TertiaryHeading>
-        <Paragraph>
-          Alarms can trigger automated actions such as:
-        </Paragraph>
+        <Paragraph>Alarms can trigger automated actions such as:</Paragraph>
         <TextList>
           <TextListItem>
             EC2: stop, terminate, reboot or recover instances.
           </TextListItem>
           <TextListItem>Auto Scaling: scale out / scale in.</TextListItem>
-          <TextListItem>SNS: send notifications or fan out to other systems.</TextListItem>
+          <TextListItem>
+            SNS: send notifications or fan out to other systems.
+          </TextListItem>
         </TextList>
         <PostImage
           src={CloudWatchAlarmsTargets}
@@ -381,9 +381,9 @@ const AWSMonitoringAudit = () => {
         <TertiaryHeading>Composite Alarms</TertiaryHeading>
         <Paragraph>
           <Strong>Composite alarms</Strong> monitor the state of other alarms
-          using <Strong>AND / OR</Strong> logic. They're ideal for
-          reducing noise (for example only alerting when multiple related
-          alarms are in ALARM).
+          using <Strong>AND / OR</Strong> logic. They're ideal for reducing
+          noise (for example only alerting when multiple related alarms are in
+          ALARM).
         </Paragraph>
         <PostImage
           src={CloudWatchCompositeAlarms}
@@ -403,12 +403,11 @@ const AWSMonitoringAudit = () => {
         <Paragraph>
           You can even test alarms via CLI by manually setting the alarm state:
         </Paragraph>
-        <CodeBlockWithCopy
-          code={cloudwatchlogsAlarmStatus}
-          language="bash"
-        />
+        <CodeBlockWithCopy code={cloudwatchlogsAlarmStatus} language="bash" />
 
-        <SubSectionHeading>CloudWatch Insights & Operational Visibility</SubSectionHeading>
+        <SubSectionHeading>
+          CloudWatch Insights & Operational Visibility
+        </SubSectionHeading>
 
         <TertiaryHeading>Container Insights</TertiaryHeading>
         <Paragraph>
@@ -423,8 +422,8 @@ const AWSMonitoringAudit = () => {
           <Strong>Lambda Insights</Strong> is a monitoring and troubleshooting
           add-on for Lambda. It collects system-level metrics (CPU time, memory,
           disk, network), cold-start metrics and worker shutdown info, and
-          provides a dedicated CloudWatch dashboard. It's enabled via a
-          Lambda layer.
+          provides a dedicated CloudWatch dashboard. It's enabled via a Lambda
+          layer.
         </Paragraph>
 
         <TertiaryHeading>Contributor Insights</TertiaryHeading>
@@ -472,14 +471,14 @@ const AWSMonitoringAudit = () => {
         <Paragraph>
           <Strong>Amazon EventBridge</Strong> is a serverless event bus that
           connects AWS services, SaaS apps and your own apps using{" "}
-          <Strong>events</Strong>. It's a key building block for
-          event-driven architectures.
+          <Strong>events</Strong>. It's a key building block for event-driven
+          architectures.
         </Paragraph>
         <Paragraph>
           Common patterns include scheduled tasks (cron expressions triggering
           Lambda every hour) and reacting to security or governance events, such
-          as sending a notification whenever the <Strong>root user</Strong>{" "}
-          logs in.
+          as sending a notification whenever the <Strong>root user</Strong> logs
+          in.
         </Paragraph>
         <PostImage
           src={EventBridgeSchedule}
@@ -504,9 +503,7 @@ const AWSMonitoringAudit = () => {
           <Strong>code bindings</Strong> so your applications know the structure
           of events at compile time.
         </Paragraph>
-        <Paragraph>
-          You can have multiple event buses:
-        </Paragraph>
+        <Paragraph>You can have multiple event buses:</Paragraph>
         <TextList>
           <TextListItem>
             <Strong>Default event bus</Strong> - available in every account,
@@ -522,9 +519,10 @@ const AWSMonitoringAudit = () => {
 
         <SectionHeading id="aws-cloudtrail">CloudTrail</SectionHeading>
         <Paragraph>
-          <Strong>AWS CloudTrail</Strong> provides <Strong>API-level audit</Strong>{" "}
-          logging. It records who did what, when, and from where in your AWS
-          accounts, and delivers logs to S3 and optionally CloudWatch Logs.
+          <Strong>AWS CloudTrail</Strong> provides{" "}
+          <Strong>API-level audit</Strong> logging. It records who did what,
+          when, and from where in your AWS accounts, and delivers logs to S3 and
+          optionally CloudWatch Logs.
         </Paragraph>
         <PostImage src={CloudTrailImg} alt="CloudTrail overview" />
 
@@ -542,7 +540,9 @@ const AWSMonitoringAudit = () => {
           Data events record high-volume actions on specific resources, such as:
         </Paragraph>
         <TextList>
-          <TextListItem>S3 object-level APIs (GetObject, PutObject, DeleteObject)</TextListItem>
+          <TextListItem>
+            S3 object-level APIs (GetObject, PutObject, DeleteObject)
+          </TextListItem>
           <TextListItem>Lambda function invocations</TextListItem>
         </TextList>
         <Paragraph>
@@ -584,8 +584,8 @@ const AWSMonitoringAudit = () => {
         <Paragraph>
           <Strong>AWS Config</Strong> continuously records the configuration of
           your AWS resources and evaluates them against{" "}
-          <Strong>compliance rules</Strong>. It's used for configuration
-          audit, change tracking and policy enforcement.
+          <Strong>compliance rules</Strong>. It's used for configuration audit,
+          change tracking and policy enforcement.
         </Paragraph>
 
         <SubSectionHeading>Config Rules</SubSectionHeading>
@@ -603,9 +603,9 @@ const AWSMonitoringAudit = () => {
         <TertiaryHeading>Remediation</TertiaryHeading>
         <Paragraph>
           You can attach <Strong>remediation actions</Strong> (SSM Automation
-          Documents) to rules so that when a resource is non-compliant,
-          AWS Config attempts automatic remediation. You can configure retries
-          if the resource remains non-compliant.
+          Documents) to rules so that when a resource is non-compliant, AWS
+          Config attempts automatic remediation. You can configure retries if
+          the resource remains non-compliant.
         </Paragraph>
         <PostImage
           src={ConfigEventRulesRemediation}
@@ -657,8 +657,12 @@ const AWSMonitoringAudit = () => {
 
         <TertiaryHeading>CloudWatch</TertiaryHeading>
         <TextList>
-          <TextListItem>Monitor connection counts and latency metrics.</TextListItem>
-          <TextListItem>Visualise 4xx/5xx error codes as percentages over time.</TextListItem>
+          <TextListItem>
+            Monitor connection counts and latency metrics.
+          </TextListItem>
+          <TextListItem>
+            Visualise 4xx/5xx error codes as percentages over time.
+          </TextListItem>
           <TextListItem>
             Build dashboards to understand load balancer performance and health.
           </TextListItem>
@@ -670,11 +674,12 @@ const AWSMonitoringAudit = () => {
             Track security group rules associated with the load balancer.
           </TextListItem>
           <TextListItem>
-            Track configuration changes (listeners, target groups, certificates).
+            Track configuration changes (listeners, target groups,
+            certificates).
           </TextListItem>
           <TextListItem>
-            Ensure an <Strong>SSL/TLS certificate</Strong> is always attached for
-            compliance.
+            Ensure an <Strong>SSL/TLS certificate</Strong> is always attached
+            for compliance.
           </TextListItem>
         </TextList>
 

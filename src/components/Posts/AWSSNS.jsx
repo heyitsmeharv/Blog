@@ -50,7 +50,7 @@ const PostContainer = styled(BasePostContainer)`
 
 const AWSSNS = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-sns" });
+    Analytics.pageview({ slug: "aws-sns" });
   }, []);
 
   return (
@@ -72,7 +72,10 @@ const AWSSNS = () => {
           </IconWrapper>
         </HeaderRow>
 
-        <Paragraph>In this post I'll be tackling Amazon's Simple Notification Service (SNS).</Paragraph>
+        <Paragraph>
+          In this post I'll be tackling Amazon's Simple Notification Service
+          (SNS).
+        </Paragraph>
 
         <TextList>
           <TextListItem>
@@ -97,45 +100,42 @@ const AWSSNS = () => {
         </SectionHeading>
 
         <Paragraph>
-          Amazon Simple Notification Service (Amazon SNS) is a fully managed messaging service provided by
-          Amazon Web Services (AWS) designed to send messages to a large number of subscribers or other
-          services. What if you wanted to send one message to many endpoints? Instead of having a direct
-          integration with each endpoint/service, you can publish that message to a topic which then
-          delivers the message to all subscribers.
+          Amazon Simple Notification Service (Amazon SNS) is a fully managed
+          messaging service provided by Amazon Web Services (AWS) designed to
+          send messages to a large number of subscribers or other services. What
+          if you wanted to send one message to many endpoints? Instead of having
+          a direct integration with each endpoint/service, you can publish that
+          message to a topic which then delivers the message to all subscribers.
         </Paragraph>
 
-        <PostImage
-          src={SNSPubSub}
-          alt="SNS publish-subscribe pattern"
-        />
+        <PostImage src={SNSPubSub} alt="SNS publish-subscribe pattern" />
 
         <Paragraph>
-          The event producer only sends messages to one SNS topic and the event receivers (subscriptions)
-          which is as many as we want will listen to the SNS topic notification and everything subscribed
-          will get a message.
+          The event producer only sends messages to one SNS topic and the event
+          receivers (subscriptions) which is as many as we want will listen to
+          the SNS topic notification and everything subscribed will get a
+          message.
         </Paragraph>
 
         <SectionHeading id="how-to-publish">How To Publish</SectionHeading>
 
         <TextList>
           <TextListItem>
-            <Strong>Publishing a Message</Strong>: An application component (publisher) sends a message to
-            an SNS topic.
+            <Strong>Publishing a Message</Strong>: An application component
+            (publisher) sends a message to an SNS topic.
           </TextListItem>
           <TextListItem>
-            <Strong>Message Propagation</Strong>: The SNS topic propagates the message to all subscribed
-            endpoints, such as HTTP endpoints, email addresses, or SQS queues.
+            <Strong>Message Propagation</Strong>: The SNS topic propagates the
+            message to all subscribed endpoints, such as HTTP endpoints, email
+            addresses, or SQS queues.
           </TextListItem>
           <TextListItem>
-            <Strong>Message Delivery</Strong>: Each subscriber endpoint receives and processes the message
-            according to its protocol.
+            <Strong>Message Delivery</Strong>: Each subscriber endpoint receives
+            and processes the message according to its protocol.
           </TextListItem>
         </TextList>
 
-        <PostImage
-          src={SNSSubscribers}
-          alt="SNS subscribers diagram"
-        />
+        <PostImage src={SNSSubscribers} alt="SNS subscribers diagram" />
 
         <SectionHeading id="security">Security</SectionHeading>
 
@@ -152,7 +152,8 @@ const AWSSNS = () => {
             Enables secure communication over HTTPS.
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Client-side encryption if the client wants to perform encryption/decryption itself.
+            Client-side encryption if the client wants to perform
+            encryption/decryption itself.
           </IndentedTextListItem>
         </IndentedTextList>
 
@@ -163,7 +164,8 @@ const AWSSNS = () => {
         </TextList>
         <IndentedTextList>
           <IndentedTextListItem>
-            Provides fine-grained access control using AWS Identity and Access Management (IAM).
+            Provides fine-grained access control using AWS Identity and Access
+            Management (IAM).
           </IndentedTextListItem>
         </IndentedTextList>
 
@@ -184,22 +186,24 @@ const AWSSNS = () => {
         <SectionHeading id="fan-out">SNS and SQS: Fan Out</SectionHeading>
 
         <Paragraph>
-          The idea of this method is to push once to an SNS topic which could have as many SQS queues
-          subscribed as you want. This is a fully decoupled approach which helps prevent data loss. The SQS
-          queue will need it's access policy to allow for SNS to write to it. This also works for cross
-          region delivery so you can have SQS queues from other regions.
+          The idea of this method is to push once to an SNS topic which could
+          have as many SQS queues subscribed as you want. This is a fully
+          decoupled approach which helps prevent data loss. The SQS queue will
+          need it's access policy to allow for SNS to write to it. This also
+          works for cross region delivery so you can have SQS queues from other
+          regions.
         </Paragraph>
 
-        <PostImage
-          src={SNSSQSFanOut}
-          alt="SNS and SQS fan-out pattern"
-        />
+        <PostImage src={SNSSQSFanOut} alt="SNS and SQS fan-out pattern" />
 
-        <SectionHeading id="message-filtering">Message Filtering</SectionHeading>
+        <SectionHeading id="message-filtering">
+          Message Filtering
+        </SectionHeading>
 
         <Paragraph>
-          It's possible to setup message filtering to control the flow of message. Message filtering is
-          defined via JSON policy, if a subscription doesn't have a filter policy it will automatically
+          It's possible to setup message filtering to control the flow of
+          message. Message filtering is defined via JSON policy, if a
+          subscription doesn't have a filter policy it will automatically
           receive all messages.
         </Paragraph>
 
@@ -216,7 +220,8 @@ const AWSSNS = () => {
               target="_blank"
               rel="noreferrer"
             >
-              Amazon Simple Notification Service Developer Guide - What is Amazon SNS?
+              Amazon Simple Notification Service Developer Guide - What is
+              Amazon SNS?
             </TextLink>
           </TextListItem>
           <TextListItem>

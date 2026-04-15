@@ -50,7 +50,7 @@ const PostContainer = styled(BasePostContainer)`
 
 const AWSCloudFront = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-cloudfront" });
+    Analytics.pageview({ slug: "aws-cloudfront" });
   }, []);
 
   return (
@@ -189,8 +189,8 @@ const AWSCloudFront = () => {
 
         <SectionHeading id="alb-as-origin">ALB as an Origin</SectionHeading>
         <Paragraph>
-          It's possible for CloudFront to access any HTTP backend like an
-          EC2 instance or a load balancer. There is no private VPC connectivity
+          It's possible for CloudFront to access any HTTP backend like an EC2
+          instance or a load balancer. There is no private VPC connectivity
           within CloudFront so security groups must be setup to allow traffic
           between edge locations and the instance you want to connect to.
         </Paragraph>
@@ -245,18 +245,18 @@ const AWSCloudFront = () => {
             viewer's location is allowed to access the content.
           </TextListItem>
           <TextListItem>
-            <Strong>Content Delivery or Denial</Strong>: CloudFront
-            continuously monitors and manages the edge locations to ensure
-            optimal performance and availability.
+            <Strong>Content Delivery or Denial</Strong>: CloudFront continuously
+            monitors and manages the edge locations to ensure optimal
+            performance and availability.
           </TextListItem>
           <TextListItem>
-            If the viewer's location is allowed, CloudFront serves the
-            requested content from the nearest edge location.
+            If the viewer's location is allowed, CloudFront serves the requested
+            content from the nearest edge location.
           </TextListItem>
           <TextListItem>
-            If the viewer's location is restricted, CloudFront returns an
-            HTTP 403 (Forbidden) status code, optionally displaying a custom
-            error page if configured.
+            If the viewer's location is restricted, CloudFront returns an HTTP
+            403 (Forbidden) status code, optionally displaying a custom error
+            page if configured.
           </TextListItem>
         </TextList>
 
@@ -279,7 +279,9 @@ const AWSCloudFront = () => {
           </TextListItem>
         </TextList>
 
-        <SectionHeading id="cache-invalidation">Cache Invalidation</SectionHeading>
+        <SectionHeading id="cache-invalidation">
+          Cache Invalidation
+        </SectionHeading>
         <Paragraph>
           AWS CloudFront cache invalidation is a feature that allows you to
           remove objects from CloudFront edge caches before they expire. This is
@@ -293,7 +295,9 @@ const AWSCloudFront = () => {
           alt="Diagram showing cache invalidation in Amazon CloudFront"
         />
 
-        <SectionHeading id="global-accelerator">Global Accelerator</SectionHeading>
+        <SectionHeading id="global-accelerator">
+          Global Accelerator
+        </SectionHeading>
         <Paragraph>
           AWS Global Accelerator is a networking service that improves the
           availability and performance of your applications with global users.

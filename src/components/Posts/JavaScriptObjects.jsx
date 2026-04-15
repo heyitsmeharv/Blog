@@ -55,7 +55,7 @@ const AnimatedPostContainer = styled(BasePostContainer)`
 
 const JavaScriptObjects = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "javascript-objects" });
+    Analytics.pageview({ slug: "javascript-objects" });
   }, []);
 
   return (
@@ -95,9 +95,8 @@ const JavaScriptObjects = () => {
           In JavaScript, objects are pretty much anything{" "}
           <Strong>non-primitive</Strong>. By using the{" "}
           <InlineHighlight>typeof</InlineHighlight> operator, we can see for
-          ourselves what is classed as an{" "}
-          <Strong>"object"</Strong>. This includes arrays,
-          dates, regexes and even functions:
+          ourselves what is classed as an <Strong>"object"</Strong>. This
+          includes arrays, dates, regexes and even functions:
         </Paragraph>
 
         <CodeBlockWithCopy code={objects} />
@@ -132,10 +131,9 @@ const JavaScriptObjects = () => {
 
         <Paragraph>
           Here is a declaration of an object which I've named{" "}
-          <Strong>person</Strong>. This object has three
-          properties and you'll notice that each property is a{" "}
-          <Strong>kvp (key-value pair)</Strong>. The left side is the{" "}
-          <Strong>key</Strong> and the right side is the{" "}
+          <Strong>person</Strong>. This object has three properties and you'll
+          notice that each property is a <Strong>kvp (key-value pair)</Strong>.
+          The left side is the <Strong>key</Strong> and the right side is the{" "}
           <Strong>value</Strong>.
         </Paragraph>
 

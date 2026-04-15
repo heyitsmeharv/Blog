@@ -60,7 +60,7 @@ const AnimatedPostContainer = styled(BasePostContainer)`
 
 const AWSRoute53 = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-route53" });
+    Analytics.pageview({ slug: "aws-route53" });
   }, []);
 
   return (
@@ -94,8 +94,8 @@ const AWSRoute53 = () => {
 
         <TextList>
           <TextListItem>
-            <Strong>DNS Service</Strong>: Route 53 translates domain names
-            (e.g. www.example.com) into IP addresses (e.g. 192.0.2.1), allowing
+            <Strong>DNS Service</Strong>: Route 53 translates domain names (e.g.
+            www.example.com) into IP addresses (e.g. 192.0.2.1), allowing
             computers to connect to each other.
           </TextListItem>
           <TextListItem>
@@ -237,45 +237,41 @@ const AWSRoute53 = () => {
           at what happens behind the scenes. Let's break it down into steps.
         </Paragraph>
 
-
         <PostImage src={DNSWorking} alt="How DNS works end-to-end" />
 
         <TextList>
           <TextListItem>
-            <Strong>1</Strong>: The first step is to ping your internet
-            service provider (ISP) and essentially ask if it's seen
-            'example.com' before.
+            <Strong>1</Strong>: The first step is to ping your internet service
+            provider (ISP) and essentially ask if it's seen 'example.com'
+            before.
           </TextListItem>
           <TextListItem>
-            <Strong>2</Strong>: Assuming that a lookup is required the Root
-            DNS Server will be asked the same question. The server will
-            respond with the named server (NS) so in this example it would
-            be '.com', along with a public IP.
+            <Strong>2</Strong>: Assuming that a lookup is required the Root DNS
+            Server will be asked the same question. The server will respond with
+            the named server (NS) so in this example it would be '.com', along
+            with a public IP.
           </TextListItem>
           <TextListItem>
-            <Strong>3</Strong>: The Top Level Domain (TLD) DNS Server then
-            gets pinged with the public IP asking the same question. If
-            again, not found that server will return the TLD with another
-            public IP.
+            <Strong>3</Strong>: The Top Level Domain (TLD) DNS Server then gets
+            pinged with the public IP asking the same question. If again, not
+            found that server will return the TLD with another public IP.
           </TextListItem>
           <TextListItem>
-            <Strong>4</Strong>: The same process happens and the Second
-            Level Domain (SLD) DNS Server should have the record entry and
-            will return the IP address.
+            <Strong>4</Strong>: The same process happens and the Second Level
+            Domain (SLD) DNS Server should have the record entry and will return
+            the IP address.
           </TextListItem>
           <TextListItem>
-            <Strong>5</Strong>: The Local DNS Server will cache the results
-            for a specified amount of time so when next time the question is
-            asked, it won't have to recursively ping DNS servers to find the
-            answer.
+            <Strong>5</Strong>: The Local DNS Server will cache the results for
+            a specified amount of time so when next time the question is asked,
+            it won't have to recursively ping DNS servers to find the answer.
           </TextListItem>
           <TextListItem>
-            <Strong>6</Strong>: The answer is sent back to the web browser
-            which it caches.
+            <Strong>6</Strong>: The answer is sent back to the web browser which
+            it caches.
           </TextListItem>
           <TextListItem>
-            <Strong>7</Strong>: The IP address is used to access the web
-            server.
+            <Strong>7</Strong>: The IP address is used to access the web server.
           </TextListItem>
         </TextList>
 
@@ -388,9 +384,9 @@ const AWSRoute53 = () => {
           mydomain.com would not. Aliases are specific to Route 53 and works
           with root domains as well as non-root domains, they are always of type
           A/AAAA. An alias is used to point a hostname to an AWS resource
-          (app.mydomain.com {'=>'} 1b1-1234.us.east-2.elb.amazon.com). It's worth
-          mentioning that aliases are free of charge and they have native health
-          check capabilities.
+          (app.mydomain.com {"=>"} 1b1-1234.us.east-2.elb.amazon.com). It's
+          worth mentioning that aliases are free of charge and they have native
+          health check capabilities.
         </Paragraph>
 
         <SubSectionHeading>Alias Records</SubSectionHeading>
@@ -549,7 +545,9 @@ const AWSRoute53 = () => {
           alt="Route 53 health checks overview"
         />
 
-        <SubSectionHeading>Health Checks - Monitor an Endpoint</SubSectionHeading>
+        <SubSectionHeading>
+          Health Checks - Monitor an Endpoint
+        </SubSectionHeading>
 
         <Paragraph>
           There are about 15 global health checkers that will check the endpoint

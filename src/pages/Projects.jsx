@@ -134,10 +134,6 @@ export default function Projects() {
   const [page, setPage] = useState(0);
   const [direction, setDirection] = useState(1);
 
-  useEffect(() => {
-    Analytics.event("projects_page_viewed", { slug: "projects-selection" });
-  }, []);
-
   const allTags = ["All", ...new Set(projects.flatMap((p) => p.tags))];
 
   const filtered =

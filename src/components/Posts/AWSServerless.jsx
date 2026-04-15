@@ -28,7 +28,7 @@ import {
   Strong,
   TextLink,
   TextList,
-  TextListItem
+  TextListItem,
 } from "../Typography/Typography";
 
 // icons
@@ -55,11 +55,9 @@ const PostContainer = styled(BasePostContainer)`
 `;
 
 const AWSServerless = () => {
-
   useEffect(() => {
-    Analytics.event('blog_opened', { slug: 'aws-serverless' });
+    Analytics.pageview({ slug: "aws-serverless" });
   }, []);
-
 
   const columns = ["Execution", "Deployment"];
   const data = [
@@ -186,8 +184,8 @@ const AWSServerless = () => {
         </HeaderRow>
 
         <Paragraph>
-          In this post we'll be diving into Amazon's serverless solutions including{" "}
-          <Strong>AWS Lambda</Strong>,{" "}
+          In this post we'll be diving into Amazon's serverless solutions
+          including <Strong>AWS Lambda</Strong>,{" "}
           <Strong>Amazon API Gateway</Strong> and{" "}
           <Strong>AWS Step Functions</Strong>.
         </Paragraph>
@@ -207,13 +205,15 @@ const AWSServerless = () => {
           </TextListItem>
         </TextList>
 
-        <SectionHeading id="what-is-serverless">What Is Serverless?</SectionHeading>
+        <SectionHeading id="what-is-serverless">
+          What Is Serverless?
+        </SectionHeading>
         <Paragraph>
-          Before we explore any AWS services that are classed as serverless, let's
-          first outline what actually constitutes{" "}
+          Before we explore any AWS services that are classed as serverless,
+          let's first outline what actually constitutes{" "}
           <Strong>“serverless”</Strong>. Serverless was a term that was
-          pioneered by AWS Lambda but now includes anything that's fully managed:
-          databases, messaging, storage, etc.
+          pioneered by AWS Lambda but now includes anything that's fully
+          managed: databases, messaging, storage, etc.
         </Paragraph>
         <Paragraph>
           <Strong>Serverless doesn't mean there are no servers</Strong>; it
@@ -241,19 +241,23 @@ const AWSServerless = () => {
           <TextListItem>Java</TextListItem>
           <TextListItem>C# (.NET Core) / PowerShell</TextListItem>
           <TextListItem>Ruby</TextListItem>
-          <TextListItem>Custom runtimes (e.g. Rust, Go via the Custom Runtime API)</TextListItem>
+          <TextListItem>
+            Custom runtimes (e.g. Rust, Go via the Custom Runtime API)
+          </TextListItem>
         </TextList>
 
-        <SubSectionHeading>Lambda Limitations (Execution & Deployment)</SubSectionHeading>
+        <SubSectionHeading>
+          Lambda Limitations (Execution & Deployment)
+        </SubSectionHeading>
         <Table data={data} columns={columns} />
 
         <SubSectionHeading>Lambda Concurrency and Throttling</SubSectionHeading>
         <Paragraph>
           By default, an AWS account has a concurrency limit of{" "}
-          <Strong>1,000 concurrent executions</Strong> (soft limit,
-          can be increased). You can also configure{" "}
-          <Strong>reserved concurrency</Strong> per function to
-          guarantee capacity for critical workloads.
+          <Strong>1,000 concurrent executions</Strong> (soft limit, can be
+          increased). You can also configure{" "}
+          <Strong>reserved concurrency</Strong> per function to guarantee
+          capacity for critical workloads.
         </Paragraph>
         <PostImage src={LambdaConcurrency} alt="Lambda concurrency model" />
         <Paragraph>
@@ -265,38 +269,42 @@ const AWSServerless = () => {
             <Strong>429 (Throttle)</Strong> error.
           </TextListItem>
           <TextListItem>
-            <Strong>Asynchronous</Strong>: Lambda automatically
-            retries for up to 6 hours with exponential backoff, and failed events
-            can end up in a DLQ or on a destination if configured.
+            <Strong>Asynchronous</Strong>: Lambda automatically retries for up
+            to 6 hours with exponential backoff, and failed events can end up in
+            a DLQ or on a destination if configured.
           </TextListItem>
         </TextList>
         <PostImage src={LambdaThrottle} alt="Lambda throttling behaviour" />
 
-        <SubSectionHeading>Cold Starts and Provisioned Concurrency</SubSectionHeading>
+        <SubSectionHeading>
+          Cold Starts and Provisioned Concurrency
+        </SubSectionHeading>
         <Paragraph>
-          A <Strong>cold start</Strong> happens when Lambda needs to
-          create a new execution environment to serve an invocation. This includes
-          bootstrapping the runtime and running any init code outside the handler.
-          Provisioned concurrency keeps a pool of warm environments ready so
-          requests avoid cold-start latency.
+          A <Strong>cold start</Strong> happens when Lambda needs to create a
+          new execution environment to serve an invocation. This includes
+          bootstrapping the runtime and running any init code outside the
+          handler. Provisioned concurrency keeps a pool of warm environments
+          ready so requests avoid cold-start latency.
         </Paragraph>
         <Table data={data2} columns={columns2} />
 
         <SubSectionHeading>Lambda SnapStart</SubSectionHeading>
         <Paragraph>
-          <Strong>Lambda SnapStart</Strong> is designed to further
-          reduce cold start latency by taking a snapshot of a fully initialised
-          execution environment and reusing it to serve requests. This can yield
-          up to a 10x improvement in cold start times for supported runtimes (for
+          <Strong>Lambda SnapStart</Strong> is designed to further reduce cold
+          start latency by taking a snapshot of a fully initialised execution
+          environment and reusing it to serve requests. This can yield up to a
+          10x improvement in cold start times for supported runtimes (for
           example Java), at no extra cost.
         </Paragraph>
         <PostImage src={LambdaSnapShot} alt="Lambda SnapStart" />
 
-        <SubSectionHeading>Lambda@Edge and CloudFront Functions</SubSectionHeading>
+        <SubSectionHeading>
+          Lambda@Edge and CloudFront Functions
+        </SubSectionHeading>
         <Paragraph>
-          <Strong>Lambda@Edge</Strong> is an extension of Lambda
-          that runs your code in CloudFront edge locations. It's suitable for
-          heavier, more flexible logic tightly integrated with CloudFront.
+          <Strong>Lambda@Edge</Strong> is an extension of Lambda that runs your
+          code in CloudFront edge locations. It's suitable for heavier, more
+          flexible logic tightly integrated with CloudFront.
         </Paragraph>
         <TertiaryHeading>How Lambda@Edge Works</TertiaryHeading>
         <TextList>
@@ -305,8 +313,8 @@ const AWSServerless = () => {
             request/response or origin request/response).
           </TextListItem>
           <TextListItem>
-            When a CloudFront request matches that event, the function runs at the
-            nearest edge location.
+            When a CloudFront request matches that event, the function runs at
+            the nearest edge location.
           </TextListItem>
           <TextListItem>
             The function can modify the request/response, perform auth,
@@ -316,24 +324,26 @@ const AWSServerless = () => {
 
         <SubSectionHeading>CloudFront Functions</SubSectionHeading>
         <Paragraph>
-          <Strong>CloudFront Functions</Strong> are ultra-lightweight
-          JavaScript functions that run at CloudFront edge locations with
-          sub-millisecond latency, ideal for high-volume, simple logic like
-          header manipulation and URL rewrites.
+          <Strong>CloudFront Functions</Strong> are ultra-lightweight JavaScript
+          functions that run at CloudFront edge locations with sub-millisecond
+          latency, ideal for high-volume, simple logic like header manipulation
+          and URL rewrites.
         </Paragraph>
 
-        <SubSectionHeading>Lambda@Edge vs CloudFront Functions</SubSectionHeading>
+        <SubSectionHeading>
+          Lambda@Edge vs CloudFront Functions
+        </SubSectionHeading>
         <Table data={data3} columns={columns3} />
 
         <SubSectionHeading>Which One to Choose?</SubSectionHeading>
         <TextList>
           <TextListItem>
-            <Strong>Choose Lambda@Edge</Strong> when you need
-            complex logic, access to the request body, or heavier processing.
+            <Strong>Choose Lambda@Edge</Strong> when you need complex logic,
+            access to the request body, or heavier processing.
           </TextListItem>
           <TextListItem>
-            <Strong>Choose CloudFront Functions</Strong> when you
-            need ultra-low latency and very high scale for simple edge logic.
+            <Strong>Choose CloudFront Functions</Strong> when you need ultra-low
+            latency and very high scale for simple edge logic.
           </TextListItem>
         </TextList>
 
@@ -341,55 +351,54 @@ const AWSServerless = () => {
         <Paragraph>
           <Strong>Amazon API Gateway</Strong> is a fully managed service for
           creating, publishing, securing, monitoring and managing APIs at scale.
-          It acts as a front door between your backend services (Lambda, ECS/EC2,
-          HTTP services, DynamoDB, etc.) and your clients.
+          It acts as a front door between your backend services (Lambda,
+          ECS/EC2, HTTP services, DynamoDB, etc.) and your clients.
         </Paragraph>
 
         <TertiaryHeading>Integration Types</TertiaryHeading>
         <TextList>
           <TextListItem>
-            <Strong>Lambda Function</Strong> - invoke a Lambda for
-            serverless business logic.
+            <Strong>Lambda Function</Strong> - invoke a Lambda for serverless
+            business logic.
           </TextListItem>
           <TextListItem>
-            <Strong>HTTP Endpoint</Strong> - proxy to external
-            HTTP/HTTPS backends.
+            <Strong>HTTP Endpoint</Strong> - proxy to external HTTP/HTTPS
+            backends.
           </TextListItem>
           <TextListItem>
-            <Strong>AWS Service</Strong> - integrate directly with
-            services like S3, DynamoDB or Step Functions.
+            <Strong>AWS Service</Strong> - integrate directly with services like
+            S3, DynamoDB or Step Functions.
           </TextListItem>
         </TextList>
 
         <TertiaryHeading>API Types</TertiaryHeading>
         <TextList>
           <TextListItem>
-            <Strong>REST APIs</Strong> - full-featured API Gateway
-            APIs (legacy but still widely used).
+            <Strong>REST APIs</Strong> - full-featured API Gateway APIs (legacy
+            but still widely used).
           </TextListItem>
           <TextListItem>
-            <Strong>HTTP APIs</Strong> - lighter, cheaper, lower
-            latency for most common API use cases.
+            <Strong>HTTP APIs</Strong> - lighter, cheaper, lower latency for
+            most common API use cases.
           </TextListItem>
           <TextListItem>
-            <Strong>WebSocket APIs</Strong> - stateful, real-time
-            communication over WebSockets.
+            <Strong>WebSocket APIs</Strong> - stateful, real-time communication
+            over WebSockets.
           </TextListItem>
         </TextList>
 
         <TertiaryHeading>Endpoint Types</TertiaryHeading>
         <TextList>
           <TextListItem>
-            <Strong>Edge-Optimized</Strong> - fronted by CloudFront
-            for global clients.
+            <Strong>Edge-Optimized</Strong> - fronted by CloudFront for global
+            clients.
           </TextListItem>
           <TextListItem>
-            <Strong>Regional</Strong> - intended for clients in the
-            same region.
+            <Strong>Regional</Strong> - intended for clients in the same region.
           </TextListItem>
           <TextListItem>
-            <Strong>Private</Strong> - accessible only within a VPC
-            via VPC endpoints.
+            <Strong>Private</Strong> - accessible only within a VPC via VPC
+            endpoints.
           </TextListItem>
         </TextList>
 
@@ -402,19 +411,16 @@ const AWSServerless = () => {
         <SectionHeading id="aws-step-functions">Step Functions</SectionHeading>
         <Paragraph>
           <Strong>AWS Step Functions</Strong> is a serverless orchestration
-          service that lets you model workflows as state machines. It coordinates
-          multiple AWS services (Lambda, ECS, SQS, SNS, Glue, etc.) into reliable,
-          auditable business processes.
+          service that lets you model workflows as state machines. It
+          coordinates multiple AWS services (Lambda, ECS, SQS, SNS, Glue, etc.)
+          into reliable, auditable business processes.
         </Paragraph>
         <Paragraph>
           You define your workflow in Amazon States Language (JSON-based), with
-          support for parallel execution, retries with backoff, error handling and
-          human approval steps (via callbacks or integrations).
+          support for parallel execution, retries with backoff, error handling
+          and human approval steps (via callbacks or integrations).
         </Paragraph>
-        <PostImage
-          src={StepFunctionExample}
-          alt="AWS Step Functions example"
-        />
+        <PostImage src={StepFunctionExample} alt="AWS Step Functions example" />
 
         <SectionHeading id="references">References</SectionHeading>
         <TextList>

@@ -1,19 +1,19 @@
-import React, { useEffect } from 'react';
-import styled from 'styled-components';
+import React, { useEffect } from "react";
+import styled from "styled-components";
 
 // helpers
-import { Analytics } from '../../helpers/analytics';
+import { Analytics } from "../../helpers/analytics";
 
 // animations
-import SlideInBottom from '../../animations/SlideInBottom';
+import SlideInBottom from "../../animations/SlideInBottom";
 
 // icons
-import { JavascriptSVG } from '../../resources/styles/icons';
+import { JavascriptSVG } from "../../resources/styles/icons";
 
 // components
-import BackButton from '../Button/BackButton';
-import ArrayExplorer from '../ArrayExplorer/ArrayExplorer';
-import { CodeBlockWithCopy } from '../Code/Code';
+import BackButton from "../Button/BackButton";
+import ArrayExplorer from "../ArrayExplorer/ArrayExplorer";
+import { CodeBlockWithCopy } from "../Code/Code";
 
 // layout
 import {
@@ -23,7 +23,7 @@ import {
   HeaderRow,
   IconWrapper,
   HeaderIcon,
-} from '../BlogLayout/BlogLayout';
+} from "../BlogLayout/BlogLayout";
 
 // typography
 import {
@@ -36,7 +36,7 @@ import {
   TextLink,
   TextList,
   TextListItem,
-} from '../Typography/Typography';
+} from "../Typography/Typography";
 
 // codeblocks
 import {
@@ -50,7 +50,7 @@ import {
   everyExample,
   someExample,
   reduceExample,
-} from '../../helpers/codeblocks';
+} from "../../helpers/codeblocks";
 
 const AnimatedPostContainer = styled(BasePostContainer)`
   animation: ${SlideInBottom} 0.5s forwards;
@@ -65,7 +65,7 @@ console.log(starWarsCharacters[starWarsCharacters.length - 1]); // "Han"`;
 
 const JavaScriptArray = () => {
   useEffect(() => {
-    Analytics.event('blog_opened', { slug: 'aws-javascript-arrays' });
+    Analytics.pageview({ slug: "aws-javascript-arrays" });
   }, []);
 
   return (
@@ -86,19 +86,19 @@ const JavaScriptArray = () => {
 
         <Paragraph>
           Do you ever find yourself forgetting what helper methods would be best
-          to manipulate your data? In this blog post, we'll cover the basics
-          of JavaScript arrays, including how to create them, access and modify
+          to manipulate your data? In this blog post, we'll cover the basics of
+          JavaScript arrays, including how to create them, access and modify
           their elements, and use built-in methods to manipulate them.
         </Paragraph>
 
         <Paragraph>
-          But before we get into that, I'd just like to briefly tackle what
-          an array is exactly and share some useful tips. If you're not new
-          to JavaScript, you can probably{' '}
+          But before we get into that, I'd just like to briefly tackle what an
+          array is exactly and share some useful tips. If you're not new to
+          JavaScript, you can probably{" "}
           <TextLink href="#skip">skip this part.</TextLink> Alternatively, you
-          can go straight to the{' '}
-          <TextLink href="#use-case">use case</TextLink> section, which can help
-          you find the helper method that best suits your needs.
+          can go straight to the <TextLink href="#use-case">use case</TextLink>{" "}
+          section, which can help you find the helper method that best suits
+          your needs.
         </Paragraph>
 
         <SectionHeading>What is an Array?</SectionHeading>
@@ -113,9 +113,9 @@ const JavaScriptArray = () => {
         <Paragraph>
           JavaScript arrays are incredibly versatile and can be used to create
           complex data structures and algorithms. Arrays can be created using
-          the <Strong>Array</Strong> constructor or by using
-          literal notation. The most common method is using literal notation,
-          which involves enclosing a list of values in square brackets.
+          the <Strong>Array</Strong> constructor or by using literal notation.
+          The most common method is using literal notation, which involves
+          enclosing a list of values in square brackets.
         </Paragraph>
 
         <Paragraph>Here is an example:</Paragraph>
@@ -123,21 +123,21 @@ const JavaScriptArray = () => {
         <CodeBlockWithCopy code={example} />
 
         <Paragraph>
-          Notice that arrays can contain a mix of different data types (integers,
-          objects, and even arrays themselves).
+          Notice that arrays can contain a mix of different data types
+          (integers, objects, and even arrays themselves).
         </Paragraph>
 
         <Paragraph>
-          JavaScript arrays are zero-indexed, which means they start at index{' '}
-          <InlineHighlight>0</InlineHighlight>, the second index being{' '}
+          JavaScript arrays are zero-indexed, which means they start at index{" "}
+          <InlineHighlight>0</InlineHighlight>, the second index being{" "}
           <InlineHighlight>1</InlineHighlight> and so on.
         </Paragraph>
 
         <CodeBlockWithCopy code={starWarsIndexExample} />
 
         <Paragraph>
-          If you're wanting to get the last element of an array, you can
-          always get the length of the array minus 1.
+          If you're wanting to get the last element of an array, you can always
+          get the length of the array minus 1.
         </Paragraph>
 
         <CodeBlockWithCopy code={lastElementExample} />
@@ -201,8 +201,8 @@ const JavaScriptArray = () => {
         <Paragraph>
           It's also common to have conditions within a map function. For
           example, if you needed to specifically change an element within the
-          array, you can set a condition. Let's say we need to amend our
-          data set to only have British spelling.
+          array, you can set a condition. Let's say we need to amend our data
+          set to only have British spelling.
         </Paragraph>
 
         <CodeBlockWithCopy code={mapExample2} />
@@ -218,7 +218,7 @@ const JavaScriptArray = () => {
         <Paragraph>
           The <InlineHighlight>forEach</InlineHighlight> helper method, much
           like <InlineHighlight>map</InlineHighlight>, is an iterative method;
-          however, a key difference is the output does{' '}
+          however, a key difference is the output does{" "}
           <Strong>not return a new array</Strong>.
         </Paragraph>
 
@@ -239,23 +239,25 @@ const JavaScriptArray = () => {
           filtered array or not.
         </Paragraph>
 
-        <Paragraph>Here is an example of filtering out all even numbers from an array:</Paragraph>
+        <Paragraph>
+          Here is an example of filtering out all even numbers from an array:
+        </Paragraph>
 
         <CodeBlockWithCopy code={filterExample} />
 
         <Paragraph>
           In this example, the callback function checks if the current number is
-          odd by using the modulus operator (%) to check if it's divisible
-          by 2 with a remainder. If the remainder is not 0, the number is odd
-          and true is returned, so it is included in the{' '}
-          <Strong>oddNumbers</Strong> array.
+          odd by using the modulus operator (%) to check if it's divisible by 2
+          with a remainder. If the remainder is not 0, the number is odd and
+          true is returned, so it is included in the <Strong>oddNumbers</Strong>{" "}
+          array.
         </Paragraph>
 
         <SubSectionHeading id="find">Find</SubSectionHeading>
 
         <Paragraph>
           The <InlineHighlight>find</InlineHighlight> method is used to search
-          an array for a <Strong>specific element</Strong> and{' '}
+          an array for a <Strong>specific element</Strong> and{" "}
           <Strong>returns the first element</Strong> in the array that satisfies
           the given condition.
         </Paragraph>
@@ -271,7 +273,7 @@ const JavaScriptArray = () => {
           In this example, the callback function checks if the current number is
           greater than 3. The method then returns the first element in the array
           that satisfies this condition, which is 4. If no element satisfies the
-          search condition, the method returns{' '}
+          search condition, the method returns{" "}
           <InlineHighlight>undefined</InlineHighlight>.
         </Paragraph>
 
@@ -300,9 +302,9 @@ const JavaScriptArray = () => {
         <CodeBlockWithCopy code={everyExample} />
 
         <Paragraph>
-          In this example, the callback function checks each element's
-          length, and because the length of the string "Anakin" is bigger than 4,
-          the return will be false despite the other elements satisfying the
+          In this example, the callback function checks each element's length,
+          and because the length of the string "Anakin" is bigger than 4, the
+          return will be false despite the other elements satisfying the
           condition.
         </Paragraph>
 
@@ -326,13 +328,14 @@ const JavaScriptArray = () => {
         <Paragraph>
           In this example, the callback function performs a calculation on each
           element (checks to see if the number is divisible by 2) and returns
-          true because there is one element that does not meet the condition (7).
+          true because there is one element that does not meet the condition
+          (7).
         </Paragraph>
 
         <SubSectionHeading id="reduce">Reduce</SubSectionHeading>
 
         <Paragraph>
-          The <InlineHighlight>reduce</InlineHighlight> method is used to{' '}
+          The <InlineHighlight>reduce</InlineHighlight> method is used to{" "}
           <Strong>reduce the values of an array to a single value.</Strong> It
           iterates over an array and applies a function to each element of the
           array, accumulating the result as it goes along.
@@ -346,10 +349,9 @@ const JavaScriptArray = () => {
         <CodeBlockWithCopy code={reduceExample} />
 
         <Paragraph>
-          In this example, the callback function takes two arguments, the{' '}
-          <Strong>accumulator</Strong> and the{' '}
-          <Strong>currentValue</Strong>. It returns the sum of
-          the accumulator and the currentValue. The{' '}
+          In this example, the callback function takes two arguments, the{" "}
+          <Strong>accumulator</Strong> and the <Strong>currentValue</Strong>. It
+          returns the sum of the accumulator and the currentValue. The{" "}
           <InlineHighlight>reduce</InlineHighlight> method then accumulates the
           result of each iteration, starting with an initial value of 0.
         </Paragraph>

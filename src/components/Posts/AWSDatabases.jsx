@@ -36,7 +36,7 @@ import {
   TextList,
   TextListItem,
   IndentedTextList,
-  IndentedTextListItem
+  IndentedTextListItem,
 } from "../Typography/Typography";
 
 // images
@@ -92,7 +92,10 @@ const data = [
 
 const columns2 = ["DynamoDB", "Kinesis Data Streams"];
 const data2 = [
-  { DynamoDB: "24 hours retention", "Kinesis Data Streams": "1 year retention" },
+  {
+    DynamoDB: "24 hours retention",
+    "Kinesis Data Streams": "1 year retention",
+  },
   {
     DynamoDB: "Limited number of consumers",
     "Kinesis Data Streams": "High number of consumers",
@@ -107,7 +110,7 @@ const data2 = [
 
 const AWSDatabases = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-databases" });
+    Analytics.pageview({ slug: "aws-databases" });
   }, []);
 
   return (
@@ -130,9 +133,10 @@ const AWSDatabases = () => {
         </HeaderRow>
 
         <Paragraph>
-          I'll be briefly covering databases which AWS provide as well as the key
-          features that each service offer. I've also listed{" "}
-          <TextLink href="#skip">ports at the end</TextLink> to be familiar with.
+          I'll be briefly covering databases which AWS provide as well as the
+          key features that each service offer. I've also listed{" "}
+          <TextLink href="#skip">ports at the end</TextLink> to be familiar
+          with.
         </Paragraph>
 
         <TextList>
@@ -181,9 +185,9 @@ const AWSDatabases = () => {
             RDS, Aurora - great for joins
           </TextListItem>
           <TextListItem>
-            <Strong>NoSQL database - no joins, no SQL</Strong>: DynamoDB (~JSON),
-            ElastiCache (key / value pairs), Neptune (graphs), DocumentDB (for
-            MongoDB), Keyspaces (for Apache Cassandra)
+            <Strong>NoSQL database - no joins, no SQL</Strong>: DynamoDB
+            (~JSON), ElastiCache (key / value pairs), Neptune (graphs),
+            DocumentDB (for MongoDB), Keyspaces (for Apache Cassandra)
           </TextListItem>
           <TextListItem>
             <Strong>Object Store</Strong>: S3 (for big objects) / Glacier (for
@@ -233,9 +237,13 @@ const AWSDatabases = () => {
 
         <TextList>
           <TextListItem>Automated provisioning, OS patching</TextListItem>
-          <TextListItem>Continuous backups and point in time restore</TextListItem>
+          <TextListItem>
+            Continuous backups and point in time restore
+          </TextListItem>
           <TextListItem>Monitoring dashboards</TextListItem>
-          <TextListItem>Read replicas for improved read performance</TextListItem>
+          <TextListItem>
+            Read replicas for improved read performance
+          </TextListItem>
           <TextListItem>Multi AZ setup for disaster recovery</TextListItem>
           <TextListItem>Maintenance windows for upgrades</TextListItem>
           <TextListItem>Scaling capability</TextListItem>
@@ -268,8 +276,8 @@ const AWSDatabases = () => {
           possible to take a replica read instance and make it the main RDS
           instance. The replication is <Strong>ASYNC</Strong>, meaning that the
           data will eventually be consistent. You can only query (SELECT) data
-          from a read replica not do any manipulations such as INSERT, UPDATE, or
-          DELETE queries.
+          from a read replica not do any manipulations such as INSERT, UPDATE,
+          or DELETE queries.
         </Paragraph>
 
         <PostImage src={ReadReplicas} alt="RDS read replicas" />
@@ -285,16 +293,17 @@ const AWSDatabases = () => {
 
         <Paragraph>
           Multi AZ is mainly used for disaster recovery. The application will
-          read/write to the main RDS instance via one DNS name, and that instance
-          will be making a <Strong>SYNC</Strong> replication, meaning a real time
-          exchange of information to a standby instance in another availability
-          zone. That means every change that the application is sending to the
-          main instance, the main instance will have to update the standby
-          instance. If there is a problem with the main instance then there will
-          be an automatic failover to the standby instance. This failover could
-          happen due to network issues or instance/storage failure, if any of
-          these events occur the standby instance would be promoted to the main
-          instance. It's possible to setup read replicas for Multi AZ.
+          read/write to the main RDS instance via one DNS name, and that
+          instance will be making a <Strong>SYNC</Strong> replication, meaning a
+          real time exchange of information to a standby instance in another
+          availability zone. That means every change that the application is
+          sending to the main instance, the main instance will have to update
+          the standby instance. If there is a problem with the main instance
+          then there will be an automatic failover to the standby instance. This
+          failover could happen due to network issues or instance/storage
+          failure, if any of these events occur the standby instance would be
+          promoted to the main instance. It's possible to setup read replicas
+          for Multi AZ.
         </Paragraph>
 
         <PostImage src={MultiAZ} alt="RDS Multi AZ" />
@@ -313,21 +322,21 @@ const AWSDatabases = () => {
           RDS has the ability to backup instances either automatically or
           manually. You can do a full backup of the database daily with the
           ability to restore to any point in time from oldest to five minutes
-          ago. Transaction logs are backed up by RDS every five minutes. There is
-          a retention period up to 35 days for automatic backups but can last as
-          long as you want if backed up manually.{" "}
+          ago. Transaction logs are backed up by RDS every five minutes. There
+          is a retention period up to 35 days for automatic backups but can last
+          as long as you want if backed up manually.{" "}
           <Strong>Automated backups can be disabled.</Strong> Do note that a
           stopped RDS instance still costs money as you're still paying for the
-          existing storage. If you plan on stopping it for a long period of time,
-          you should snapshot and restore instead.
+          existing storage. If you plan on stopping it for a long period of
+          time, you should snapshot and restore instead.
         </Paragraph>
 
         <SubSectionHeading>RDS Restore</SubSectionHeading>
 
         <Paragraph>
           RDS has the ability to restore an instance by creating a backup of the
-          existing database which is stored in S3, that is then used on a new RDS
-          instance running MySQL.
+          existing database which is stored in S3, that is then used on a new
+          RDS instance running MySQL.
         </Paragraph>
 
         <SubSectionHeading>RDS Proxy</SubSectionHeading>
@@ -336,15 +345,16 @@ const AWSDatabases = () => {
           This allows apps to pool and share database connections already
           established. Instead of having individual applications connect to the
           RDS instance, they will instead connect to the proxy which will pool
-          the connections together into less connections to the RDS instance. You
-          would want to do this to improve the database efficiency by reducing
-          the strain on the RDS resources such as CPU and RAM. This feature
-          auto-scales and is multi-AZ so you won't need to manage capacity which
-          in turn reduces the failover time by up to 66%. This feature enforces
-          IAM authentication, so users can only connect to the RDS instance using
-          the correct credentials, and it's never publicly available as it can
-          only be accessed from a VPC. This supports RDS (MySQL, PostgreSQL,
-          MariaDB, MSSQL Server) and Aurora (MySQL and PostgreSQL).
+          the connections together into less connections to the RDS instance.
+          You would want to do this to improve the database efficiency by
+          reducing the strain on the RDS resources such as CPU and RAM. This
+          feature auto-scales and is multi-AZ so you won't need to manage
+          capacity which in turn reduces the failover time by up to 66%. This
+          feature enforces IAM authentication, so users can only connect to the
+          RDS instance using the correct credentials, and it's never publicly
+          available as it can only be accessed from a VPC. This supports RDS
+          (MySQL, PostgreSQL, MariaDB, MSSQL Server) and Aurora (MySQL and
+          PostgreSQL).
         </Paragraph>
 
         <PostImage src={Proxy} alt="RDS Proxy" />
@@ -384,8 +394,9 @@ const AWSDatabases = () => {
             You don't have any information about the data itself
           </TextListItem>
           <TextListItem>
-            Subscribe to following event categories: DB instance, DB snapshot, DB
-            Parameter Group, DB Security Group, RDS Proxy, Custom Engine Version
+            Subscribe to following event categories: DB instance, DB snapshot,
+            DB Parameter Group, DB Security Group, RDS Proxy, Custom Engine
+            Version
           </TextListItem>
           <TextListItem>Near real-time events (up to 5 minutes)</TextListItem>
           <TextListItem>
@@ -409,9 +420,7 @@ const AWSDatabases = () => {
             Provisioned RDS instance Size and EBS Volume Type & Size
           </TextListItem>
           <TextListItem>Auto-scaling capability for Storage</TextListItem>
-          <TextListItem>
-            Support for Read Replicas and Multi AZ
-          </TextListItem>
+          <TextListItem>Support for Read Replicas and Multi AZ</TextListItem>
           <TextListItem>
             Security through IAM, Security Groups, KMS, SSL in transit
           </TextListItem>
@@ -490,8 +499,8 @@ const AWSDatabases = () => {
 
         <Paragraph>
           If you wish to run analytics on the database without effecting
-          performance you can define a subset of Aurora instances to point towards
-          a custom endpoint.
+          performance you can define a subset of Aurora instances to point
+          towards a custom endpoint.
         </Paragraph>
 
         <PostImage
@@ -503,8 +512,8 @@ const AWSDatabases = () => {
 
         <Paragraph>
           Aurora Serverless is an automated database which auto scales based on
-          usage. This could be good for infrequent, intermittent or unpredictable
-          workloads.
+          usage. This could be good for infrequent, intermittent or
+          unpredictable workloads.
         </Paragraph>
 
         <PostImage src={AuroraServerless} alt="Aurora Serverless" />
@@ -512,9 +521,9 @@ const AWSDatabases = () => {
         <SubSectionHeading>Aurora Global</SubSectionHeading>
 
         <Paragraph>
-          Global Aurora has cross region read replicas which is good for disaster
-          recovery. It takes less than a second to replicate data into another
-          region.
+          Global Aurora has cross region read replicas which is good for
+          disaster recovery. It takes less than a second to replicate data into
+          another region.
         </Paragraph>
 
         <PostImage src={AuroraGlobal} alt="Aurora Global" />
@@ -523,8 +532,8 @@ const AWSDatabases = () => {
 
         <Paragraph>
           You can integrate Aurora with machine learning services (AWS Sagemaker
-          and AWS Comprehend) to make predictions with your applications via SQL.
-          Good use cases for this would be to check for fraud detection and
+          and AWS Comprehend) to make predictions with your applications via
+          SQL. Good use cases for this would be to check for fraud detection and
           product recommendations.
         </Paragraph>
 
@@ -538,9 +547,9 @@ const AWSDatabases = () => {
         <Paragraph>
           Aurora has the ability to backup instances either automatically or
           manually. You can do a full backup of the database daily with the
-          ability to restore to any point in time. There is a retention period up
-          to 35 days for automatic backups but can last as long as you want if
-          backed up manually.{" "}
+          ability to restore to any point in time. There is a retention period
+          up to 35 days for automatic backups but can last as long as you want
+          if backed up manually.{" "}
           <Strong>Automated backups can't be disabled.</Strong>
         </Paragraph>
 
@@ -598,8 +607,8 @@ const AWSDatabases = () => {
             compute
           </TextListItem>
           <TextListItem>
-            Storage: data is stored in 6 replicas across 3 AZ - highly available,
-            self-healing, auto-scaling
+            Storage: data is stored in 6 replicas across 3 AZ - highly
+            available, self-healing, auto-scaling
           </TextListItem>
           <TextListItem>
             Compute: Cluster of DB Instance across multiple AZ, auto-scaling of
@@ -634,8 +643,8 @@ const AWSDatabases = () => {
         </IndentedTextList>
 
         <Paragraph>
-          <Strong>Use case</Strong>: same as RDS, but with less maintenance / more
-          flexibility / more performance / more features
+          <Strong>Use case</Strong>: same as RDS, but with less maintenance /
+          more flexibility / more performance / more features
         </Paragraph>
 
         <SectionHeading id="elasticache">Elasticache</SectionHeading>
@@ -681,7 +690,8 @@ const AWSDatabases = () => {
             Select an ElastiCache instance type (e.g. cache.m6g.large)
           </TextListItem>
           <TextListItem>
-            Support for Clustering (Redis) and Multi AZ, Read Replicas (sharding)
+            Support for Clustering (Redis) and Multi AZ, Read Replicas
+            (sharding)
           </TextListItem>
           <TextListItem>
             Security through IAM, Security Groups, KMS, Redis Auth
@@ -759,8 +769,8 @@ const AWSDatabases = () => {
             You need to plan capacity beforehand
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Pay for provisioned Read Capacity Units (RCU) & Write Capacity
-            Units (WCU)
+            Pay for provisioned Read Capacity Units (RCU) & Write Capacity Units
+            (WCU)
           </IndentedTextListItem>
           <IndentedTextListItem>
             Possibility to add auto-scaling mode for RCU & WCU
@@ -777,7 +787,9 @@ const AWSDatabases = () => {
           <IndentedTextListItem>
             Read/Writes automatically scale up/down with your workloads
           </IndentedTextListItem>
-          <IndentedTextListItem>No capacity planning needed</IndentedTextListItem>
+          <IndentedTextListItem>
+            No capacity planning needed
+          </IndentedTextListItem>
           <IndentedTextListItem>
             Pay for what you use, more expensive ($$$)
           </IndentedTextListItem>
@@ -806,7 +818,9 @@ const AWSDatabases = () => {
 
         <PostImage src={DynamoDBDAX} alt="DynamoDB DAX" />
 
-        <TertiaryHeading>DynamoDB Accelerator (DAX) vs ElastiCache</TertiaryHeading>
+        <TertiaryHeading>
+          DynamoDB Accelerator (DAX) vs ElastiCache
+        </TertiaryHeading>
 
         <PostImage
           src={DynamoDBDAXvsElastiCache}
@@ -828,7 +842,9 @@ const AWSDatabases = () => {
             React to changes in real-time (welcome email to users)
           </IndentedTextListItem>
           <IndentedTextListItem>Real-time usage analytics</IndentedTextListItem>
-          <IndentedTextListItem>Insert into derivative tables</IndentedTextListItem>
+          <IndentedTextListItem>
+            Insert into derivative tables
+          </IndentedTextListItem>
           <IndentedTextListItem>
             Implement cross-region replication
           </IndentedTextListItem>
@@ -852,7 +868,8 @@ const AWSDatabases = () => {
 
         <TextList>
           <TextListItem>
-            Make a DynamoDB table accessible with low latency in multiple-regions
+            Make a DynamoDB table accessible with low latency in
+            multiple-regions
           </TextListItem>
           <TextListItem>Active-Active replication</TextListItem>
           <TextListItem>
@@ -865,7 +882,9 @@ const AWSDatabases = () => {
 
         <TertiaryHeading>DynamoDB - Time To Live (TTL)</TertiaryHeading>
 
-        <Paragraph>Automatically delete items after an expiry timestamp.</Paragraph>
+        <Paragraph>
+          Automatically delete items after an expiry timestamp.
+        </Paragraph>
 
         <PostImage src={DynamoDBTTL} alt="DynamoDB TTL" />
 
@@ -876,7 +895,9 @@ const AWSDatabases = () => {
           </TextListItem>
         </TextList>
 
-        <TertiaryHeading>DynamoDB - Backups for disaster recovery</TertiaryHeading>
+        <TertiaryHeading>
+          DynamoDB - Backups for disaster recovery
+        </TertiaryHeading>
 
         <TextList>
           <TextListItem>
@@ -913,7 +934,9 @@ const AWSDatabases = () => {
           </IndentedTextListItem>
         </IndentedTextList>
 
-        <SubSectionHeading>DynamoDB - Integration with Amazon S3</SubSectionHeading>
+        <SubSectionHeading>
+          DynamoDB - Integration with Amazon S3
+        </SubSectionHeading>
 
         <TextList>
           <TextListItem>
@@ -938,8 +961,8 @@ const AWSDatabases = () => {
             ETL on top of S3 data before importing back into DynamoDB
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Export in DynamoDB JSON or ION format (data serialization language by
-            amazon)
+            Export in DynamoDB JSON or ION format (data serialization language
+            by amazon)
           </IndentedTextListItem>
         </IndentedTextList>
 
@@ -978,8 +1001,8 @@ const AWSDatabases = () => {
             for example, using TTL feature)
           </TextListItem>
           <TextListItem>
-            Highly Available, Multi AZ by default, Read and Writes are decoupled,
-            transaction capability
+            Highly Available, Multi AZ by default, Read and Writes are
+            decoupled, transaction capability
           </TextListItem>
           <TextListItem>
             DAX cluster for read cache, microsecond read latency
@@ -991,16 +1014,14 @@ const AWSDatabases = () => {
             Event Processing: DynamoDB Streams to integrate with AWS Lambda, or
             Kinesis Data Streams
           </TextListItem>
-          <TextListItem>
-            Global Table feature: active-active setup
-          </TextListItem>
+          <TextListItem>Global Table feature: active-active setup</TextListItem>
           <TextListItem>
             Automated backups up to 35 days with PITR (point-in-time-recovery -
             restore to new table), or on-demand backups
           </TextListItem>
           <TextListItem>
-            Export to S3 without using RCU within the PITR window, import from S3
-            without using WCU
+            Export to S3 without using RCU within the PITR window, import from
+            S3 without using WCU
           </TextListItem>
           <TextListItem>Great for rapidly evolve schemas</TextListItem>
         </TextList>
@@ -1022,8 +1043,8 @@ const AWSDatabases = () => {
             capability
           </TextListItem>
           <TextListItem>
-            Tiers: S3 Standard, S3 Infrequent Access, S3 Intelligent, S3 Glacier +
-            lifecycle policy
+            Tiers: S3 Standard, S3 Infrequent Access, S3 Intelligent, S3 Glacier
+            + lifecycle policy
           </TextListItem>
           <TextListItem>
             Features: Versioning, Encryption, Replication, MFA-Delete, Access
@@ -1084,9 +1105,9 @@ const AWSDatabases = () => {
         <SectionHeading id="neptune">Amazon Neptune</SectionHeading>
 
         <Paragraph>
-          Amazon Neptune is a fully managed graph database service. It is designed
-          to work with highly connected datasets, enabling you to efficiently
-          store and navigate complex relationships within your data.
+          Amazon Neptune is a fully managed graph database service. It is
+          designed to work with highly connected datasets, enabling you to
+          efficiently store and navigate complex relationships within your data.
         </Paragraph>
 
         <TextList>
@@ -1129,8 +1150,8 @@ const AWSDatabases = () => {
             Send notifications when certain changes are made
           </IndentedTextListItem>
           <IndentedTextListItem>
-            Maintain your graph data synchronized in another data store (e.g. S3,
-            OpenSearch, ElastiCache)
+            Maintain your graph data synchronized in another data store (e.g.
+            S3, OpenSearch, ElastiCache)
           </IndentedTextListItem>
           <IndentedTextListItem>
             Replicate data across regions in Neptune
@@ -1159,9 +1180,7 @@ const AWSDatabases = () => {
           <TextListItem>
             Tables are replicated 3 times across multiple AZ
           </TextListItem>
-          <TextListItem>
-            Using the Cassandra Query Language (CQL)
-          </TextListItem>
+          <TextListItem>Using the Cassandra Query Language (CQL)</TextListItem>
           <TextListItem>
             Single-digit millisecond latency at any scale, 1000s of requests per
             second
@@ -1175,8 +1194,8 @@ const AWSDatabases = () => {
         </TextList>
 
         <Paragraph>
-          <Strong>Use case</Strong>: store IoT (internet of things) devices info,
-          time-series data
+          <Strong>Use case</Strong>: store IoT (internet of things) devices
+          info, time-series data
         </Paragraph>
 
         <SectionHeading id="qldb">
@@ -1214,7 +1233,9 @@ const AWSDatabases = () => {
           <TextListItem>
             Fully managed, fast, scalable, serverless time series database
           </TextListItem>
-          <TextListItem>A graph containing points with a time included</TextListItem>
+          <TextListItem>
+            A graph containing points with a time included
+          </TextListItem>
           <TextListItem>
             Automatically scales up / down to adjust capacity
           </TextListItem>
@@ -1232,8 +1253,8 @@ const AWSDatabases = () => {
             kept in a cost-optimized storage
           </TextListItem>
           <TextListItem>
-            Built-in time series analytics functions (helps you identify patterns
-            in your data in near real-time)
+            Built-in time series analytics functions (helps you identify
+            patterns in your data in near real-time)
           </TextListItem>
           <TextListItem>Encryption in transit and at rest</TextListItem>
         </TextList>
@@ -1344,7 +1365,6 @@ const AWSDatabases = () => {
             </TextLink>
           </TextListItem>
         </TextList>
-
       </AnimatedPostContainer>
     </PageWrapper>
   );

@@ -77,10 +77,14 @@ const PostContainer = styled(BasePostContainer)`
 
 const AWSSecurityEncryption = () => {
   useEffect(() => {
-    Analytics.event("blog_opened", { slug: "aws-encryption" });
+    Analytics.pageview({ slug: "aws-encryption" });
   }, []);
 
-  const compareSecretsColumns = ["Feature", "SSM Parameter Store", "AWS Secrets Manager"];
+  const compareSecretsColumns = [
+    "Feature",
+    "SSM Parameter Store",
+    "AWS Secrets Manager",
+  ];
   const compareSecretsData = [
     {
       Feature: "Use Case",
@@ -162,16 +166,22 @@ const AWSSecurityEncryption = () => {
 
         <TextList>
           <TextListItem>
-            <TextLink href="#aws-encryption-overview">Encryption Overview</TextLink>
+            <TextLink href="#aws-encryption-overview">
+              Encryption Overview
+            </TextLink>
           </TextListItem>
           <TextListItem>
             <TextLink href="#aws-kms">KMS (Key Management Service)</TextLink>
           </TextListItem>
           <TextListItem>
-            <TextLink href="#aws-multi-region-keys">KMS Multi-Region Keys</TextLink>
+            <TextLink href="#aws-multi-region-keys">
+              KMS Multi-Region Keys
+            </TextLink>
           </TextListItem>
           <TextListItem>
-            <TextLink href="#aws-s3-replication-encryption">S3 Replication Encryption</TextLink>
+            <TextLink href="#aws-s3-replication-encryption">
+              S3 Replication Encryption
+            </TextLink>
           </TextListItem>
           <TextListItem>
             <TextLink href="#aws-ami-sharing-via-kms">
@@ -179,7 +189,9 @@ const AWSSecurityEncryption = () => {
             </TextLink>
           </TextListItem>
           <TextListItem>
-            <TextLink href="#aws-ssm-parameter-store">SSM Parameter Store</TextLink>
+            <TextLink href="#aws-ssm-parameter-store">
+              SSM Parameter Store
+            </TextLink>
           </TextListItem>
           <TextListItem>
             <TextLink href="#aws-secrets-manager">AWS Secrets Manager</TextLink>
@@ -190,13 +202,17 @@ const AWSSecurityEncryption = () => {
             </TextLink>
           </TextListItem>
           <TextListItem>
-            <TextLink href="#aws-waf">AWS Web Application Firewall (WAF)</TextLink>
+            <TextLink href="#aws-waf">
+              AWS Web Application Firewall (WAF)
+            </TextLink>
           </TextListItem>
           <TextListItem>
             <TextLink href="#aws-shield">AWS Shield</TextLink>
           </TextListItem>
           <TextListItem>
-            <TextLink href="#aws-firewall-manager">AWS Firewall Manager</TextLink>
+            <TextLink href="#aws-firewall-manager">
+              AWS Firewall Manager
+            </TextLink>
           </TextListItem>
           <TextListItem>
             <TextLink href="#aws-guard-duty">AWS GuardDuty</TextLink>
@@ -247,16 +263,18 @@ const AWSSecurityEncryption = () => {
         <SubSectionHeading>Client-Side Encryption</SubSectionHeading>
         <Paragraph>
           With <Strong>client-side encryption</Strong>, your application
-          encrypts data before sending it to AWS and decrypts it after retrieval.
-          AWS only ever sees ciphertext; key management lives entirely on the
-          client side (or in your own KMS/HSM).
+          encrypts data before sending it to AWS and decrypts it after
+          retrieval. AWS only ever sees ciphertext; key management lives
+          entirely on the client side (or in your own KMS/HSM).
         </Paragraph>
         <PostImage
           src={ClientSideEncryption}
           alt="Client-side encryption flow"
         />
 
-        <SectionHeading id="aws-kms">KMS (Key Management Service)</SectionHeading>
+        <SectionHeading id="aws-kms">
+          KMS (Key Management Service)
+        </SectionHeading>
         <Paragraph>
           <Strong>AWS Key Management Service (KMS)</Strong> is a managed service
           for creating, managing and controlling cryptographic keys used across
@@ -300,7 +318,9 @@ const AWSSecurityEncryption = () => {
           </TextListItem>
         </TextList>
 
-        <SubSectionHeading>Copying Snapshots Across Regions / Accounts</SubSectionHeading>
+        <SubSectionHeading>
+          Copying Snapshots Across Regions / Accounts
+        </SubSectionHeading>
         <Paragraph>
           When copying <Strong>encrypted EBS snapshots</Strong> across accounts
           or regions, you must ensure the destination has access to the relevant
@@ -387,10 +407,7 @@ const AWSSecurityEncryption = () => {
           is managed independently in its own region. This enables seamless
           encryption/decryption across regions for multi-region architectures.
         </Paragraph>
-        <PostImage
-          src={MultiRegionKeys}
-          alt="KMS multi-region keys overview"
-        />
+        <PostImage src={MultiRegionKeys} alt="KMS multi-region keys overview" />
 
         <SubSectionHeading>
           DynamoDB Global Tables & Aurora Global with KMS
@@ -445,7 +462,8 @@ const AWSSecurityEncryption = () => {
             are replicated by default.
           </TextListItem>
           <TextListItem>
-            Use <Strong>Batch Replication</Strong> to replicate existing objects.
+            Use <Strong>Batch Replication</Strong> to replicate existing
+            objects.
           </TextListItem>
         </TextList>
 
@@ -453,9 +471,9 @@ const AWSSecurityEncryption = () => {
           Changing Encryption During Replication
         </SubSectionHeading>
         <Paragraph>
-          If a source object's encryption is changed (for example
-          SSE-S3 → SSE-KMS), replication does not automatically re-replicate it;
-          again, Batch Replication or manual processes are needed.
+          If a source object's encryption is changed (for example SSE-S3 →
+          SSE-KMS), replication does not automatically re-replicate it; again,
+          Batch Replication or manual processes are needed.
         </Paragraph>
 
         <SectionHeading id="aws-ami-sharing-via-kms">
@@ -485,10 +503,13 @@ const AWSSecurityEncryption = () => {
           </TextListItem>
         </TextList>
         <Paragraph>
-          This ensures secure AMI sharing and proper encryption management across
-          accounts.
+          This ensures secure AMI sharing and proper encryption management
+          across accounts.
         </Paragraph>
-        <PostImage src={AMISharingKMS} alt="AMI sharing with KMS across accounts" />
+        <PostImage
+          src={AMISharingKMS}
+          alt="AMI sharing with KMS across accounts"
+        />
 
         <SectionHeading id="aws-ssm-parameter-store">
           SSM Parameter Store
@@ -509,24 +530,32 @@ const AWSSecurityEncryption = () => {
           alt="SSM Parameter Store architecture"
         />
 
-        <SectionHeading id="aws-secrets-manager">AWS Secrets Manager</SectionHeading>
+        <SectionHeading id="aws-secrets-manager">
+          AWS Secrets Manager
+        </SectionHeading>
         <Paragraph>
           <Strong>AWS Secrets Manager</Strong> is a fully managed service for
           securely storing, rotating and managing secrets such as:
         </Paragraph>
         <TextList>
-          <TextListItem>Database credentials (RDS, Redshift, etc.)</TextListItem>
+          <TextListItem>
+            Database credentials (RDS, Redshift, etc.)
+          </TextListItem>
           <TextListItem>API keys and OAuth tokens</TextListItem>
           <TextListItem>Application credentials</TextListItem>
-          <TextListItem>Encryption keys and other sensitive config data</TextListItem>
+          <TextListItem>
+            Encryption keys and other sensitive config data
+          </TextListItem>
         </TextList>
         <Paragraph>
-          It's ideal where you need{" "}
-          <Strong>automatic rotation</Strong>, centralised secrets governance
-          and tight integration with AWS services.
+          It's ideal where you need <Strong>automatic rotation</Strong>,
+          centralised secrets governance and tight integration with AWS
+          services.
         </Paragraph>
 
-        <SubSectionHeading>Secrets Manager vs SSM Parameter Store</SubSectionHeading>
+        <SubSectionHeading>
+          Secrets Manager vs SSM Parameter Store
+        </SubSectionHeading>
         <Table columns={compareSecretsColumns} data={compareSecretsData} />
 
         <SubSectionHeading>Multi-Region Secrets</SubSectionHeading>
@@ -553,9 +582,7 @@ const AWSSecurityEncryption = () => {
         <PostImage src={AWSACM} alt="AWS Certificate Manager overview" />
 
         <SubSectionHeading>Requesting Public Certificates</SubSectionHeading>
-        <Paragraph>
-          To request a public ACM certificate, you:
-        </Paragraph>
+        <Paragraph>To request a public ACM certificate, you:</Paragraph>
         <TextList>
           <TextListItem>
             Request a public certificate and specify domain names (including
@@ -595,9 +622,10 @@ const AWSSecurityEncryption = () => {
 
         <SubSectionHeading>Integration with ALB</SubSectionHeading>
         <Paragraph>
-          ACM integrates directly with <Strong>Application Load Balancers</Strong>{" "}
-          to terminate TLS at the load balancer. Certificates are selected per
-          listener, and ACM handles rotation transparently.
+          ACM integrates directly with{" "}
+          <Strong>Application Load Balancers</Strong> to terminate TLS at the
+          load balancer. Certificates are selected per listener, and ACM handles
+          rotation transparently.
         </Paragraph>
         <PostImage
           src={AWSACMIntegrationWithALB}
@@ -630,8 +658,8 @@ const AWSSecurityEncryption = () => {
         <TertiaryHeading>Private</TertiaryHeading>
         <IndentedTextList>
           <IndentedTextListItem>
-            Accessible only from your VPC via <Strong>interface VPC endpoints</Strong>{" "}
-            (ENIs).
+            Accessible only from your VPC via{" "}
+            <Strong>interface VPC endpoints</Strong> (ENIs).
           </IndentedTextListItem>
           <IndentedTextListItem>
             Access controlled via <Strong>resource policies</Strong>.
@@ -654,7 +682,9 @@ const AWSSecurityEncryption = () => {
           alt="ACM certificates with API Gateway"
         />
 
-        <SectionHeading id="aws-waf">AWS Web Application Firewall (WAF)</SectionHeading>
+        <SectionHeading id="aws-waf">
+          AWS Web Application Firewall (WAF)
+        </SectionHeading>
         <Paragraph>
           <Strong>AWS WAF</Strong> protects web applications from common web
           exploits (SQL injection, XSS, bad bots, etc.) by inspecting HTTP(S)
@@ -677,7 +707,8 @@ const AWSSecurityEncryption = () => {
             components (IP, headers, query strings, body, URI, etc.).
           </TextListItem>
           <TextListItem>
-            You can define up to <Strong>10,000 IP addresses</Strong> per IP set.
+            You can define up to <Strong>10,000 IP addresses</Strong> per IP
+            set.
           </TextListItem>
         </TextList>
 
@@ -779,7 +810,8 @@ const AWSSecurityEncryption = () => {
         <Paragraph>
           <Strong>AWS GuardDuty</Strong> is a managed threat detection service
           that continuously analyses AWS data sources (CloudTrail, VPC Flow
-          Logs, DNS logs, etc.) for <Strong>malicious or unauthorised activity</Strong>.
+          Logs, DNS logs, etc.) for{" "}
+          <Strong>malicious or unauthorised activity</Strong>.
         </Paragraph>
         <Paragraph>
           It uses ML, anomaly detection and threat intelligence feeds to spot
@@ -792,7 +824,7 @@ const AWSSecurityEncryption = () => {
         <SectionHeading id="aws-inspector">AWS Inspector</SectionHeading>
         <Paragraph>
           <Strong>AWS Inspector</Strong> is an automated vulnerability
-          management service that scans your AWS workloads for{' '}
+          management service that scans your AWS workloads for{" "}
           <Strong>CVEs and security issues</Strong>.
         </Paragraph>
         <Paragraph>
@@ -800,7 +832,10 @@ const AWSSecurityEncryption = () => {
           and other supported resources to identify vulnerabilities,
           misconfigurations, and deviations from security best practices.
         </Paragraph>
-        <PostImage src={AWSInspector} alt="AWS Inspector vulnerability scanning" />
+        <PostImage
+          src={AWSInspector}
+          alt="AWS Inspector vulnerability scanning"
+        />
 
         <SectionHeading id="aws-macie">AWS Macie</SectionHeading>
         <Paragraph>
