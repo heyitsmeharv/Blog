@@ -112,6 +112,7 @@ const StyledIntro = styled.p`
 
 const StyledBorderLink = styled(StyledNavLink)`
   padding: 0.6rem 1.4rem;
+  font-size: 1.5rem;
   border: 2px solid ${({ theme }) => theme.primary};
   transition:
     background 0.25s ease,

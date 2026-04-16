@@ -429,10 +429,7 @@ const allPosts = [
     readingTime: "approx 45 mins",
     type: "Practical",
     date: "09/10/2025",
-    tags: [
-      { name: "DevOps", background: "#005F02", icon: <DevOpsSVG /> },
-      { name: "Bash", background: "#000", icon: <BashSVG /> },
-    ],
+    tags: [{ name: "Bash", background: "#000", icon: <BashSVG /> }],
     intro: `When you first start working in the command line, it can feel like stepping into a different world - one where you're talking directly to your computer instead of clicking buttons.
       It's intimidating at first, but once you realise how much power sits behind a few keystrokes it's addictive. In this post...`,
     navigate: "getting-started-with-bash-scripting",
@@ -443,10 +440,7 @@ const allPosts = [
     readingTime: "approx 10 mins",
     type: "Practical",
     date: "10/12/2025",
-    tags: [
-      { name: "DevOps", background: "#005F02", icon: <DevOpsSVG /> },
-      { name: "GitHub", background: "#000", icon: <GitHubSVG /> },
-    ],
+    tags: [{ name: "GitHub", background: "#000", icon: <GitHubSVG /> }],
     intro: `GitHub Actions has quietly become one of the most powerful tools in a modern developer's toolkit. It's where your tests run, your Docker images build, your infrastructure deploys, and
       your app quietly rolls out to production while you're making coffee...`,
     navigate: "github-ci-cd",
@@ -458,7 +452,6 @@ const allPosts = [
     type: "Practical",
     date: "10/12/2025",
     tags: [
-      { name: "DevOps", background: "#005F02", icon: <DevOpsSVG /> },
       { name: "Docker", background: "#D3ECEC", icon: <DockerSVG /> },
       { name: "Kubernetes", background: "#326DE6", icon: <KubernetesSVG /> },
     ],
@@ -473,7 +466,6 @@ const allPosts = [
     type: "Practical",
     date: "03/01/2026",
     tags: [
-      { name: "DevOps", background: "#005F02", icon: <DevOpsSVG /> },
       { name: "Terraform", background: "#2E71E5", icon: <TerraformSVG /> },
     ],
     intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the
@@ -487,7 +479,6 @@ const allPosts = [
     type: "Practical",
     date: "05/01/2026",
     tags: [
-      { name: "DevOps", background: "#005F02", icon: <DevOpsSVG /> },
       {
         name: "Commits",
         background: "#ffff",
@@ -507,12 +498,26 @@ const allPosts = [
     type: "Practical",
     date: "06/04/2026",
     tags: [
-      { name: "DevOps", background: "#005F02", icon: <DevOpsSVG /> },
       { name: "Docker", background: "#D3ECEC", icon: <DockerSVG /> },
       { name: "Kubernetes", background: "#326DE6", icon: <KubernetesSVG /> },
     ],
     intro: `Part two of the Docker and Kubernetes series. Covers Pod Security Standards, container security contexts, StatefulSets with persistent storage, and cluster management with namespaces and resource quotas...`,
     navigate: "docker-kubernetes-advanced",
+    published: true,
+  },
+  {
+    title: "Building Your Own Analytics Stack",
+    readingTime: "approx 15 mins",
+    type: "Practical",
+    date: "16/04/2026",
+    tags: [
+      { name: "Terraform", background: "#2E71E5", icon: <TerraformSVG /> },
+      { name: "AWS", background: "#FF9900", icon: <AWSWhiteBackgroundSVG /> },
+      { name: "React", background: "#64CBF6", icon: <ReactjsSVG /> },
+    ],
+    intro: `At some point every developer gets tired of sending their users' data to a third party just to see a page view count. This post walks through quiet-ly - a self-hosted analytics stack built for this portfolio.
+      It's split across two public repos: a Terraform module that provisions the AWS backend, and an npm package...`,
+    navigate: "building-your-own-analytics",
     published: true,
   },
 ];

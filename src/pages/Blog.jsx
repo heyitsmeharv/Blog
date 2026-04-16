@@ -1306,6 +1306,22 @@ export default function Blog() {
       navigate: "docker-kubernetes-advanced",
       published: true,
     },
+    {
+      title: "Building Your Own Analytics Stack",
+      readingTime: "approx 15 mins",
+      type: "Practical",
+      date: "16/04/2026",
+      tags: [
+        { name: "DevOps" },
+        { name: "Terraform", background: "#2E71E5", icon: <TerraformSVG /> },
+        { name: "AWS", background: "#FF9900", icon: <AWSWhiteBackgroundSVG /> },
+        { name: "React", background: "#64CBF6", icon: <ReactjsSVG /> },
+      ],
+      intro: `At some point every developer gets tired of sending their users' data to a third party just to see a page view count. This post walks through quiet-ly - a self-hosted analytics stack built for this portfolio.
+      It's split across two public repos: a Terraform module that provisions the AWS backend, and an npm package...`,
+      navigate: "building-your-own-analytics",
+      published: true,
+    },
   ].reverse();
 
   useEffect(() => {

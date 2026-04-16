@@ -64,6 +64,7 @@ import DockerKubernetes from "./components/Posts/DockerKubernetes";
 import DockerKubernetesAdvanced from "./components/Posts/DockerKubernetesAdvanced";
 import IaCTerraform from "./components/Posts/IaCTerraform";
 import ConventionalCommits from "./components/Posts/ConventionalCommits.jsx";
+import QuietlyAnalytics from "./components/Posts/QuietlyAnalytics.jsx";
 import { posts } from "./data/posts";
 import {
   blogText,
@@ -339,6 +340,11 @@ const App = () => {
                           exact
                           path="/blog/semantic-versioning-with-conventional-commits"
                           component={ConventionalCommits}
+                        />
+                        <Route
+                          exact
+                          path="/blog/building-your-own-analytics"
+                          component={QuietlyAnalytics}
                         />
                         <Route component={NotFound} />
                       </Switch>
