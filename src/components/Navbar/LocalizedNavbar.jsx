@@ -99,7 +99,7 @@ const Divider = styled.span`
   height: 2rem;
   background: ${({ theme }) => theme.secondary};
   opacity: 0.5;
-  margin: 0 0.2rem;
+  margin-right: 10px;
 `;
 
 const ThemeDot = styled.button.attrs({ type: "button" })`

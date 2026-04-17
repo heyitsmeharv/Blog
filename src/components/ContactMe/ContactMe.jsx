@@ -47,12 +47,18 @@ const Card = styled(motion.div)`
   width: min(640px, 92vw);
   max-height: 90vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background: ${({ theme }) => theme.surface || theme.secondary};
   border-radius: 1.4rem;
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
   padding: 4rem;
   scrollbar-width: thin;
   scrollbar-color: ${({ theme }) => theme.secondary} transparent;
+
+  @media only screen and (max-width: 540px) {
+    padding: 2.4rem 2rem;
+    max-height: 92vh;
+  }
 `;
 
 /* ── Form elements ─────────────────────────────────── */
@@ -115,6 +121,10 @@ const Title = styled.h2`
   font-weight: 800;
   margin: 0 0 0.4rem;
   padding-right: 4rem;
+
+  @media only screen and (max-width: 540px) {
+    font-size: 2.2rem;
+  }
 `;
 
 const Separator = styled.span`
