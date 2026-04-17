@@ -14,8 +14,8 @@ import { CodeBlockWithCopy } from "../Code/Code";
 import Carousel from "../Carousel/Carousel";
 
 // images
-import dashboardPng from "../../resources/images/blog/Quiet-lyAnalytics/dashboard.png";
-import dashboardTwoPng from "../../resources/images/blog/Quiet-lyAnalytics/dashboard2.png";
+import dashboardPng from "../../resources/images/blog/Quiet-lyAnalytics/Dashboard.png";
+import dashboardTwoPng from "../../resources/images/blog/Quiet-lyAnalytics/Dashboard2.png";
 
 // layout
 import {
