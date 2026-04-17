@@ -5,8 +5,30 @@ import RockPaperScissors from "../resources/images/RockPaperScissors.png";
 import NavigationMenu from "../resources/gifs/navigation-menu.gif";
 import TextBasedAdventure from "../resources/gifs/text-based-adventure.gif";
 import FantasyFightPicker from "../resources/images/ffp.png";
+import QuietlyDashboard from "../resources/images/blog/Quiet-lyAnalytics/Dashboard.png";
+import ObservabilityDashboard from "../resources/images/blog/AWSObservabilityDashboard/demo-overview.png";
 
 export const projects = [
+  {
+    name: "AWS Observability Dashboard",
+    description: {
+      EN: "A composable Terraform module set for CloudWatch observability. Modules for alarms, Synthetics canaries, dashboards, and Logs Insights queries wire together via ARN inputs — drop it onto any existing stack without restructuring it.",
+      ES: "Un conjunto de módulos Terraform componibles para la observabilidad con CloudWatch. Módulos para alarmas, canarios de Synthetics, dashboards y consultas de Logs Insights se conectan mediante entradas de ARN — se puede agregar a cualquier stack existente sin reestructurarlo.",
+    },
+    image: ObservabilityDashboard,
+    github: "https://github.com/heyitsmeharv/aws-observability-dashboard",
+    tags: ["AWS", "Terraform"],
+  },
+  {
+    name: "quiet-ly Analytics",
+    description: {
+      EN: "A self-hosted, privacy-first analytics stack built on AWS. CloudFront forwards events to a Lambda Function URL, DynamoDB stores them in a single-table design, and a React dashboard visualises page views and sessions in real time — no third-party cookies, no consent banners.",
+      ES: "Una pila de analiticas autoalojada y centrada en la privacidad construida sobre AWS. CloudFront reenvía eventos a una Lambda Function URL, DynamoDB los almacena en un diseño de tabla única y un panel de control en React visualiza las páginas vistas y sesiones en tiempo real — sin cookies de terceros ni banners de consentimiento.",
+    },
+    image: QuietlyDashboard,
+    github: "https://github.com/heyitsmeharv/terraform-aws-quiet-ly",
+    tags: ["AWS", "Terraform", "Node.js", "npm"],
+  },
   {
     name: "Fantasy Fight Picker",
     description: {
@@ -79,6 +101,6 @@ export const projects = [
     },
     image: NavigationMenu,
     github: "https://github.com/heyitsmeharv/navigation-menu",
-    tags: ["JavaScript", "CSS"],
+    tags: ["JavaScript", "CSS", "npm"],
   },
 ];
