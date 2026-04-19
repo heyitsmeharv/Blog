@@ -7,8 +7,19 @@ import TextBasedAdventure from "../resources/gifs/text-based-adventure.gif";
 import FantasyFightPicker from "../resources/images/ffp.png";
 import QuietlyDashboard from "../resources/images/blog/Quiet-lyAnalytics/Dashboard.png";
 import ObservabilityDashboard from "../resources/images/blog/AWSObservabilityDashboard/demo-overview.png";
+import AWSSecAudit from "../resources/images/AWSSecAudit.svg";
 
 export const projects = [
+  {
+    name: "AWS Security Scorecard CLI",
+    description: {
+      EN: "A Node.js CLI that audits an AWS account against 26 CIS Foundations Benchmark v2.0 controls across IAM, S3, CloudTrail, KMS, VPC, and Secrets Manager. Grades the account A–F with weighted severity scoring, applies safe auto-remediations via --fix, and exits with code 2 on a failing grade for CI integration.",
+      ES: "Una CLI de Node.js que audita una cuenta de AWS contra 26 controles del CIS Foundations Benchmark v2.0 en IAM, S3, CloudTrail, KMS, VPC y Secrets Manager. Califica la cuenta de A a F con puntuación ponderada por severidad, aplica correcciones automáticas seguras con --fix y sale con código 2 ante una calificación reprobatoria para integración en CI.",
+    },
+    image: AWSSecAudit,
+    github: "https://github.com/heyitsmeharv/aws-sec-audit",
+    tags: ["AWS", "Node.js", "npm"],
+  },
   {
     name: "AWS Observability Dashboard",
     description: {

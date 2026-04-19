@@ -864,7 +864,7 @@ export default function Blog() {
         title: "AWS Security Scorecard CLI",
         readingTime: "approx 10 mins",
         type: "Practical",
-        date: "18/04/2026",
+        date: "19/04/2026",
         tags: [
           {
             name: "AWS",
@@ -1409,7 +1409,7 @@ export default function Blog() {
       title: "AWS Security Scorecard CLI",
       readingTime: "approx 10 mins",
       type: "Practical",
-      date: "18/04/2026",
+      date: "19/04/2026",
       tags: [
         { name: "AWS", background: "#FF9900", icon: <AWSWhiteBackgroundSVG /> },
         { name: "IAM", background: "#FF9900", icon: <AWSIAMSVG /> },
