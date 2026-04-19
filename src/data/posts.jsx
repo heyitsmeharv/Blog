@@ -429,7 +429,7 @@ const allPosts = [
     readingTime: "approx 45 mins",
     type: "Practical",
     date: "09/10/2025",
-    tags: [{ name: "Bash", background: "#000", icon: <BashSVG /> }],
+    tags: [{ name: "Bash", background: "#5B7E3C", icon: <BashSVG /> }],
     intro: `When you first start working in the command line, it can feel like stepping into a different world - one where you're talking directly to your computer instead of clicking buttons.
       It's intimidating at first, but once you realise how much power sits behind a few keystrokes it's addictive. In this post...`,
     navigate: "getting-started-with-bash-scripting",
@@ -515,8 +515,8 @@ const allPosts = [
       { name: "AWS", background: "#FF9900", icon: <AWSSVG /> },
       { name: "React", background: "#64CBF6", icon: <ReactjsSVG /> },
     ],
-    intro: `At some point every developer gets tired of sending their users' data to a third party just to see a page view count. This post walks through quiet-ly - a self-hosted analytics stack built for this portfolio.
-      It's split across two public repos: a Terraform module that provisions the AWS backend, and an npm package...`,
+    intro: `I was using Google Analytics on this portfolio and it bothered me more than it should have. Not for any deep privacy reason - more that I was sending every visitor's data to Google just to see which blog 
+    posts people actually read. It felt lazy. So I built quiet-ly instead...`,
     navigate: "building-your-own-analytics",
     published: true,
   },
@@ -530,9 +530,24 @@ const allPosts = [
       { name: "AWS", background: "#FF9900", icon: <AWSSVG /> },
       { name: "CloudWatch", background: "#FF9900", icon: <AWSCloudWatchSVG /> },
     ],
-    intro: `A reusable Terraform module set that attaches standardised CloudWatch observability to an existing ECS workload. Point it at your ALB, ECS service, and log groups and it creates a composed
-      CloudWatch dashboard, seven alarms, ten Logs Insights saved queries, and optional Synthetics canaries...`,
+    intro: `Every time I've onboarded a service at work without existing observability I've had to rebuild the same thing: a CloudWatch dashboard, a handful of alarms, a set of Logs Insights queries. It takes a day, 
+      it looks slightly different every time, and the next person to own the service has to reverse-engineer what the alarms actually mean...`,
     navigate: "aws-observability-dashboard",
+    published: true,
+  },
+  {
+    title: "AWS Security Scorecard CLI",
+    readingTime: "approx 10 mins",
+    type: "Practical",
+    date: "18/04/2026",
+    tags: [
+      { name: "AWS", background: "#FF9900", icon: <AWSSVG /> },
+      { name: "IAM", background: "#FF9900", icon: <AWSIAMSVG /> },
+      { name: "Bash", background: "#5B7E3C", icon: <BashSVG /> },
+    ],
+    intro: `I've written a lot of theory posts about AWS security services - IAM, KMS, CloudTrail, VPC, Secrets Manager. I covered how they work, what the controls are, why they matter. I used this project as an excuse to
+    see if I could build something useful which encapsulates the above...`,
+    navigate: "aws-sec-audit",
     published: true,
   },
 ];

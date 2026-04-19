@@ -66,6 +66,7 @@ import IaCTerraform from "./components/Posts/IaCTerraform";
 import ConventionalCommits from "./components/Posts/ConventionalCommits.jsx";
 import QuietlyAnalytics from "./components/Posts/QuietlyAnalytics.jsx";
 import AWSObservabilityDashboard from "./components/Posts/AWSObservabilityDashboard.jsx";
+import AWSSecAudit from "./components/Posts/AWSSecAudit.jsx";
 import { posts } from "./data/posts";
 import {
   blogText,
@@ -351,6 +352,11 @@ const App = () => {
                           exact
                           path="/blog/aws-observability-dashboard"
                           component={AWSObservabilityDashboard}
+                        />
+                        <Route
+                          exact
+                          path="/blog/aws-sec-audit"
+                          component={AWSSecAudit}
                         />
                         <Route component={NotFound} />
                       </Switch>
