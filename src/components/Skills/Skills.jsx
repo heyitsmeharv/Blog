@@ -12,6 +12,7 @@ import {
   ReactjsSVG,
   ExpressSVG,
   JavascriptSVG,
+  TypeScriptSVG,
   NodejsSVG,
   HtmlSVG,
   CssSVG,
@@ -202,15 +203,15 @@ const skillList = [
   { icon: <DockerSVG />, title: "Docker", level: "comfortable" },
   { icon: <BashSVG />, title: "Bash", level: "comfortable" },
   { icon: <WebpackSVG />, title: "Webpack", level: "comfortable" },
-  { icon: <ServerlessSVG />, title: "Serverless", level: "comfortable" },
   { icon: <MySQLSVG />, title: "MySQL", level: "comfortable" },
+  { icon: <TwilioSVG />, title: "Twilio", level: "comfortable" },
 
   { icon: <CPlusPlusSVG />, title: "C++", level: "familiar" },
   { icon: <CSharpSVG />, title: "C#", level: "familiar" },
+  { icon: <TypeScriptSVG />, title: "TypeScript", level: "familiar" },
+  { icon: <ServerlessSVG />, title: "Serverless", level: "familiar" },
   { icon: <GraphqlSVG />, title: "GraphQL", level: "familiar" },
   { icon: <MongoDBSVG />, title: "MongoDB", level: "familiar" },
-  { icon: <SocketIOSVG />, title: "Socket IO", level: "familiar" },
-  { icon: <TwilioSVG />, title: "Twilio", level: "familiar" },
 ];
 
 const Skills = ({ language }) => {
