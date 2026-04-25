@@ -21,6 +21,7 @@ import Pagination from "../components/Pagination/Pagination";
 
 // icons
 import { DockerSVG, StyledClose } from "../resources/styles/icons";
+import { Journal } from "@styled-icons/bootstrap/Journal";
 import { Search } from "@styled-icons/ionicons-solid/Search";
 import {
   JavascriptSVG,
@@ -879,6 +880,16 @@ export default function Blog() {
         navigate: "aws-sec-audit",
         published: true,
       },
+      {
+        title: "When Imagination Outruns Understanding",
+        readingTime: "approx 8 mins",
+        type: "Reflection",
+        date: "25/04/2026",
+        tags: [{ name: "Misc", background: "#23262E", icon: <Journal /> }],
+        intro: `AI has made me faster, but it has also made me question whether my comprehension is keeping up with my output. This is a reflection on feeling more efficient and less certain at the same time, and the changes I am making so my project posts prove understanding as well as delivery...`,
+        navigate: "when-imagination-outruns-understanding",
+        published: true,
+      },
     ].reverse(),
   );
 
@@ -1418,6 +1429,16 @@ export default function Blog() {
       intro: `I've written a lot of theory posts about AWS security services - IAM, KMS, CloudTrail, VPC, Secrets Manager. I covered how they work, what the controls are, why they matter. I used this project as an excuse to
       see if I could build something useful which encapsulates the above...`,
       navigate: "aws-sec-audit",
+      published: true,
+    },
+    {
+      title: "When Imagination Outruns Understanding",
+      readingTime: "approx 8 mins",
+      type: "Reflection",
+      date: "25/04/2026",
+      tags: [{ name: "Misc", background: "#23262E", icon: <Journal /> }],
+      intro: `AI has made me faster, but it has also made me question whether my comprehension is keeping up with my output. This is a reflection on feeling more efficient and less certain at the same time, and the changes I am making so my project posts prove understanding as well as delivery...`,
+      navigate: "when-imagination-outruns-understanding",
       published: true,
     },
   ].reverse();

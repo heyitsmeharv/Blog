@@ -69,9 +69,14 @@ export const Strong = styled.strong`
   font-weight: 700;
 `;
 
-export const Italic = styled.p`
+export const Italic = styled.span`
   color: ${({ theme }) => theme.text};
   font-style: italic;
+`;
+
+export const Strike = styled.span`
+  color: ${({ theme }) => theme.text};
+  text-decoration: line-through;
 `;
 
 export const TextLink = styled.a`

@@ -67,6 +67,7 @@ import ConventionalCommits from "./components/Posts/ConventionalCommits.jsx";
 import QuietlyAnalytics from "./components/Posts/QuietlyAnalytics.jsx";
 import AWSObservabilityDashboard from "./components/Posts/AWSObservabilityDashboard.jsx";
 import AWSSecAudit from "./components/Posts/AWSSecAudit.jsx";
+import OutputUnderstanding from "./components/Posts/OutputUnderstanding.jsx";
 import { posts } from "./data/posts";
 import {
   blogText,
@@ -361,6 +362,11 @@ const App = () => {
                           exact
                           path="/blog/aws-sec-audit"
                           component={AWSSecAudit}
+                        />
+                        <Route
+                          exact
+                          path="/blog/when-imagination-outruns-understanding"
+                          component={OutputUnderstanding}
                         />
                         <Route component={NotFound} />
                       </Switch>
