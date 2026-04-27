@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import styled, { css } from "styled-components";
+import { motion } from "motion/react";
 
 import { StyledNavLink } from "../Button/Button";
 import { Journal } from "@styled-icons/bootstrap/Journal";
@@ -13,7 +14,7 @@ import {
   tagsForItemText,
 } from "../../helpers/i18nText";
 
-const Container = styled.article`
+const Container = styled(motion.article)`
   background: ${({ theme }) => theme.surface || theme.secondary};
   position: relative;
   width: 30%;
@@ -139,11 +140,16 @@ const BlogPost = ({
   intro,
   navigate,
   published,
+  ...motionProps
 }) => {
   const language = useContext(LanguageContext);
 
   return (
-    <Container $disabled={!published} aria-labelledby={`blog-post-${navigate}`}>
+    <Container
+      $disabled={!published}
+      aria-labelledby={`blog-post-${navigate}`}
+      {...motionProps}
+    >
       {!published && (
         <ComingSoonBanner>{notPublishedText(language)}</ComingSoonBanner>
       )}

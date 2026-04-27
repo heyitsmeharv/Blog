@@ -1,22 +1,19 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import styled, { css } from "styled-components";
 import { motion, AnimatePresence } from "motion/react";
 
 // components
 import BlogPost from "../BlogPost/BlogPost";
 
-// animations
-import SlideInTop from "../../animations/SlideInTop";
 import { LanguageContext } from "../../context/languageContext";
 import { blogPageStatusText, goToPageText } from "../../helpers/i18nText";
 
-const Container = styled.div`
+const Container = styled(motion.div)`
   display: flex;
   justify-content: space-evenly;
   flex-wrap: wrap;
   padding: 4rem 4rem 2rem 4rem;
   background: ${({ theme }) => theme.background};
-  animation: ${SlideInTop} 0.5s forwards;
   text-align: center;
   @media only screen and (max-width: 585px) {
     flex-direction: column;
@@ -69,43 +66,65 @@ const PaginationNav = styled.nav`
   width: 100%;
 `;
 
+const pageVariants = {
+  enter: (dir) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (dir) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
+};
+
 const Pagination = ({ currentPage, setCurrentPage, itemsPerPage, items }) => {
   const language = useContext(LanguageContext);
-  const [displayItems, setDisplayItems] = useState([]);
+  const [direction, setDirection] = useState(1);
 
   const totalPages = Math.ceil(items.length / itemsPerPage);
-
-  useEffect(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentItems = items.slice(startIndex, endIndex);
-    setDisplayItems(currentItems);
-  }, [currentPage, items, itemsPerPage]);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const displayItems = items.slice(startIndex, endIndex);
+  const pageKey = `${currentPage}-${items.map((item) => item.navigate).join("-")}`;
 
   const changePage = (pageNumber) => {
+    setDirection(pageNumber > currentPage ? 1 : -1);
     setCurrentPage(pageNumber);
   };
 
   return (
     <>
-      <Container>
-        {displayItems.map((p, i) => {
-          return (
-            <BlogPost
-              key={i}
-              index={i}
-              title={p.title}
-              readingTime={p.readingTime}
-              type={p.type}
-              date={p.date}
-              tags={p.tags}
-              intro={p.intro}
-              navigate={p.navigate}
-              published={p.published}
-            />
-          );
-        })}
-      </Container>
+      <AnimatePresence custom={direction} mode="wait">
+        <Container
+          key={pageKey}
+          aria-label={blogPageStatusText(
+            language,
+            currentPage,
+            Math.max(totalPages, 1),
+          )}
+          custom={direction}
+          variants={pageVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.25 }}
+        >
+          {displayItems.map((p, i) => {
+            return (
+              <BlogPost
+                key={p.navigate}
+                index={i}
+                title={p.title}
+                readingTime={p.readingTime}
+                type={p.type}
+                date={p.date}
+                tags={p.tags}
+                intro={p.intro}
+                navigate={p.navigate}
+                published={p.published}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.07 }}
+              />
+            );
+          })}
+        </Container>
+      </AnimatePresence>
       {totalPages > 1 && (
         <PaginationNav
           aria-label={blogPageStatusText(language, currentPage, totalPages)}

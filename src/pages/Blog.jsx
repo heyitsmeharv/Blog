@@ -4,6 +4,7 @@ import styled from "styled-components";
 // helpers
 import { Analytics } from "../helpers/analytics";
 import {
+  allText,
   blogNoResultsDescriptionText,
   blogNoResultsTitleText,
   clearSearchText,
@@ -139,10 +140,11 @@ const StyledPillButton = styled.button`
   display: inline-block;
   padding: 0.6rem 1.6rem;
   border-radius: 999px;
-  border: 2px solid ${({ $color }) => $color};
-  background: ${({ $active, $color }) => ($active ? $color : "transparent")};
+  border: 2px solid ${({ $color, theme }) => $color || theme.buttonColour};
+  background: ${({ $active, $color, theme }) =>
+    $active ? $color || theme.buttonColour : "transparent"};
   color: ${({ $active, $textColor, theme }) =>
-    $active ? $textColor : theme.text};
+    $active ? $textColor || theme.buttonText : theme.text};
   text-align: center;
   font-size: 1.3rem;
   font-family: inherit;
@@ -154,8 +156,8 @@ const StyledPillButton = styled.button`
     color 0.2s;
 
   &:hover {
-    background: ${({ $color }) => $color};
-    color: ${({ $textColor }) => $textColor};
+    background: ${({ $color, theme }) => $color || theme.buttonColour};
+    color: ${({ $textColor, theme }) => $textColor || theme.buttonText};
   }
 `;
 
@@ -207,7 +209,11 @@ export default function Blog() {
   const [isEmpty, setIsEmpty] = useState(false);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [filterButtons, setFilterButtons] = useState([
+  const [activeFilter, setActiveFilter] = useState("All");
+  const filterButtons = [
+    {
+      name: "All",
+    },
     {
       name: "AWS",
       colour: "#FF9900",
@@ -232,7 +238,7 @@ export default function Blog() {
       textColor: "#fff",
       active: false,
     },
-  ]);
+  ];
   const [blogPosts, setBlogPosts] = useState(
     [
       {
@@ -1444,52 +1450,26 @@ export default function Blog() {
   ].reverse();
 
   useEffect(() => {
-    if (search !== "") {
-      setBlogPosts(
-        blogPosts.filter(
-          (x) =>
-            x.title.toLowerCase().includes(search.toLowerCase()) ||
-            x.type.toLowerCase().includes(search.toLowerCase()),
-        ),
-      );
-      if (blogPosts.length === 0) {
-        setIsEmpty(true);
-      }
-    } else {
-      setIsEmpty(false);
-      setBlogPosts(defaultArr);
-    }
-  }, [search]);
+    const normalisedSearch = search.toLowerCase();
+    const filteredPosts = defaultArr.filter((post) => {
+      const matchesFilter =
+        activeFilter === "All" ||
+        post.tags.some((tag) => tag.name === activeFilter);
+      const matchesSearch =
+        normalisedSearch === "" ||
+        post.title.toLowerCase().includes(normalisedSearch) ||
+        post.type.toLowerCase().includes(normalisedSearch);
+
+      return matchesFilter && matchesSearch;
+    });
+
+    setIsEmpty(filteredPosts.length === 0);
+    setBlogPosts(filteredPosts);
+  }, [search, activeFilter]);
 
   const handlePillButtonClick = (button) => {
     setCurrentPage(1);
-    const newFilterButtons = [...filterButtons];
-    const index = newFilterButtons.indexOf(button);
-    newFilterButtons[index].active = !newFilterButtons[index].active;
-    setFilterButtons(newFilterButtons);
-
-    const filterActive = filterButtons.some((x) => x.active === true);
-
-    const arr = [];
-
-    if (filterActive) {
-      defaultArr.map((post) => {
-        post.tags.map((tag) => {
-          filterButtons.map((filterButton) => {
-            if (filterButton.active) {
-              if (tag.name === filterButton.name) {
-                if (!arr.includes(post)) {
-                  arr.push(post);
-                }
-              }
-            }
-          });
-        });
-      });
-      setBlogPosts(arr);
-    } else {
-      setBlogPosts(defaultArr);
-    }
+    setActiveFilter(button.name);
   };
 
   return (
@@ -1522,11 +1502,11 @@ export default function Blog() {
               type="button"
               $color={button.colour}
               $textColor={button.textColor}
-              $active={button.active}
+              $active={activeFilter === button.name}
               onClick={() => handlePillButtonClick(button)}
-              aria-pressed={button.active}
+              aria-pressed={activeFilter === button.name}
             >
-              {button.name}
+              {button.name === "All" ? allText(language) : button.name}
             </StyledPillButton>
           );
         })}
