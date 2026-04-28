@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
+import { renderArchitexter } from "architexter";
 
 // helpers
 import { Analytics } from "../../helpers/analytics";
@@ -57,24 +58,17 @@ import demoSignalsPng from "../../resources/images/blog/AWSObservabilityDashboar
 
 const repoUrl = "https://github.com/heyitsmeharv/aws-observability-dashboard";
 
-const dataFlow = `Internet
-    │
-    ▼
-Application Load Balancer
-    │  metrics ──────────────────────────────► CloudWatch (AWS/ApplicationELB)
-    │
-    ▼
-ECS Service (EC2 or Fargate)
-    │  container metrics ────────────────────► CloudWatch (ECS/ContainerInsights)
-    │  structured logs ──────────────────────► CloudWatch Logs ─► Logs Insights
-    ▼
-CloudWatch Synthetics Canaries ─────────────► CloudWatch (CloudWatchSynthetics)
-                                                        │
-                                                        ▼
-                                              CloudWatch Alarms
-                                                        │
-                                                        ▼
-                                              CloudWatch Dashboard`;
+const dataFlow = `[internet] Internet
+  [alb] Application Load Balancer
+    > metrics -> CloudWatch (AWS/ApplicationELB)
+    [ecs] ECS Service (EC2 or Fargate)
+      > container metrics -> CloudWatch (ECS/ContainerInsights)
+      > structured logs -> CloudWatch Logs -> Logs Insights
+  [canary] CloudWatch Synthetics Canaries
+    > metrics -> CloudWatch (CloudWatchSynthetics)
+[observability] CloudWatch
+  [alarm] CloudWatch Alarms
+  [dashboard] CloudWatch Dashboard`;
 
 const quickStart = `module "observability" {
   source = "github.com/heyitsmeharv/aws-observability-dashboard//infra/modules/adapters/platform_service"
@@ -154,15 +148,22 @@ log("info", "request completed", {
   sourceIp: req.ip,
 });`;
 
-const moduleStructure = `infra/modules/
-├── core_alarms/          CloudWatch metric alarms
-├── core_canaries/        CloudWatch Synthetics canaries + IAM
-├── core_dashboards/      Single composed CloudWatch dashboard
-├── core_logs_insights/   10 saved Logs Insights query definitions
-└── adapters/
-    ├── platform_service/ Recommended public adapter
-    ├── ecs_ec2_alb/      ECS-on-EC2 wrapper
-    └── ecs_fargate_alb/  Fargate wrapper`;
+const moduleStructure = `infra/modules
+  [module] core_alarms
+    (CloudWatch metric alarms)
+  [module] core_canaries
+    (CloudWatch Synthetics canaries + IAM)
+  [module] core_dashboards
+    (Single composed CloudWatch dashboard)
+  [module] core_logs_insights
+    (10 saved Logs Insights query definitions)
+  adapters
+    [adapter] platform_service
+      (Recommended public adapter)
+    [adapter] ecs_ec2_alb
+      (ECS-on-EC2 wrapper)
+    [adapter] ecs_fargate_alb
+      (Fargate wrapper)`;
 
 const demoBackendEndpoints = `GET /health             - always 200 (used by ALB health checks and canaries)
 GET /api/ok            - fast 200, normal traffic
@@ -312,7 +313,7 @@ const AWSObservabilityDashboard = () => {
         </TextList>
 
         <ProjectArchitecture
-          diagram={dataFlow}
+          archOutline={dataFlow}
           summary="The package observes signals that already exist in CloudWatch. It does not instrument your application by itself; it reads from the metrics and logs your AWS infrastructure already produces."
         >
           <Paragraph>
@@ -332,7 +333,10 @@ const AWSObservabilityDashboard = () => {
           pattern.
         </Paragraph>
 
-        <CodeBlockWithCopy code={moduleStructure} />
+        <CodeBlockWithCopy
+          compact
+          code={renderArchitexter(moduleStructure, "tree")}
+        />
 
         <Paragraph>
           For most use cases you'll only interact with{" "}

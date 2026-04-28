@@ -58,22 +58,17 @@ import {
 const terraformRepo = "https://github.com/heyitsmeharv/terraform-aws-quiet-ly";
 const npmRepo = "https://github.com/heyitsmeharv/quiet-ly-npm";
 
-const architecture = `Browser
-  └── @quiet-ly/analytics (SDK)
-        │
-        │  POST /   (ingest event)
-        │  GET  /   (dashboard query)
-        ▼
-  CloudFront Distribution
-  (HTTPS redirect, IPv6, country header injection)
-        │
-        ▼
-  AWS Lambda Function URL
-        │
-        ├── PutItem  ──▶  DynamoDB  ◀──  Query
-        │                (events table)
-        │
-        └── CloudWatch Logs`;
+const architecture = `[client] Browser + @quiet-ly/analytics SDK
+  > POST /events (ingest)
+  > GET /events (dashboard)
+  [cdn] CloudFront Distribution
+    (HTTPS redirect, IPv6, country header injection)
+    [lambda] Lambda Function URL
+      > PutItem -> DynamoDB
+      > Query <- DynamoDB
+      [db] DynamoDB
+        (events table, pay-per-request)
+      [observability] CloudWatch Logs`;
 
 const terraformQuickStart = `module "analytics" {
   source  = "heyitsmeharv/quiet-ly/aws"
@@ -333,8 +328,9 @@ const QuietlyAnalytics = () => {
         </Paragraph>
 
         <ProjectArchitecture
-          diagram={architecture}
+          archOutline={architecture}
           summary="At a high level, quiet-ly is a small event pipeline: browser SDK to CloudFront, CloudFront to Lambda, Lambda to DynamoDB, and the dashboard reading the same endpoint back for reporting."
+          type="flow"
         >
           <Paragraph>
             There are two repos and they map cleanly onto two concerns:

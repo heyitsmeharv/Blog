@@ -47,32 +47,24 @@ import { AWSSVG, AWSIAMSVG, BashSVG } from "../../resources/styles/icons";
 
 const repoUrl = "https://github.com/heyitsmeharv/aws-sec-audit";
 
-const architectureFlow = `Operator or CI runner
-    |
-    | aws-sec-audit --profile my-profile --region eu-west-2
-    v
-CLI entrypoint
-    |
-    +-- resolve AWS credentials and target region
-    +-- load CIS control metadata and scoring weights
-    +-- run service checks concurrently
-    |
-    v
-Service check modules
-    +-- IAM
-    +-- S3
-    +-- CloudTrail
-    +-- KMS
-    +-- VPC
-    +-- Secrets Manager
-    |
-    v
-Normalised findings
-    |
-    +-- terminal report
-    +-- JSON report
-    +-- HTML report
-    +-- optional safe remediations`;
+const architectureFlow = `[runner] Operator or CI Runner
+  > aws-sec-audit --profile my-profile --region eu-west-2
+    [cli] CLI Entrypoint
+      resolve AWS credentials and target region
+      load CIS control metadata and scoring weights
+      run service checks concurrently
+      [checks] Service Check Modules
+        [module] IAM
+        [module] S3
+        [module] CloudTrail
+        [module] KMS
+        [module] VPC
+        [module] Secrets Manager
+      [output] Normalised Findings
+        [report] Terminal Report
+        [report] JSON Report
+        [report] HTML Report
+        optional safe remediations`;
 
 const sampleOutput = `AWS Security Scorecard  v1.0.0
 Account: 123456789012  |  Region: eu-west-2
@@ -349,7 +341,7 @@ const AWSSecAudit = () => {
         </Paragraph>
 
         <ProjectArchitecture
-          diagram={architectureFlow}
+          archOutline={architectureFlow}
           summary="At a high level, the tool is a thin CLI orchestration layer around small AWS service check modules. The CLI owns arguments, credentials, concurrency, scoring, and output formatting. Each service module owns one thing: inspect a service and return findings in the same shape as every other module."
         >
           <Paragraph>

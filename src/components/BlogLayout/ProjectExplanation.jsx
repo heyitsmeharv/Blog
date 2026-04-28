@@ -1,5 +1,6 @@
 import React from "react";
 
+import { renderArchitexter } from "architexter";
 import { CodeBlockWithCopy } from "../Code/Code";
 import {
   SectionHeading,
@@ -38,12 +39,17 @@ export const ProjectArchitecture = ({
   title = "Architecture at a Glance",
   summary,
   diagram,
+  archOutline,
+  type = "tree",
   children,
 }) => (
   <>
     <SectionHeading>{title}</SectionHeading>
     {renderSectionContent(summary)}
-    {diagram && <CodeBlockWithCopy code={diagram} />}
+    {archOutline && (
+      <CodeBlockWithCopy compact code={renderArchitexter(archOutline, type)} />
+    )}
+    {!archOutline && diagram && <CodeBlockWithCopy code={diagram} />}
     {renderSectionContent(children)}
   </>
 );

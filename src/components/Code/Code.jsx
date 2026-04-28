@@ -12,7 +12,7 @@ const CodeContainer = styled.pre`
   padding: 1.6rem 2.1rem 1.5rem;
   border-radius: 1.2rem;
   overflow-x: auto;
-  line-height: 2.4;
+  line-height: ${({ $compact }) => ($compact ? 1.5 : 2.4)};
   margin: 1.8rem 0 2.4rem;
 `;
 
@@ -26,7 +26,7 @@ export const CodeBlock = ({ children }) => (
   <CodeContainer>{children}</CodeContainer>
 );
 
-export const CodeBlockWithCopy = ({ code }) => {
+export const CodeBlockWithCopy = ({ code, compact }) => {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {
@@ -42,7 +42,7 @@ export const CodeBlockWithCopy = ({ code }) => {
   };
 
   return (
-    <CodeContainer>
+    <CodeContainer $compact={compact}>
       <CopyButtonWrapper>
         <CopyButton onClick={handleCopy}>
           {copied ? "Copied!" : "Copy"}
