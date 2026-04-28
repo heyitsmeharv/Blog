@@ -4,6 +4,7 @@ import { Journal } from "@styled-icons/bootstrap/Journal";
 
 import {
   JavascriptSVG,
+  NpmSVG,
   ReactjsSVG,
   AWSSVG,
   AWSIAMSVG,
@@ -98,7 +99,7 @@ const allPosts = [
     type: "Practical",
     date: "07/05/2023",
     tags: [
-      { name: "React", background: "#64CBF6", icon: <ReactjsSVG /> },
+      { name: "React", background: "#20232a", icon: <ReactjsSVG /> },
       { name: "JavaScript", background: "#F4BF36", icon: <JavascriptSVG /> },
     ],
     intro: `I've been contemplating on whether or not to do a separate blog post to explain what the React.js framework is but I want to move away from my last posts and get stuck in with building something!
@@ -431,7 +432,7 @@ const allPosts = [
     readingTime: "approx 45 mins",
     type: "Practical",
     date: "09/10/2025",
-    tags: [{ name: "Bash", background: "#5B7E3C", icon: <BashSVG /> }],
+    tags: [{ name: "Bash", background: "#2d3436", icon: <BashSVG /> }],
     intro: `When you first start working in the command line, it can feel like stepping into a different world - one where you're talking directly to your computer instead of clicking buttons.
       It's intimidating at first, but once you realise how much power sits behind a few keystrokes it's addictive. In this post...`,
     navigate: "getting-started-with-bash-scripting",
@@ -442,7 +443,7 @@ const allPosts = [
     readingTime: "approx 10 mins",
     type: "Practical",
     date: "10/12/2025",
-    tags: [{ name: "GitHub", background: "#000", icon: <GitHubSVG /> }],
+    tags: [{ name: "GitHub", background: "#f6f8fa", icon: <GitHubSVG /> }],
     intro: `GitHub Actions has quietly become one of the most powerful tools in a modern developer's toolkit. It's where your tests run, your Docker images build, your infrastructure deploys, and
       your app quietly rolls out to production while you're making coffee...`,
     navigate: "github-ci-cd",
@@ -454,7 +455,7 @@ const allPosts = [
     type: "Practical",
     date: "10/12/2025",
     tags: [
-      { name: "Docker", background: "#D3ECEC", icon: <DockerSVG /> },
+      { name: "Docker", background: "#fff", icon: <DockerSVG /> },
       { name: "Kubernetes", background: "#326DE6", icon: <KubernetesSVG /> },
     ],
     intro: `This is a practical learning path built around one tiny project: a "virtual shell" playground: a small service that feels like a terminal you can poke at safely, plus a helper service
@@ -468,7 +469,7 @@ const allPosts = [
     type: "Practical",
     date: "03/01/2026",
     tags: [
-      { name: "Terraform", background: "#2E71E5", icon: <TerraformSVG /> },
+      { name: "Terraform", background: "#7B42BC", icon: <TerraformSVG /> },
     ],
     intro: `In this post, we're going to build a Terraform template repo and work through the core workflow (init, plan, apply). We'll cover how to structure a project sensibly, and how to take the
       same setup from local development into CI and multiple environments...`,
@@ -483,10 +484,10 @@ const allPosts = [
     tags: [
       {
         name: "Commits",
-        background: "#ffff",
+        background: "#fff",
         icon: <ConventionalCommitsSVG />,
       },
-      { name: "GitHub", background: "#000", icon: <GitHubSVG /> },
+      { name: "GitHub", background: "#f6f8fa", icon: <GitHubSVG /> },
     ],
     intro: `I'm guilty of writing some pretty horrific commit messages in my own personal projects and that has now caught up to me! If your git history is the same as mine which is full of commits
       like fix test wip, or just fix look no further. This post will look to set up a simple system that forces clean...`,
@@ -500,7 +501,7 @@ const allPosts = [
     type: "Practical",
     date: "06/04/2026",
     tags: [
-      { name: "Docker", background: "#D3ECEC", icon: <DockerSVG /> },
+      { name: "Docker", background: "#fff", icon: <DockerSVG /> },
       { name: "Kubernetes", background: "#326DE6", icon: <KubernetesSVG /> },
     ],
     intro: `Part two of the Docker and Kubernetes series. Covers Pod Security Standards, container security contexts, StatefulSets with persistent storage, and cluster management with namespaces and resource quotas...`,
@@ -513,9 +514,9 @@ const allPosts = [
     type: "Practical",
     date: "16/04/2026",
     tags: [
-      { name: "Terraform", background: "#2E71E5", icon: <TerraformSVG /> },
+      { name: "Terraform", background: "#7B42BC", icon: <TerraformSVG /> },
       { name: "AWS", background: "#FF9900", icon: <AWSSVG /> },
-      { name: "React", background: "#64CBF6", icon: <ReactjsSVG /> },
+      { name: "React", background: "#20232a", icon: <ReactjsSVG /> },
     ],
     intro: `I was using Google Analytics on this portfolio and it bothered me more than it should have. Not for any deep privacy reason - more that I was sending every visitor's data to Google just to see which blog 
     posts people actually read. It felt lazy. So I built quiet-ly instead...`,
@@ -528,7 +529,7 @@ const allPosts = [
     type: "Practical",
     date: "17/04/2026",
     tags: [
-      { name: "Terraform", background: "#2E71E5", icon: <TerraformSVG /> },
+      { name: "Terraform", background: "#7B42BC", icon: <TerraformSVG /> },
       { name: "AWS", background: "#FF9900", icon: <AWSSVG /> },
       { name: "CloudWatch", background: "#FF9900", icon: <AWSCloudWatchSVG /> },
     ],
@@ -545,7 +546,7 @@ const allPosts = [
     tags: [
       { name: "AWS", background: "#FF9900", icon: <AWSSVG /> },
       { name: "IAM", background: "#FF9900", icon: <AWSIAMSVG /> },
-      { name: "Bash", background: "#5B7E3C", icon: <BashSVG /> },
+      { name: "Bash", background: "#2d3436", icon: <BashSVG /> },
     ],
     intro: `I've written a lot of theory posts about AWS security services - IAM, KMS, CloudTrail, VPC, Secrets Manager. I covered how they work, what the controls are, why they matter. I used this project as an excuse to
     see if I could build something useful which encapsulates the above...`,
@@ -560,6 +561,19 @@ const allPosts = [
     tags: [{ name: "Misc", background: "#23262E", icon: <Journal /> }],
     intro: `AI has made me faster, but it has also made me question whether my comprehension is keeping up with my output. This is a reflection on feeling more efficient and less certain at the same time, and the changes I am making so my project posts prove understanding as well as delivery...`,
     navigate: "when-output-outruns-understanding",
+    published: true,
+  },
+  {
+    title: "Publishing an npm Package",
+    readingTime: "approx 8 mins",
+    type: "Practical",
+    date: "28/04/2026",
+    tags: [
+      { name: "npm", background: "#CB3837", icon: <NpmSVG /> },
+      { name: "JavaScript", background: "#F4BF36", icon: <JavascriptSVG /> },
+    ],
+    intro: `I've published a few things to npm over the years but always in a fairly ad-hoc way - run npm publish, hope for the best. For architexter, a small package I use across this portfolio, I wanted to do it properly: a real build pipeline, tests that run before every publish, and a versioning workflow I can actually follow...`,
+    navigate: "publishing-an-npm-package",
     published: true,
   },
 ];

@@ -233,6 +233,7 @@ const TagIconWrap = styled.span`
   height: 2rem;
   border-radius: 50%;
   flex-shrink: 0;
+  color: ${({ $dark }) => ($dark ? "#111827" : "inherit")};
   background: ${({ $dark }) =>
     $dark ? "rgba(255, 255, 255, 0.92)" : "rgba(255, 255, 255, 0.45)"};
   border: 1px solid

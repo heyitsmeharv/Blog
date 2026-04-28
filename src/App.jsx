@@ -68,6 +68,7 @@ import QuietlyAnalytics from "./components/Posts/QuietlyAnalytics.jsx";
 import AWSObservabilityDashboard from "./components/Posts/AWSObservabilityDashboard.jsx";
 import AWSSecAudit from "./components/Posts/AWSSecAudit.jsx";
 import OutputUnderstanding from "./components/Posts/OutputUnderstanding.jsx";
+import NpmPublishing from "./components/Posts/NpmPublishing.jsx";
 import { posts } from "./data/posts";
 import {
   blogText,
@@ -367,6 +368,11 @@ const App = () => {
                           exact
                           path="/blog/when-output-outruns-understanding"
                           component={OutputUnderstanding}
+                        />
+                        <Route
+                          exact
+                          path="/blog/publishing-an-npm-package"
+                          component={NpmPublishing}
                         />
                         <Route component={NotFound} />
                       </Switch>
