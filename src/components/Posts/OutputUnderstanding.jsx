@@ -40,7 +40,7 @@ const OutputUnderstanding = () => {
     window.scrollTo(0, 0);
     Analytics.pageview("/blog/when-output-outruns-understanding");
     Analytics.track("blog_page_viewed", {
-      slug: "when-imagination-outruns-understanding",
+      slug: "when-output-outruns-understanding",
     });
   }, []);
 
@@ -147,9 +147,9 @@ const OutputUnderstanding = () => {
           After what felt like a honeymoon phase of 'AI', I started to feel a
           sense of unease and discomfort with the speed at which I was able to
           produce output. I was left with a feeling of what happens when my
-          imagination and creativity can outrun my understanding of the
-          technology? At what point am I not engineering but just prompting? Am
-          I building or just orchestrating the tools that are built by others?
+          output and creativity can outrun my understanding of the technology?
+          At what point am I not engineering but just prompting? Am I building
+          or just orchestrating the tools that are built by others?
         </Paragraph>
 
         <SectionHeading>Pandora's Box</SectionHeading>
