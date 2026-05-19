@@ -5,6 +5,7 @@ import { Journal } from "@styled-icons/bootstrap/Journal";
 import {
   JavascriptSVG,
   NpmSVG,
+  TypeScriptSVG,
   ReactjsSVG,
   AWSSVG,
   AWSIAMSVG,
@@ -571,10 +572,25 @@ const allPosts = [
     tags: [
       { name: "npm", background: "#CB3837", icon: <NpmSVG /> },
       { name: "JavaScript", background: "#F4BF36", icon: <JavascriptSVG /> },
+      { name: "React", background: "#20232a", icon: <ReactjsSVG /> },
     ],
     intro: `I've published a few things to npm over the years but always in a fairly ad-hoc way - run npm publish, hope for the best. For architexter, a small package I use across this portfolio, I wanted to do it properly: a real build pipeline, tests that run before every publish, and a versioning workflow I can actually follow...`,
     navigate: "publishing-an-npm-package",
     published: true,
+  },
+  {
+    title: "Lambda Powertools & Middy",
+    readingTime: "approx 15 mins",
+    type: "Theory",
+    date: "01/05/2026",
+    tags: [
+      { name: "AWS", background: "#FF9900", icon: <AWSSVG /> },
+      { name: "Lambda", background: "#FF9900", icon: <AWSLambdaSVG /> },
+      { name: "TypeScript", background: "#3178C6", icon: <TypeScriptSVG /> },
+    ],
+    intro: `Lambda functions are easy to get wrong in production. Without a shared approach to logging, tracing, and metrics, you end up with a dozen functions all handling observability differently. This post covers AWS Lambda Powertools for TypeScript and Middy — how each works, why they pair, and what a fully wired handler looks like.`,
+    navigate: "lambda-powertools",
+    published: false,
   },
 ];
 

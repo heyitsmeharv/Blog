@@ -69,6 +69,7 @@ import AWSObservabilityDashboard from "./components/Posts/AWSObservabilityDashbo
 import AWSSecAudit from "./components/Posts/AWSSecAudit.jsx";
 import OutputUnderstanding from "./components/Posts/OutputUnderstanding.jsx";
 import NpmPublishing from "./components/Posts/NpmPublishing.jsx";
+import LambdaPowertools from "./components/Posts/LambdaPowertools.jsx";
 import { posts } from "./data/posts";
 import {
   blogText,
@@ -373,6 +374,11 @@ const App = () => {
                           exact
                           path="/blog/publishing-an-npm-package"
                           component={NpmPublishing}
+                        />
+                        <Route
+                          exact
+                          path="/blog/lambda-powertools"
+                          component={LambdaPowertools}
                         />
                         <Route component={NotFound} />
                       </Switch>
