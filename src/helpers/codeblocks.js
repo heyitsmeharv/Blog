@@ -1,4 +1,4 @@
-export const example = `const starWarsCharacters = [ "starwars", { starwars: [ { nameOne: "Luke", nameTwo: "Leia", nameThree: "Han" } ] }, 4, ["starwars"] ];`
+export const example = `const starWarsCharacters = [ "starwars", { starwars: [ { nameOne: "Luke", nameTwo: "Leia", nameThree: "Han" } ] }, 4, ["starwars"] ];`;
 export const mapExample = `const kvpArray = [
     { key: 1, value: 10 },
     { key: 2, value: 20 },
@@ -400,7 +400,7 @@ export const roomHelper = `export const Rooms = [
     locked: false,
     explored: false
   },
-]`
+]`;
 
 export const partitionsInAthena = `CREATE EXTERNAL TABLE sales (
   product_id STRING,
@@ -444,7 +444,7 @@ export const bashFeed2 = `while read user; do
   echo "Hello $user"
 done < users.txt
 `;
-export const bashFeedAlt = `cat users.txt | while read user; do echo "Hello $user"; done`
+export const bashFeedAlt = `cat users.txt | while read user; do echo "Hello $user"; done`;
 export const bashRedirectErr = `find ~ -name "config.json" > results.txt 2> errors.txt`;
 export const bashRedirectErr2 = `find ~ -name "config.json" > all_output.txt 2>&1`;
 export const bashMixingMatching = `sort < input.txt | uniq > cleaned.txt`;
@@ -868,3 +868,142 @@ timestamp() { date +"%Y-%m-%d %H:%M:%S"; }
   echo
 } >> "$LOG"
 `;
+
+// AWS Multi-Account Setup
+export const awsMultiAccountSCPDenyGuardDuty = `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyDisableGuardDuty",
+      "Effect": "Deny",
+      "Action": [
+        "guardduty:DeleteDetector",
+        "guardduty:DisassociateFromAdministratorAccount",
+        "guardduty:StopMonitoringMembers",
+        "guardduty:UpdateDetector"
+      ],
+      "Resource": "*"
+    }
+  ]
+}`;
+
+export const awsMultiAccountSCPDenyRegions = `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyNonApprovedRegions",
+      "Effect": "Deny",
+      "NotAction": [
+        "iam:*",
+        "organizations:*",
+        "account:*",
+        "sts:*",
+        "support:*",
+        "health:*",
+        "route53:*",
+        "cloudfront:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": [
+            "eu-west-1",
+            "us-east-1"
+          ]
+        }
+      }
+    }
+  ]
+}`;
+
+export const awsMultiAccountSCPDenyRoot = `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyRootUser",
+      "Effect": "Deny",
+      "Action": "*",
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::*:root"
+          ]
+        }
+      }
+    }
+  ]
+}`;
+
+export const awsMultiAccountTerraformDeployRoleTrust = `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::MANAGEMENT_ACCOUNT_ID:root"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "sts:ExternalId": "terraform-deploy"
+        }
+      }
+    }
+  ]
+}`;
+
+export const awsMultiAccountGitHubOIDCRole = `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::MANAGEMENT_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": "repo:your-org/your-repo:ref:refs/heads/main"
+        }
+      }
+    }
+  ]
+}`;
+
+export const awsMultiAccountTerraformProviderAssumeRole = `provider "aws" {
+  region = "eu-west-1"
+
+  assume_role {
+    role_arn     = "arn:aws:iam::\${var.target_account_id}:role/TerraformDeployRole"
+    session_name = "terraform-\${var.environment}"
+  }
+}`;
+
+export const awsMultiAccountTagPolicy = `{
+  "tags": {
+    "env": {
+      "tag_key": {
+        "@@assign": "env"
+      },
+      "tag_value": {
+        "@@assign": [
+          "dev",
+          "stage",
+          "prod"
+        ]
+      },
+      "enforced_for": {
+        "@@assign": [
+          "ec2:instance",
+          "s3:bucket",
+          "lambda:function",
+          "rds:db"
+        ]
+      }
+    }
+  }
+}`;
